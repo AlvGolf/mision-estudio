@@ -68,12 +68,50 @@ table.rules td{padding:8px;border-bottom:1px solid #34509f;vertical-align:top}
 @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.6}}
 .shake{animation:sh .35s}
 @keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-@media(max-width:520px){.q{font-size:19px}.opt{font-size:17px}.mc{font-size:12px}}
+.t-short{display:none}
+.pill{white-space:nowrap}
+.rk-list{margin:8px 0}
+.rk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #34509f}
+.rk-m{font-size:24px;width:36px;flex:none;text-align:center}
+.rk-b{flex:1;min-width:0}
+.rk-n{font-weight:700;font-size:18px}
+.rk-n small{font-weight:400;color:var(--mut);font-size:13px}
+.rk-s{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0;font-size:16px}
+.rk-st{font-size:14px}
+.rk .fdel{flex:none}
+@media(max-width:600px){
+ header{padding:8px 10px}
+ header h1{font-size:17px}
+ .t-long{display:none}.t-short{display:inline}
+ .hud{gap:6px}.pill{font-size:14px;padding:5px 10px}
+ main{padding:12px 10px 50px}
+ .box{padding:16px;border-radius:18px}
+ .grid{grid-template-columns:1fr 1fr;gap:10px}
+ .mission{padding:12px;border-radius:16px}
+ .mission .ic{font-size:30px}
+ .mission h3{font-size:16px}
+ .mission p{font-size:12px}
+ .mission .stars{font-size:15px;margin-top:4px}
+ .q{font-size:19px}.opt{font-size:17px;padding:12px}
+ .mc{font-size:12px}
+ .row2{grid-template-columns:1fr}
+ .row2 .btn{margin-top:0}
+ .flash{height:170px}.flash .f{font-size:26px}.flash .b{font-size:19px}
+ .chip{font-size:17px;padding:9px 12px}
+ .big{font-size:48px}
+ .btn{font-size:17px;padding:12px 18px}
+ table.rules{font-size:15px}
+}
+@media(min-width:601px) and (max-width:1024px){
+ main{max-width:760px}
+ .grid{grid-template-columns:repeat(3,1fr)}
+}
+
 </style>
 </head>
 <body>
 <header>
-  <h1 onclick="home()">🏆 Misión Examen · Unit 2</h1>
+  <h1 onclick="home()">🏆 <span class="t-long">Misión Inglés · Unit 2</span><span class="t-short">Unit 2</span></h1>
   <div class="hud"><span class="pill" id="xp">⭐ 0 XP</span><span class="pill" id="streak">🔥 0</span></div>
 </header>
 <main id="app"></main>
@@ -332,7 +370,7 @@ function classBox(){
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="clase"><h2>🏫 Ranking de la clase</h2>
   <p class="sub">Pulsa 📤 para subir tu marca. Ordenado por nota; si empatan, por XP. <button class="tab" id="crel" style="font-size:12px;padding:3px 10px">🔄 actualizar</button></p>
-  ${rows.length?`<table class="rules">${rows.map((r,i)=>`<tr><td style="width:40px;font-size:22px">${med[i]||(i+1)+'.'}</td><td><b>${esc(r.n)}</b></td><td>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></td><td>👑 ${r.ex!=null?fmt(r.ex):'–'}</td><td>⭐ ${r.xp}</td><td>★ ${r.st}/24</td><td>🔥 ${r.bs}</td></tr><tr><td></td><td colspan="6" style="padding-top:0;font-size:14px">${r.sb?starLine(r.sb):''}</td></tr>`).join('')}</table>`
+  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/24</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
   :'<p style="font-size:18px">Todavía no hay nadie. ¡Juega, pulsa 📤 y sé el primero!</p>'}
   <button class="btn" id="fsend">📤 Subir mi marca al ranking</button>
   <div class="fb" id="sfb"></div>${importBox()}</div>`;
@@ -377,7 +415,7 @@ function fame(){
   <div class="row2"><input class="typ" id="fn" maxlength="20" value="${esc(lsGet('mision_name')||'')}" placeholder="Tu nombre">
   <button class="btn" id="fsave" style="margin-top:0">💾 Guardar mi puntuación</button></div>
   <div class="fb" id="ffb"></div>
-  ${rows.length?`<table class="rules">${rows.map((r,i)=>`<tr><td style="width:40px;font-size:22px">${med[i]||(i+1)+'.'}</td><td><b>${esc(r.n)}</b><br><span style="color:var(--mut);font-size:14px">${new Date(r.d).toLocaleDateString('es-ES',{day:'numeric',month:'short'})} ${new Date(r.d).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</span></td><td>⭐ ${r.xp}</td><td>★ ${r.st}</td><td>🔥 ${r.bs}</td><td>${r.no?'📊 '+r.no:''}${r.ex?'<br>👑 '+r.ex:''}</td><td style="width:44px"><button class="tab fdel" data-ix="${r.ix}" title="Borrar">🗑️</button></td></tr><tr><td></td><td colspan="6" style="padding-top:0;font-size:14px">${r.sb?starLine(r.sb):'<span style="color:var(--mut)">Estrellas por apartado: no se guardaron en esta partida</span>'}</td></tr>`).join('')}</table>`:'<p class="sub">Aún no hay marcas. ¡Sé el primero!</p>'}
+  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)} <small>${new Date(r.d).toLocaleDateString('es-ES',{day:'numeric',month:'short'})} ${new Date(r.d).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</small></div><div class="rk-s"><span>⭐ ${r.xp}</span><span>★ ${r.st}</span><span>🔥 ${r.bs}</span>${r.no?`<span>📊 ${r.no}</span>`:''}${r.ex?`<span>👑 ${r.ex}</span>`:''}</div><div class="rk-st">${r.sb?starLine(r.sb):'<span style="color:var(--mut)">Sin desglose de estrellas</span>'}</div></div><button class="tab fdel" data-ix="${r.ix}" title="Borrar">🗑️</button></div>`).join('')}</div>`:'<p class="sub">Aún no hay marcas. ¡Sé el primero!</p>'}
   <p class="sub" style="font-size:13px;margin-top:10px">Tus partidas se guardan en este dispositivo.</p></div>`;
 }
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -488,8 +526,8 @@ const R={
        app().innerHTML=`<div class="box"><h2>⌨️ Escribe los verbos</h2>
        <div class="bar"><div style="width:${i/set.length*100}%"></div></div>
        <div class="q">${v[0]} <span style="color:var(--mut);font-size:17px">(${v[3]})</span></div>
-       <div class="row2"><div><div class="lbl">past simple</div><input class="typ" id="a" autocomplete="off" autocapitalize="off"></div>
-       <div><div class="lbl">past participle</div><input class="typ" id="b" autocomplete="off" autocapitalize="off"></div></div>
+       <div class="row2"><div><div class="lbl">past simple</div><input class="typ" id="a" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+       <div><div class="lbl">past participle</div><input class="typ" id="b" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div></div>
        <div class="fb" id="fb"></div><button class="btn" id="chk">Comprobar ✔</button></div>`;
        $('#a').focus();
        const go=()=>{const A=good($('#a').value,v[1]),B=good($('#b').value,v[2]);
