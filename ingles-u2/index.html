@@ -497,7 +497,7 @@ function classBox(){
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="clase"><h2>🏫 Ranking de la clase</h2>
   <p class="sub">Pulsa 📤 para subir tu marca. Ordenado por nota; si empatan, por XP. <button class="tab" id="crel" style="font-size:12px;padding:3px 10px">🔄 actualizar</button></p>
-  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/24</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
+  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MIC.length*3}</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
   :'<p style="font-size:18px">Todavía no hay nadie. ¡Juega, pulsa 📤 y sé el primero!</p>'}
   <button class="btn" id="fsend">📤 Subir mi marca al ranking</button>
   <div class="fb" id="sfb"></div>${importBox()}</div>`;
@@ -532,13 +532,13 @@ function myCode(){
   const n=(lsGet('mision_name')||'').trim(),f=finalNota(),ex=nota('exam');
   const sb=MIC.map(([k])=>BEST[k]||0).join('');
   const core=[n,f.miss?'-':fmt(f.n),ex==null?'-':fmt(ex),XP,totalStars(),BSTREAK,sb].join('|');
-  return `🏆 MISIÓN UNIT 2 (inglés)\nNombre: ${n}\nNota: ${f.miss?'pendiente':fmt(f.n)}\nExamen: ${ex==null?'sin hacer':fmt(ex)}\nXP: ${XP}\nEstrellas: ${totalStars()}/24\nRacha: ${BSTREAK}\nCódigo: ${core}#${chk(core)}`;
+  return `🏆 MISIÓN UNIT 2 (inglés)\nNombre: ${n}\nNota: ${f.miss?'pendiente':fmt(f.n)}\nExamen: ${ex==null?'sin hacer':fmt(ex)}\nXP: ${XP}\nEstrellas: ${totalStars()}/${MIC.length*3}\nRacha: ${BSTREAK}\nCódigo: ${core}#${chk(core)}`;
 }
 function fame(){
   const rows=HIST.map((r,ix)=>({...r,ix})).sort((a,b)=>b.xp-a.xp||b.st-a.st).slice(0,10);
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="fame"><h2>🏅 Mis partidas</h2>
-  <p class="sub">Tu marcador ahora: <b>⭐ ${XP} XP</b> · <b>${totalStars()}/24 estrellas</b> · <b>🔥 mejor racha ${BSTREAK}</b>${nota('exam')!=null?` · <b>👑 examen ${fmt(nota('exam'))}</b>`:''}</p>
+  <p class="sub">Tu marcador ahora: <b>⭐ ${XP} XP</b> · <b>${totalStars()}/${MIC.length*3} estrellas</b> · <b>🔥 mejor racha ${BSTREAK}</b>${nota('exam')!=null?` · <b>👑 examen ${fmt(nota('exam'))}</b>`:''}</p>
   <div class="row2"><input class="typ" id="fn" maxlength="20" value="${esc(lsGet('mision_name')||'')}" placeholder="Tu nombre">
   <button class="btn" id="fsave" style="margin-top:0">💾 Guardar mi puntuación</button></div>
   <div class="fb" id="ffb"></div>
