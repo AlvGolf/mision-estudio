@@ -108,6 +108,67 @@ table.rules td{padding:8px;border-bottom:1px solid #34509f;vertical-align:top}
  .grid{grid-template-columns:repeat(3,1fr)}
 }
 
+.chipb{font-family:inherit;font-size:16px;padding:9px 14px;border-radius:999px;border:2px solid #34509f;background:transparent;color:#fff;cursor:pointer}
+.chipb.on{background:#eef2ff;color:#0d1329;border-color:#eef2ff;font-weight:700}
+.chipb{font-size:15px}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+.mode{--c:#22d3ee;font-family:inherit;text-align:left;color:#fff;border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:18px;padding:18px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;
+ background:linear-gradient(160deg,#141c38 0%,#0d1329 100%);box-shadow:0 10px 30px -18px var(--c)}
+.mode::after{content:"";position:absolute;inset:auto -30% -60% auto;width:70%;height:120%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%);pointer-events:none}
+.mode:hover{transform:translateY(-3px);box-shadow:0 14px 34px -14px var(--c);border-color:var(--c)}
+.mode .tag{font-size:11px;letter-spacing:2.5px;font-weight:700;color:var(--c);text-transform:uppercase}
+.mode .ic{font-size:30px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;margin:8px 0 4px;background:color-mix(in srgb,var(--c) 16%,transparent);border:1px solid color-mix(in srgb,var(--c) 40%,transparent)}
+.mode h3{margin:6px 0 2px;font-size:20px;letter-spacing:.2px}
+.mode p{margin:0;font-size:14px;color:#a9b3d6}
+.mode .rec{margin-top:10px;font-size:13px;font-weight:600;color:var(--c);display:inline-block;padding:3px 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.m1{--c:#ff7a45}.m2{--c:#a78bfa}.m3{--c:#22d3ee}.m4{--c:#a3e635}
+.hudrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
+.timer{height:14px;background:#0c1633;border-radius:9px;overflow:hidden;margin:10px 0}
+.timer>div{height:100%;background:linear-gradient(90deg,var(--yes),var(--gold),var(--no));transition:width .2s linear}
+.q{font-size:22px;font-weight:600;margin:12px 0 14px;line-height:1.35;min-height:30px}
+.aopts.long{grid-template-columns:1fr}
+.opt{font-family:inherit;font-size:19px;padding:14px;border-radius:14px;border:3px solid #34509f;background:var(--card2);color:#fff;cursor:pointer}
+.big{font-size:64px;text-align:center}
+.arena{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 4px}
+.boss{font-size:96px;line-height:1;transition:transform .15s;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.boss.hit{animation:hit .35s}.boss.atk{animation:atk .4s}
+@keyframes hit{20%{transform:translateX(12px) rotate(8deg);filter:brightness(2)}60%{transform:translateX(-8px)}}
+@keyframes atk{50%{transform:translateX(-40px) scale(1.2)}}
+.hero{font-size:56px}
+.hp{height:16px;background:#0c1633;border-radius:9px;overflow:hidden;border:2px solid #34509f}
+.hp>div{height:100%;background:linear-gradient(90deg,#ff5c5c,#ff8a3d);transition:width .3s}
+.dmg{position:fixed;font-size:30px;font-weight:700;color:var(--gold);pointer-events:none;animation:up 1s forwards;z-index:9;text-shadow:0 2px 6px #000}
+@keyframes up{to{transform:translateY(-70px);opacity:0}}
+/* globos */
+.sky{position:relative;height:58vh;min-height:360px;border-radius:20px;overflow:hidden;background:radial-gradient(1px 1px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 20%,#fff8,transparent),radial-gradient(1.5px 1.5px at 40% 60%,#fff6,transparent),radial-gradient(1px 1px at 85% 70%,#fff8,transparent),linear-gradient(#0b1230,#1e1b4b 55%,#3b1d6e);border:1px solid #2a3570;margin-top:10px;touch-action:manipulation}
+.cloud{display:none}
+.bal{position:absolute;bottom:-120px;width:min(40%,170px);text-align:center;cursor:pointer;user-select:none}
+.bal .b{border-radius:50% 50% 46% 46%;padding:26px 6px;font-size:17px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);box-shadow:inset -8px -10px 0 rgba(0,0,0,.22),inset 8px 8px 0 rgba(255,255,255,.12),0 0 18px -4px currentColor;word-break:break-word}
+.bal .s{width:1px;height:40px;background:#8b93b8;margin:0 auto}
+.bal.pop{animation:pop .25s forwards}@keyframes pop{to{transform:scale(1.6);opacity:0}}
+/* ahorcado */
+.word{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:16px 0}
+.word span{min-width:30px;border-bottom:4px solid var(--acc);font-size:30px;font-weight:700;text-align:center;padding:0 2px}
+.word span.sp{border:0;min-width:12px}
+.word{column-gap:22px;row-gap:12px}.wgrp{display:flex;gap:6px;white-space:nowrap}
+.kb{display:flex;flex-direction:column;gap:6px;align-items:center}
+.kb div{display:flex;gap:5px}
+.key{font-family:inherit;font-size:19px;font-weight:600;width:34px;height:44px;border-radius:9px;border:0;background:var(--card2);color:#fff;cursor:pointer}
+.key.ok{background:var(--yes)}.key.bad{background:#47506e;color:#8a93b5}
+.rocket{font-size:40px;text-align:center;letter-spacing:4px}
+.conf{position:fixed;top:-20px;font-size:24px;animation:fall 1.6s linear forwards;pointer-events:none;z-index:9}
+.flash-bad{animation:fbad .4s}@keyframes fbad{50%{background:#7a2b37}}
+@media(max-width:600px){
+@media(max-width:600px){
+ .q{font-size:19px}.opt{font-size:16px;padding:12px}.opts{grid-template-columns:1fr}
+ .aopts{grid-template-columns:1fr}
+ .key{width:29px;height:42px;font-size:17px}.kb div{gap:4px}
+ .word span{font-size:24px;min-width:22px}
+ .bal .b{font-size:14px;padding:20px 4px}
+}
+}
+.mission.locked{opacity:.75;border:2px dashed #4a5a8f}
+.mission.arc{background:linear-gradient(160deg,#141c38,#0d1329);border:1.5px solid #a78bfa}
 </style>
 </head>
 <body>
@@ -371,8 +432,9 @@ const fmt=n=>n==null?'–':n.toFixed(1).replace('.',',');
 function hoyToca(){
   const miss=BLOCKS.find(b=>nota(b.k)==null);if(miss)return{b:miss,why:'aún no lo has jugado'};
   const w=[...BLOCKS].sort((a,b)=>nota(a.k)-nota(b.k))[0];return nota(w.k)>=8?null:{b:w,why:'es tu nota más baja'};}
-const MIC=[['adv','🌡️'],['order','🧩'],['like','💬'],['ling','✍️'],['lord','🗨️'],['vcards','🃏'],['vtype','⌨️'],['vsent','📖'],['vtest','📝'],['vfrase','🔤'],['vocab','🧠'],['traps','🕵️'],['exam','👑']];
-function starLine(b){return MIC.map(([k,ic])=>{const s=(b&&b[k])||0;return `<span style="display:inline-block;background:#0c1633;border-radius:8px;padding:2px 7px;margin:2px;white-space:nowrap">${ic} <span style="color:var(--gold)">${'★'.repeat(s)}</span><span style="color:#4a5a8f">${'★'.repeat(3-s)}</span></span>`}).join('')}
+const MIC=[['adv','🌡️'],['order','🧩'],['like','💬'],['ling','✍️'],['lord','🗨️'],['vcards','🃏'],['vtype','⌨️'],['vsent','📖'],['vtest','📝'],['vfrase','🔤'],['vocab','🧠'],['traps','🕵️'],['exam','👑'],['arcade','🎮']];
+const MAXSTAR=c=>c=='arcade'?1:3;const MAXST=MIC.reduce((s,[k])=>s+MAXSTAR(k),0);
+function starLine(b){return MIC.map(([k,ic])=>{const s=Math.min((b&&b[k])||0,MAXSTAR(k));const M3=MAXSTAR(k);return `<span style="display:inline-block;background:#0c1633;border-radius:8px;padding:2px 7px;margin:2px;white-space:nowrap">${ic} <span style="color:var(--gold)">${'★'.repeat(s)}</span><span style="color:#4a5a8f">${'★'.repeat(M3-s)}</span></span>`}).join('')}
 const MAP={adv:1,order:1,like:1,ling:1,lord:1,vtype:1,vsent:1,vtest:1,vfrase:1,traps:1};
 const totalStars=()=>Object.values(BEST).reduce((a,b)=>a+b,0);
 /* Partidas antiguas sin desglose: si sus estrellas coinciden con las actuales, se rellena */
@@ -388,7 +450,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function confetti(){const e=['⭐','🎉','✨','🏆','💥'];for(let i=0;i<24;i++){const d=document.createElement('div');d.className='conf';d.textContent=e[i%5];d.style.left=Math.random()*100+'vw';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}}
 function starsFor(p){return p>=.9?3:p>=.7?2:p>=.5?1:0}
 function setBest(k,p){const s=starsFor(p);if(!BEST[k]||s>BEST[k])BEST[k]=s;save()}
-function starStr(k){const s=BEST[k]||0;return '★'.repeat(s)+'☆'.repeat(3-s)}
+function starStr(k){const m=k=='arcade'?1:3;const s=Math.min(BEST[k]||0,m);return '★'.repeat(s)+'☆'.repeat(m-s)}
 
 /* ================== MOTOR TEST ================== */
 function quiz(title,sub,qs,key,after){
@@ -419,6 +481,7 @@ function quiz(title,sub,qs,key,after){
 
 /* ================== MISIONES ================== */
 function home(){
+  if(typeof ARC!=='undefined')ARC.clear();
   STREAK=STREAK;hud();
   const M=[
    ['#','🌡️ Adverbios de frecuencia'],
@@ -439,6 +502,8 @@ function home(){
    ['traps','🕵️','Cazaerrores','Traducciones que se apuntan mal'],
    ['#','👑 Examen'],
    ['exam','👑','EXAMEN FINAL','20 preguntas · 10 minutos · sin pistas'],
+   ['#','🎮 Arcade'],
+   ['arcade','🎮','Arcade','Contrarreloj, jefes, globos y cohetes'],
   ];
   const NAME=lsGet('mision_name');
   if(!NAME){app().innerHTML=`<div class="box center" style="margin-top:30px"><div class="big">👋</div><h2>¡Hola! ¿Cómo te llamas?</h2>
@@ -448,7 +513,7 @@ function home(){
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}try{localStorage.setItem('mision_name',v)}catch(e){}home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
   app().innerHTML=`${boletin()}<p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> Cada palabra, cada verbo y cada adverbio del examen tiene su ejercicio. Consigue 3 ⭐ en cada misión. El viernes vas a arrasar.</p>
-  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}</button>`).join('')}</div>
+  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
   <div class="box"><h2>📘 Chuleta rápida</h2>
   <table class="rules">
   <tr><td><b>always</b> 100% · <b>usually</b> 75% · <b>often</b> 50% · <b>sometimes</b> 25% · <b>never</b> 0%</td></tr>
@@ -497,7 +562,7 @@ function classBox(){
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="clase"><h2>🏫 Ranking de la clase</h2>
   <p class="sub">Pulsa 📤 para subir tu marca. Ordenado por nota; si empatan, por XP. <button class="tab" id="crel" style="font-size:12px;padding:3px 10px">🔄 actualizar</button></p>
-  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MIC.length*3}</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
+  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MAXST}</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
   :'<p style="font-size:18px">Todavía no hay nadie. ¡Juega, pulsa 📤 y sé el primero!</p>'}
   <button class="btn" id="fsend">📤 Subir mi marca al ranking</button>
   <div class="fb" id="sfb"></div>${importBox()}</div>`;
@@ -532,13 +597,13 @@ function myCode(){
   const n=(lsGet('mision_name')||'').trim(),f=finalNota(),ex=nota('exam');
   const sb=MIC.map(([k])=>BEST[k]||0).join('');
   const core=[n,f.miss?'-':fmt(f.n),ex==null?'-':fmt(ex),XP,totalStars(),BSTREAK,sb].join('|');
-  return `🏆 MISIÓN UNIT 2 (inglés)\nNombre: ${n}\nNota: ${f.miss?'pendiente':fmt(f.n)}\nExamen: ${ex==null?'sin hacer':fmt(ex)}\nXP: ${XP}\nEstrellas: ${totalStars()}/${MIC.length*3}\nRacha: ${BSTREAK}\nCódigo: ${core}#${chk(core)}`;
+  return `🏆 MISIÓN UNIT 2 (inglés)\nNombre: ${n}\nNota: ${f.miss?'pendiente':fmt(f.n)}\nExamen: ${ex==null?'sin hacer':fmt(ex)}\nXP: ${XP}\nEstrellas: ${totalStars()}/${MAXST}\nRacha: ${BSTREAK}\nCódigo: ${core}#${chk(core)}`;
 }
 function fame(){
   const rows=HIST.map((r,ix)=>({...r,ix})).sort((a,b)=>b.xp-a.xp||b.st-a.st).slice(0,10);
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="fame"><h2>🏅 Mis partidas</h2>
-  <p class="sub">Tu marcador ahora: <b>⭐ ${XP} XP</b> · <b>${totalStars()}/${MIC.length*3} estrellas</b> · <b>🔥 mejor racha ${BSTREAK}</b>${nota('exam')!=null?` · <b>👑 examen ${fmt(nota('exam'))}</b>`:''}</p>
+  <p class="sub">Tu marcador ahora: <b>⭐ ${XP} XP</b> · <b>${totalStars()}/${MAXST} estrellas</b> · <b>🔥 mejor racha ${BSTREAK}</b>${nota('exam')!=null?` · <b>👑 examen ${fmt(nota('exam'))}</b>`:''}</p>
   <div class="row2"><input class="typ" id="fn" maxlength="20" value="${esc(lsGet('mision_name')||'')}" placeholder="Tu nombre">
   <button class="btn" id="fsave" style="margin-top:0">💾 Guardar mi puntuación</button></div>
   <div class="fb" id="ffb"></div>
@@ -767,6 +832,15 @@ const R={
    }
    show();
  },
+ arcade(){
+   const f=finalNota();
+   if(f.miss){app().innerHTML=`<div class="box center"><div class="big">🔒</div><h2>El arcade está bloqueado</h2>
+     <p style="font-size:19px">Se desbloquea cuando juegues <b>todos los bloques</b> una vez y el boletín te dé tu nota.</p>
+     <p class="sub">Te falta${f.miss>1?'n':''} <b>${f.miss}</b> bloque${f.miss>1?'s':''}: ${BLOCKS.filter(b=>nota(b.k)==null).map(b=>b.n).join(', ')}.</p>
+     ${hoyToca()?`<button class="btn" id="hoy2">🎯 Ir a: ${hoyToca().b.n}</button> `:''}<button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
+     const b=$('#hoy2');if(b)b.onclick=()=>R[hoyToca().b.k]();return}
+   ARC.home();
+ },
  exam(){
    const vq=pick(VERBS,3).map(v=>({q:VSENT[v[0]].replace('___','_____')+` (${v[0]})`,opts:pastOpts(v),a:v[1][0],ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`}));
    const pq=pick(VERBS,2).map(v=>{const a=v[2][0];let o=[...new Set([a,v[1][0],v[0]+(v[0].endsWith('e')?'d':'ed'),v[0]])];return{q:`Past participle de "${v[0]}" (${v[3]})`,opts:o,a}});
@@ -775,6 +849,197 @@ const R={
    examRun(qs);
  },
 };
+/* ===== ARCADE (se desbloquea al jugar todos los bloques) ===== */
+const ARC=(()=>{
+/* ===== Banco de preguntas: los mismos ejercicios del juego ===== */
+const mc=q=>({...q,opts:shuf([...new Set(q.opts)])});
+const ABLK=[
+ {k:'mix',n:'Todo mezclado',ic:'🎲'},
+ {k:'adv',n:'Adverbios',ic:'🌡️'},
+ {k:'like',n:'Do you like / Would you like',ic:'💬'},
+ {k:'verbs',n:'Verbos (los 20)',ic:'🔤'},
+ {k:'vocab',n:'Vocabulario (las 52)',ic:'📚'},
+];
+function bankMC(k){
+  const adv=()=>[...ADV_MC,...ADV_POS];
+  const like=()=>[...LIKE,...ING.map(x=>({q:`${x[0]} → -ing`,opts:[x[1],x[0]+'ing',x[0].replace(/e$/,'')+'ing',x[0]+x[0].slice(-1)+'ing'],a:x[1],ex:x[2]}))];
+  const verbs=()=>VERBS.flatMap(v=>[
+    {q:`Past simple de "${v[0]}" (${v[3]})`,opts:pastOpts(v),a:v[1][0],ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`},
+    {q:`Past participle de "${v[0]}" (${v[3]})`,opts:[v[2][0],v[1][0],v[0]+(v[0].endsWith('e')?'d':'ed'),v[0]],a:v[2][0],ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`},
+    {q:VSENT[v[0]].replace('___','_____')+` (${v[0]})`,opts:pastOpts(v),a:v[1][0],ex:`${v[0]} → ${v[1].join('/')}`}]);
+  const vocab=()=>VOCAB.flatMap(w=>[vocabTransQ(w),vocabSentQ(w)]);
+  const m={adv,like,verbs,vocab,mix:()=>[...adv(),...like(),...verbs(),...vocab()]};
+  return shuf(m[k]().map(mc)).filter(q=>q.opts.length>=2&&q.opts.includes(q.a));
+}
+/* Para deletrear: respuestas de una palabra o expresión corta */
+function bankSpell(k){
+  const verbs=()=>VERBS.flatMap(v=>[{q:`Past simple de "${v[0]}"`,h:v[3],a:v[1][0]},{q:`Past participle de "${v[0]}"`,h:v[3],a:v[2][0]}]);
+  const like=()=>ING.map(x=>({q:`"${x[0]}" con -ing`,h:x[2],a:x[1]}));
+  const adv=()=>ADV.map(a=>({q:`Adverbio del ${a.p}`,h:{always:'siempre',usually:'normalmente',often:'a menudo',sometimes:'a veces',never:'nunca'}[a.w],a:a.w}));
+  const vocab=()=>VOCAB.filter(w=>w[0].length<=16&&!w[0].includes('(')).map(w=>({q:`¿Cómo se dice "${w[1]}"?`,h:'Vocabulario Unit 2',a:w[0]}));
+  const m={adv,like,verbs,vocab,mix:()=>[...adv(),...like(),...verbs(),...vocab()]};
+  return shuf(m[k]());
+}
+/* ===== Estado ===== */
+let ST={coins:0,best:{},blk:'mix'};
+try{Object.assign(ST,JSON.parse(localStorage.getItem('arcade_u2')||'{}'))}catch(e){}
+function asave(){try{localStorage.setItem('arcade_u2',JSON.stringify(ST))}catch(e){}}
+function coins(n){XP+=n*5;hud();save()}
+function record(mode,score){const key=mode+':'+ST.blk;const old=ST.best[key]||0;if(score>old){ST.best[key]=score;asave();return true}return false}
+const best=mode=>ST.best[mode+':'+ST.blk]||0;
+/* ===== Sonido y efectos ===== */
+let AC=null;
+function sfx(t){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  const f={ok:[660,990],bad:[220,140],pop:[880,1320],win:[523,1047],hit:[300,600]}[t]||[440,440];const n=AC.currentTime;
+  o.type=t=='bad'?'sawtooth':'triangle';o.frequency.setValueAtTime(f[0],n);o.frequency.exponentialRampToValueAtTime(f[1],n+.15);
+  g.gain.setValueAtTime(.12,n);g.gain.exponentialRampToValueAtTime(.001,n+.25);o.start(n);o.stop(n+.26)}catch(e){}}
+function confetti(){const e=['⭐','🎉','✨','🏆','🪙'];for(let i=0;i<24;i++){const d=document.createElement('div');d.className='conf';d.textContent=e[i%5];d.style.left=Math.random()*100+'vw';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}}
+function floatTxt(txt,x,y,color){const d=document.createElement('div');d.className='dmg';d.textContent=txt;d.style.left=x+'px';d.style.top=y+'px';if(color)d.style.color=color;document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
+let TIMERS=[];function clearAll(){TIMERS.forEach(t=>{clearInterval(t);clearTimeout(t);cancelAnimationFrame(t)});TIMERS=[];document.onkeydown=null}
+/* ===== Pantalla de resultado ===== */
+function result(icon,title,lines,mode,score,again){
+  clearAll();const rec=record(mode,score);const c=Math.max(1,Math.round(score/10));coins(c);if(rec||score>0)confetti();sfx('win');
+  app().innerHTML=`<div class="box center"><div class="big">${icon}</div><h2>${title}</h2>
+  <p style="font-size:22px">${lines}</p>
+  <p style="font-size:20px">${rec?'🏆 ¡NUEVO RÉCORD!':'Récord: '+best(mode)} · +${c*5} XP</p>
+  <button class="btn" id="again">🔁 Otra vez</button> <button class="btn sec" onclick="ARC.home()">🏠 Modos</button></div>`;
+  $('#again').onclick=again;
+}
+function answerOpts(q,onPick){
+  const long=q.opts.some(o=>o.length>22);
+  return `<div class="aopts ${long?'long':''}">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+}
+function wireOpts(q,cb){document.querySelectorAll('.opt').forEach(b=>b.onclick=e=>{
+  document.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent==q.a)x.classList.add('ok')});
+  const ok=b.textContent==q.a;if(!ok)b.classList.add('bad');cb(ok,e,b)})}
+
+/* ===== MENÚ ===== */
+const MODES=[
+ {k:'time',c:'m1',ic:'⚡',n:'Contrarreloj',d:'60 segundos. Acierta seguido para multiplicar puntos.',r:s=>s+' puntos'},
+ {k:'boss',c:'m2',ic:'🐉',n:'Batalla contra el jefe',d:'Cada acierto es un ataque. ¡Que no te quite las 3 vidas!',r:s=>s+' jefes'},
+ {k:'balloon',c:'m3',ic:'🎈',n:'Explota globos',d:'Explota el globo correcto antes de que se escape.',r:s=>s+' globos'},
+ {k:'spell',c:'m4',ic:'🚀',n:'Rescate letra a letra',d:'Escribe la palabra letra a letra antes de que despegue el cohete.',r:s=>s+' rescates'},
+];
+function ahome(){
+  clearAll();
+  app().innerHTML=`<div class="box"><h2>🎮 Arcade</h2><p class="sub">Los mismos ejercicios, en modo arcade. Lo que ganas suma XP, pero no cuenta para la nota. Vence a un jefe y gana la ⭐ número 40.</p>
+  <div class="achips">${ABLK.map(b=>`<button class="chipb ${ST.blk==b.k?'on':''}" data-k="${b.k}">${b.ic} ${b.n}</button>`).join('')}</div>
+  <div class="modes">${MODES.map((m,ix)=>`<button class="mode ${m.c}" data-k="${m.k}"><div class="tag">Modo 0${ix+1}</div><div class="ic">${m.ic}</div><h3>${m.n}</h3><p>${m.d}</p><div class="rec">🏆 ${m.r(best(m.k))}</div></button>`).join('')}</div><button class="btn sec" onclick="home()">🏠 Volver a las misiones</button></div>`;
+  document.querySelectorAll('.chipb').forEach(b=>b.onclick=()=>{ST.blk=b.dataset.k;asave();ahome()});
+  document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>G[b.dataset.k]());
+}
+
+const G={
+ /* ⚡ CONTRARRELOJ */
+ time(){
+   let qs=bankMC(ST.blk),i=0,score=0,streak=0,left=60,total=60,hits=0,miss=0;
+   app().innerHTML=`<div class="box"><div class="hudrow"><span>⚡ Contrarreloj</span><span id="sc">0 pts</span><span class="combo" id="cb"></span><span id="tl">60 s</span></div>
+   <div class="timer"><div id="tb" style="width:100%"></div></div><div id="qa"></div></div>`;
+   const tick=setInterval(()=>{left-=.2;if(left<=0){left=0;end()}$('#tb').style.width=(left/total*100)+'%';$('#tl').textContent=Math.ceil(left)+' s'},200);TIMERS.push(tick);
+   function mult(){return streak>=9?4:streak>=6?3:streak>=3?2:1}
+   function show(){if(i>=qs.length){qs=bankMC(ST.blk);i=0}const q=qs[i];
+     $('#qa').innerHTML=`<div class="q">${esc(q.q)}</div>${answerOpts(q)}`;
+     wireOpts(q,(ok,e)=>{if(ok){streak++;hits++;const p=10*mult();score+=p;left=Math.min(total,left+2);sfx('ok');floatTxt('+'+p,e.clientX,e.clientY)}
+       else{streak=0;miss++;left=Math.max(0,left-3);sfx('bad');$('#qa').classList.add('shake');floatTxt('-3 s',e.clientX,e.clientY,'#ff5c5c')}
+       $('#sc').textContent=score+' pts';$('#cb').textContent=mult()>1?'🔥 x'+mult():'';
+       TIMERS.push(setTimeout(()=>{$('#qa')&&$('#qa').classList.remove('shake');i++;show()},ok?350:900))});
+   }
+   let done=false;function end(){if(done)return;done=true;result('⚡','¡Tiempo!',`${score} puntos · ${hits} aciertos · ${miss} fallos`,'time',score,G.time)}
+   show();
+ },
+ /* 🐉 JEFE */
+ boss(){
+   const BOSS={adv:['👾','Monstruo del Reloj'],like:['🤖','Robot Preguntón'],verbs:['🐉','Dragón del Pasado'],vocab:['🐙','Kraken de las Palabras'],mix:['🦖','Rex Supremo']};
+   let qs=bankMC(ST.blk),i=0,lives=3,beaten=0,streak=0,hp,maxhp,qtime=12,qleft;
+   const [face,name]=BOSS[ST.blk];
+   function newBoss(){maxhp=100+beaten*40;hp=maxhp;qtime=Math.max(6,12-beaten*2)}
+   newBoss();
+   app().innerHTML=`<div class="box"><div class="hudrow"><span id="bn"></span><span id="lv"></span></div>
+   <div class="hp" style="margin-top:8px"><div id="hpb" style="width:100%"></div></div>
+   <div class="arena"><div class="hero">🥷</div><div class="boss" id="boss">${face}</div></div>
+   <div class="timer"><div id="atb" style="width:100%"></div></div><div class="hint" style="color:var(--mut);font-size:13px">Si la barra se vacía, ¡el jefe ataca!</div><div id="qa"></div></div>`;
+   function hud(){$('#bn').textContent=`${name} ${beaten?'nivel '+(beaten+1):''}`;$('#lv').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);$('#hpb').style.width=(hp/maxhp*100)+'%'}
+   function hurt(){lives--;sfx('bad');const b=$('#boss');b.classList.remove('atk');void b.offsetWidth;b.classList.add('atk');document.querySelector('.box').classList.add('flash-bad');setTimeout(()=>document.querySelector('.box')&&document.querySelector('.box').classList.remove('flash-bad'),400);streak=0;hud();if(lives<=0){end();return true}return false}
+   let atk;
+   function show(){if(i>=qs.length){qs=bankMC(ST.blk);i=0}const q=qs[i];qleft=qtime;
+     $('#qa').innerHTML=`<div class="q">${esc(q.q)}</div>${answerOpts(q)}`;
+     clearInterval(atk);atk=setInterval(()=>{qleft-=.1;$('#atb').style.width=Math.max(0,qleft/qtime*100)+'%';if(qleft<=0){clearInterval(atk);document.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent==q.a)x.classList.add('ok')});if(!hurt())TIMERS.push(setTimeout(()=>{i++;show()},900))}},100);TIMERS.push(atk);
+     wireOpts(q,(ok,e)=>{clearInterval(atk);
+       if(ok){streak++;const crit=streak>=3;const d=(crit?30:20)+Math.round(qleft);hp=Math.max(0,hp-d);sfx('hit');const b=$('#boss');b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit');
+         const r=b.getBoundingClientRect();floatTxt((crit?'💥 CRÍTICO -':'-')+d,r.left,r.top);hud();
+         if(hp<=0){beaten++;coins(5);if(!BEST.arcade){BEST.arcade=1;save()}confetti();sfx('win');$('#qa').innerHTML=`<div class="q center">🏆 ¡Has vencido al jefe! +25 XP · ⭐ estrella del arcade<br><span style="color:var(--mut);font-size:16px">Llega uno más fuerte y más rápido…</span></div>`;
+           TIMERS.push(setTimeout(()=>{newBoss();hud();i++;show()},1800));return}
+         TIMERS.push(setTimeout(()=>{i++;show()},500))}
+       else{if(!hurt())TIMERS.push(setTimeout(()=>{i++;show()},1000))}});
+   }
+   let done=false;function end(){if(done)return;done=true;result(beaten?'🏆':'💀',beaten?`¡Venciste a ${beaten} jefe${beaten>1?'s':''}!`:'El jefe ganó esta vez',`Jefes vencidos: ${beaten}`,'boss',beaten,G.boss)}
+   hud();show();
+ },
+ /* 🎈 GLOBOS */
+ balloon(){
+   let qs=bankMC(ST.blk).filter(q=>q.opts.every(o=>o.length<=24)),i=0,lives=3,popped=0,round=0,speed;
+   const COLS=['#dc2f45','#7c4dde','#0f9d74','#e2672e','#c2398f','#1a8fc2'];
+   app().innerHTML=`<div class="box"><div class="hudrow"><span>🎈 Explota globos</span><span id="pp">🎈 0</span><span id="lv"></span></div>
+   <div class="q" id="qq"></div><div class="sky" id="sky"><div class="cloud" style="left:8%;top:12%">☁️</div><div class="cloud" style="right:10%;top:30%">☁️</div></div></div>`;
+   function hud(){$('#lv').textContent='❤️'.repeat(lives)+'🖤'.repeat(Math.max(0,3-lives));$('#pp').textContent='🎈 '+popped}
+   function show(){
+     if(lives<=0)return end();
+     if(i>=qs.length){qs=bankMC(ST.blk).filter(q=>q.opts.every(o=>o.length<=24));i=0}
+     const q=qs[i];round++;speed=0.72+Math.min(1.45,round*0.065);
+     $('#qq').textContent=q.q;
+     const sky=$('#sky');sky.querySelectorAll('.bal').forEach(b=>b.remove());
+     const n=q.opts.length,slots=shuf([...Array(n).keys()]);let resolved=false;
+     const bals=q.opts.map((o,k)=>{const d=document.createElement('div');d.className='bal';d.dataset.o=o;
+       d.style.left=(slots[k]*(100/n)+(100/n-40)/2)+'%';d.style.left=`calc(${slots[k]*(100/n)}% + 4px)`;d.style.width=`calc(${100/n}% - 8px)`;
+       d.innerHTML=`<div class="b" style="background:${COLS[(k+round)%COLS.length]}">${esc(o)}</div><div class="s"></div>`;
+       d._y=-130-Math.random()*90;d._v=speed*(0.85+Math.random()*0.3);sky.appendChild(d);
+       d.onclick=()=>{if(resolved||d.classList.contains('pop'))return;
+         if(o==q.a){resolved=true;d.classList.add('pop');sfx('pop');popped++;hud();const r=d.getBoundingClientRect();floatTxt('+1 🎈',r.left+20,r.top);
+           bals.forEach(x=>{if(x!=d)x.style.opacity=.35});TIMERS.push(setTimeout(()=>{i++;show()},600))}
+         else{d.classList.add('pop');sfx('bad');lives--;hud();sky.classList.add('shake');setTimeout(()=>sky.classList.remove('shake'),400);if(lives<=0){resolved=true;showAns(q);TIMERS.push(setTimeout(end,1400))}}};
+       return d});
+     const H=sky.clientHeight;
+     function frame(){if(resolved)return;let esc=false;bals.forEach(b=>{if(b.classList.contains('pop'))return;b._y+=b._v;b.style.bottom=b._y+'px';if(b.dataset.o==q.a&&b._y>H+10)esc=true});
+       if(esc){resolved=true;lives--;sfx('bad');hud();showAns(q);TIMERS.push(setTimeout(()=>{i++;show()},1300));return}
+       TIMERS.push(requestAnimationFrame(frame))}
+     TIMERS.push(requestAnimationFrame(frame));
+   }
+   function showAns(q){$('#qq').innerHTML=`${esc(q.q)}<br><span style="color:var(--yes)">✔ ${esc(q.a)}</span>`}
+   let done=false;function end(){if(done)return;done=true;result('🎈','¡Se acabaron las vidas!',`Has explotado ${popped} globos buenos`,'balloon',popped,G.balloon)}
+   hud();show();
+ },
+ /* 🚀 RESCATE LETRA A LETRA */
+ spell(){
+   let qs=bankSpell(ST.blk),i=0,saved=0,fails=0;const MAXF=6,ROUNDS=8;
+   function show(){
+     if(i>=ROUNDS||fails>=3)return result('🚀',fails>=3?'¡Fin de la misión!':'¡Misión completada!',`Rescates: ${saved} de ${i}`,'spell',saved,G.spell);
+     const q=qs[i%qs.length],target=q.a.toLowerCase();let guessed=new Set(),miss=0,over=false;
+     const isL=c=>/[a-z]/.test(c);
+     app().innerHTML=`<div class="box"><div class="hudrow"><span>🚀 Rescate ${i+1}/${ROUNDS}</span><span>🧑‍🚀 ${saved}</span><span>${'❌'.repeat(fails)}</span></div>
+     <div class="q center">${esc(q.q)}</div><div class="center" style="color:var(--mut)">${esc(q.h)}</div>
+     <div class="rocket" id="rk"></div><div class="word" id="wd"></div><div class="kb" id="kb"></div><div class="center" id="fb" style="min-height:50px;font-size:18px;margin-top:10px"></div></div>`;
+     const rows=['qwertyuiop','asdfghjkl','zxcvbnm'];
+     $('#kb').innerHTML=rows.map(r=>`<div>${[...r].map(c=>`<button class="key" data-c="${c}">${c}</button>`).join('')}</div>`).join('');
+     function draw(){
+       $('#wd').innerHTML=target.split(' ').map(wd=>`<div class="wgrp">${[...wd].map(c=>!isL(c)?`<span class="sp">${esc(c)}</span>`:`<span>${guessed.has(c)||over?c:''}</span>`).join('')}</div>`).join('');
+       $('#rk').textContent='🔥'.repeat(miss)+'🚀'+'·'.repeat(MAXF-miss)+'🌍';
+     }
+     function tryC(c){if(over||guessed.has(c))return;guessed.add(c);const k=document.querySelector(`.key[data-c="${c}"]`);
+       if(target.includes(c)){k&&k.classList.add('ok');sfx('ok')}else{k&&k.classList.add('bad');miss++;sfx('bad')}
+       const solved=[...target].every(x=>!isL(x)||guessed.has(x));
+       if(solved){over=true;saved++;coins(2);confetti();sfx('win');$('#fb').innerHTML='✅ ¡Rescatado! +10 XP'}
+       else if(miss>=MAXF){over=true;fails++;$('#fb').innerHTML=`🚀 ¡Despegó! Era <b>${esc(q.a)}</b>`}
+       draw();if(over){$('#fb').innerHTML+=` <button class="btn" id="nx" style="margin-top:6px">Siguiente ➜</button>`;$('#nx').onclick=()=>{i++;show()}}}
+     document.querySelectorAll('.key').forEach(b=>b.onclick=()=>tryC(b.dataset.c));
+     document.onkeydown=e=>{if(/^[a-z]$/i.test(e.key))tryC(e.key.toLowerCase());else if(e.key=='Enter'&&$('#nx'))$('#nx').click()};
+     draw();
+   }
+   show();
+ },
+};
+
+return{home:ahome,clear:clearAll};
+})();
 hud();home();loadClass();
 </script>
 </body>
