@@ -69,6 +69,7 @@ table.rules td{padding:8px;border-bottom:1px solid #34509f;vertical-align:top}
 .shake{animation:sh .35s}
 @keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .t-short{display:none}
+.sect{grid-column:1/-1;font-size:19px;font-weight:700;margin:10px 2px -4px;color:var(--gold)}
 .pill{white-space:nowrap}
 .rk-list{margin:8px 0}
 .rk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #34509f}
@@ -124,57 +125,191 @@ const ADV = [
 
 const ADV_MC = [
  {q:'Juego al fútbol TODOS los días, sin excepción.',a:'always'},
+ {q:'Me lavo los dientes cada noche, sin fallar ni una.',a:'always'},
+ {q:'El sol sale por la mañana. Pasa el 100% de los días.',a:'always'},
  {q:'Como pizza casi todos los días, pero no todos.',a:'usually'},
+ {q:'Voy al cole en autobús casi siempre. Solo a veces me lleva mi padre.',a:'usually'},
+ {q:'Normalmente ceno a las nueve.',a:'usually'},
  {q:'Voy al cine la mitad de los fines de semana.',a:'often'},
+ {q:'Juego a videojuegos a menudo, unos 3 o 4 días a la semana.',a:'often'},
+ {q:'Mis abuelos vienen a casa con frecuencia.',a:'often'},
  {q:'Veo una peli de miedo de vez en cuando.',a:'sometimes'},
+ {q:'A veces llego tarde al cole, pero pocas veces.',a:'sometimes'},
+ {q:'Algunos domingos comemos en un restaurante.',a:'sometimes'},
  {q:'Jamás de los jamases como brócoli.',a:'never'},
+ {q:'Mi gato nunca bebe leche.',a:'never'},
+ {q:'Nunca me voy a la cama a la hora de comer.',a:'never'},
  {q:'I ____ go to bed at night. (100%)',a:'always'},
- {q:'I ____ go to bed at lunchtime. (0%)',a:'never'},
  {q:'I ____ go to bed at 10.00. (75%)',a:'usually'},
  {q:'I ____ go to bed at 11.00 at the weekend. (50%)',a:'often'},
  {q:'I ____ go to bed at midnight. (25%)',a:'sometimes'},
-].map(x=>({q:x.q,opts:ADV.map(a=>a.w),a:x.a,ex:`${x.a} = ${ADV.find(a=>a.w==x.a).p}`}));
+ {q:'I ____ go to bed at lunchtime. (0%)',a:'never'},
+ {q:'¿Qué adverbio significa "siempre"?',a:'always'},
+ {q:'¿Qué adverbio significa "normalmente"?',a:'usually'},
+ {q:'¿Qué adverbio significa "a menudo"?',a:'often'},
+ {q:'¿Qué adverbio significa "a veces"?',a:'sometimes'},
+ {q:'¿Qué adverbio significa "nunca"?',a:'never'},
+].map(x=>({q:x.q,opts:ADV.map(a=>a.w),a:x.a,ex:`${x.a} = ${ADV.find(a=>a.w==x.a).p}`,adv:x.a}));
 
 const ADV_POS = [
  {q:'¿Cuál está bien?',opts:['I am always happy.','I always am happy.'],a:'I am always happy.',ex:'Con "am / is / are" el adverbio va DETRÁS.'},
  {q:'¿Cuál está bien?',opts:['She goes usually to school by bus.','She usually goes to school by bus.'],a:'She usually goes to school by bus.',ex:'Con los demás verbos el adverbio va DELANTE del verbo.'},
  {q:'¿Cuál está bien?',opts:['They are never late.','They never are late.'],a:'They are never late.',ex:'Detrás de "are".'},
  {q:'¿Cuál está bien?',opts:['We often play tennis.','We play often tennis.'],a:'We often play tennis.',ex:'Delante de "play".'},
+ {q:'¿Cuál está bien?',opts:['He is sometimes tired.','He sometimes is tired.'],a:'He is sometimes tired.',ex:'Detrás de "is".'},
+ {q:'¿Cuál está bien?',opts:['I never eat broccoli.','I eat never broccoli.'],a:'I never eat broccoli.',ex:'Delante de "eat".'},
+ {q:'¿Cuál está bien?',opts:['My mum usually is busy.','My mum is usually busy.'],a:'My mum is usually busy.',ex:'Detrás de "is".'},
+ {q:'¿Cuál está bien?',opts:['We always watch films on Friday.','We watch always films on Friday.'],a:'We always watch films on Friday.',ex:'Delante de "watch".'},
+ {q:'¿Cuál está bien?',opts:['Do you often read books?','Do you read often books?'],a:'Do you often read books?',ex:'En preguntas también va delante del verbo principal.'},
+ {q:'¿Cuál está bien?',opts:['It is never cold in summer.','It never is cold in summer.'],a:'It is never cold in summer.',ex:'Detrás de "is".'},
 ];
 
 const ORDER = [
- {w:['I','always','get up','at seven.'],h:'Siempre me levanto a las siete.'},
- {w:['She','is','never','late.'],h:'Ella nunca llega tarde.'},
- {w:['We','usually','have lunch','at school.'],h:'Normalmente comemos en el cole.'},
- {w:['They','often','play','football.'],h:'A menudo juegan al fútbol.'},
- {w:['He','sometimes','goes out','in the evening.'],h:'A veces sale por la tarde.'},
- {w:['I','am','always','hungry.'],h:'Siempre tengo hambre.'},
- {w:['My dad','never','watches','horror films.'],h:'Mi padre nunca ve pelis de terror.'},
- {w:['I','usually','sleep','eight hours a day.'],h:'Normalmente duermo ocho horas al día.'},
+ {w:['I','always','get up','at seven.'],h:'Siempre me levanto a las siete.',adv:'always'},
+ {w:['I','am','always','hungry.'],h:'Siempre tengo hambre.',adv:'always'},
+ {w:['We','always','have','pizza on Friday.'],h:'Siempre cenamos pizza los viernes.',adv:'always'},
+ {w:['We','usually','have lunch','at school.'],h:'Normalmente comemos en el cole.',adv:'usually'},
+ {w:['I','usually','sleep','eight hours a day.'],h:'Normalmente duermo ocho horas al día.',adv:'usually'},
+ {w:['My mum','is','usually','busy.'],h:'Mi madre normalmente está ocupada.',adv:'usually'},
+ {w:['They','often','play','football.'],h:'A menudo juegan al fútbol.',adv:'often'},
+ {w:['I','often','go to bed','at eleven.'],h:'A menudo me acuesto a las once.',adv:'often'},
+ {w:['She','is','often','late.'],h:'Ella a menudo llega tarde.',adv:'often'},
+ {w:['He','sometimes','goes out','in the evening.'],h:'A veces sale por la tarde.',adv:'sometimes'},
+ {w:['We','sometimes','watch','horror films.'],h:'A veces vemos pelis de terror.',adv:'sometimes'},
+ {w:['I','am','sometimes','tired.'],h:'A veces estoy cansado.',adv:'sometimes'},
+ {w:['She','is','never','late.'],h:'Ella nunca llega tarde.',adv:'never'},
+ {w:['My dad','never','watches','horror films.'],h:'Mi padre nunca ve pelis de terror.',adv:'never'},
+ {w:['I','never','go to bed','at lunchtime.'],h:'Nunca me acuesto a la hora de comer.',adv:'never'},
 ];
 
+/* --- Do you like / Would you like --- */
 const LIKE = [
  {q:'Do you like ____ computer games?',opts:['playing','to play','play'],a:'playing',ex:'Do you like + -ing'},
- {q:'Would you like ____ the Theatre Club?',opts:['joining','to join','join'],a:'to join',ex:'Would you like + to + verbo'},
+ {q:'Do you like ____ homework?',opts:['doing','to do','do'],a:'doing',ex:'Do you like + -ing'},
+ {q:'Do you like ____ to songs?',opts:['listening','to listen','listen'],a:'listening',ex:'Do you like + -ing'},
+ {q:'Do you like ____ in a tent?',opts:['sleeping','to sleep','sleep'],a:'sleeping',ex:'Do you like + -ing'},
  {q:'I enjoy ____ books.',opts:['reading','to read','read'],a:'reading',ex:'enjoy + -ing'},
+ {q:'I enjoy ____ new food.',opts:['trying','to try','try'],a:'trying',ex:'enjoy + -ing'},
  {q:'I prefer ____ films.',opts:['watching','to watching','watch'],a:'watching',ex:'prefer + -ing'},
- {q:'Would you like ____ to the cinema with me?',opts:['coming','to come','come'],a:'to come',ex:'Es una invitación → to + verbo'},
+ {q:'My brother prefers ____ sports.',opts:['playing','to playing','play'],a:'playing',ex:'prefer + -ing'},
  {q:'My sister hates ____ photos.',opts:['takeing','taking','to taking'],a:'taking',ex:'take → taking (se quita la e)'},
+ {q:'I hate ____ up early.',opts:['geting','getting','get'],a:'getting',ex:'get → getting (se dobla la t)'},
  {q:'He loves ____ in the sea.',opts:['swiming','swimming','swim'],a:'swimming',ex:'swim → swimming (se dobla la m)'},
+ {q:'We love ____ to concerts.',opts:['going','to going','go'],a:'going',ex:'love + -ing'},
+ {q:'I like ____ pictures.',opts:['drawing','to drawing','draw'],a:'drawing',ex:'like + -ing'},
+ {q:'They don\'t like ____ .',opts:['cooking','to cooking','cook'],a:'cooking',ex:'(don\'t) like + -ing'},
+ {q:'Would you like ____ the Theatre Club?',opts:['joining','to join','join'],a:'to join',ex:'Would you like + to + verbo'},
+ {q:'Would you like ____ to the cinema with me?',opts:['coming','to come','come'],a:'to come',ex:'Invitación → to + verbo'},
+ {q:'Would you like ____ football this afternoon?',opts:['playing','to play','play'],a:'to play',ex:'Invitación → to + verbo'},
+ {q:'Would you like ____ a film tonight?',opts:['watching','to watch','watch'],a:'to watch',ex:'Invitación → to + verbo'},
+ {q:'Would you like ____ camping this weekend?',opts:['going','to go','go'],a:'to go',ex:'Invitación → to + verbo'},
+ {q:'Would you like ____ a pizza with us?',opts:['cooking','to cook','cook'],a:'to cook',ex:'Invitación → to + verbo'},
+ {q:'Would you like ____ photos at the zoo?',opts:['taking','to take','take'],a:'to take',ex:'Invitación → to + verbo'},
  {q:'Do you like dancing?',opts:['Yes, I do.','Yes, please! I\'d love to.','Yes, I like.'],a:'Yes, I do.',ex:'Do you like…? → Yes, I do. / No, I don\'t.'},
+ {q:'Do you like horror films? (no te gustan)',opts:['No, I don\'t.','No, thanks! I\'m afraid I\'m busy.','No, I not like.'],a:'No, I don\'t.',ex:'Do you like…? → No, I don\'t.'},
+ {q:'Do you like reading comics? (sí te gusta)',opts:['Yes, please.','Yes, I do.','Yes, I like it to.'],a:'Yes, I do.',ex:'Do you like…? → Yes, I do.'},
  {q:'Would you like to play tennis with me?',opts:['Yes, I do.','Yes, please! I\'d love to.','Yes, I would like.'],a:'Yes, please! I\'d love to.',ex:'Invitación → Yes, please! I\'d love to.'},
- {q:'Would you like to come to my party? (pero estás ocupado)',opts:['No, I don\'t.','No, thanks. I\'m afraid I\'m busy.','No, I hate.'],a:'No, thanks. I\'m afraid I\'m busy.',ex:'Rechazar con educación.'},
- {q:'¿Qué frase es una INVITACIÓN?',opts:['Do you like dancing?','Would you like to dance?'],a:'Would you like to dance?',ex:'Would you like…? = ¿Te apetece…?'},
+ {q:'Would you like to come to my party? (pero estás ocupado)',opts:['No, I don\'t.','No, thanks! I\'m afraid I\'m busy.','No, I hate.'],a:'No, thanks! I\'m afraid I\'m busy.',ex:'Rechazar con educación.'},
+ {q:'Would you like to join the Theatre Club? (quieres)',opts:['Yes, please. I\'d love to.','Yes, I do.','Yes, I like.'],a:'Yes, please. I\'d love to.',ex:'Así responde el libro.'},
+ {q:'¿Qué frase es una INVITACIÓN?',opts:['Do you like dancing?','Would you like to dance?'],a:'Would you like to dance?',ex:'Would you like…? = ¿Te apetece…? / ¿Quieres…?'},
  {q:'¿Qué frase pregunta lo que te GUSTA?',opts:['Do you like cooking?','Would you like to cook?'],a:'Do you like cooking?',ex:'Do you like…? = ¿Te gusta…?'},
+ {q:'¿Qué frase está bien?',opts:['I enjoy reading, but I prefer watching films.','I enjoy to read, but I prefer to watching films.'],a:'I enjoy reading, but I prefer watching films.',ex:'enjoy / prefer + -ing'},
+ {q:'¿Qué frase está bien?',opts:['Would you like going to the beach?','Would you like to go to the beach?'],a:'Would you like to go to the beach?',ex:'Would you like + to + verbo'},
+ {q:'¿Qué frase está bien?',opts:['Do you like play the piano?','Do you like playing the piano?'],a:'Do you like playing the piano?',ex:'Do you like + -ing'},
+ {q:'"¿Te gusta hacer fotos?" en inglés es…',opts:['Do you like taking photos?','Would you like to take photos?'],a:'Do you like taking photos?',ex:'Gusto → Do you like + -ing'},
+ {q:'"¿Quieres venir a mi casa?" en inglés es…',opts:['Do you like coming to my house?','Would you like to come to my house?'],a:'Would you like to come to my house?',ex:'Invitación → Would you like + to'},
 ];
+/* Escribe el -ing (también lo usa el examen) */
 const ING = [
- {q:'swim → ?',opts:['swiming','swimming','swimeing'],a:'swimming',ex:'Vocal + consonante final: se dobla.'},
- {q:'dance → ?',opts:['danceing','dancing','danccing'],a:'dancing',ex:'Termina en -e: se quita.'},
- {q:'run → ?',opts:['runing','running','runeing'],a:'running',ex:'Se dobla la n.'},
- {q:'play → ?',opts:['playing','plaing','playying'],a:'playing',ex:'Normal: + ing.'},
- {q:'write → ?',opts:['writeing','writing','writting'],a:'writing',ex:'Se quita la e.'},
- {q:'cook → ?',opts:['cooking','cookking','cookeing'],a:'cooking',ex:'Normal: + ing.'},
+ ['play','playing','Normal: + ing.'],['read','reading','Normal: + ing.'],['watch','watching','Normal: + ing.'],
+ ['listen','listening','Normal: + ing.'],['cook','cooking','Normal: + ing.'],['do','doing','Normal: + ing.'],
+ ['go','going','Normal: + ing.'],['draw','drawing','Normal: + ing.'],['sleep','sleeping','Normal: + ing.'],
+ ['dance','dancing','Termina en -e: se quita la e.'],['take','taking','Termina en -e: se quita la e.'],
+ ['write','writing','Termina en -e: se quita la e.'],['make','making','Termina en -e: se quita la e.'],
+ ['come','coming','Termina en -e: se quita la e.'],
+ ['swim','swimming','Vocal + consonante al final: se dobla.'],['run','running','Vocal + consonante al final: se dobla.'],
+ ['get','getting','Vocal + consonante al final: se dobla.'],['sit','sitting','Vocal + consonante al final: se dobla.'],
 ];
+const LORD = [
+ {w:['Do you','like','doing','homework?'],h:'¿Te gusta hacer los deberes?'},
+ {w:['Do you','like','playing','sports?'],h:'¿Te gusta hacer deporte?'},
+ {w:['I','enjoy','reading,','but I','prefer','watching films.'],h:'Me gusta leer, pero prefiero ver películas.'},
+ {w:['My sister','hates','taking','photos.'],h:'Mi hermana odia hacer fotos.'},
+ {w:['Would you','like','to join','the Theatre Club?'],h:'¿Quieres apuntarte al club de teatro?'},
+ {w:['Would you','like','to come','to my party?'],h:'¿Quieres venir a mi fiesta?'},
+ {w:['Yes, please!','I\'d','love','to.'],h:'¡Sí, por favor! Me encantaría.'},
+ {w:['No, thanks!','I\'m afraid','I\'m','busy.'],h:'¡No, gracias! Me temo que estoy ocupado.'},
+];
+
+/* --- Verbos en frases (past simple) --- */
+const VSENT = {
+ be:'Yesterday I ___ at home all day.',become:'The caterpillar ___ a butterfly.',begin:'The film ___ at six o\'clock yesterday.',
+ break:'I ___ my arm last summer.',build:'We ___ a big sandcastle on the beach.',burn:'I ___ my finger on the oven.',
+ buy:'Mum ___ me a new bike last week.',catch:'The goalkeeper ___ the ball.',choose:'I ___ the red T-shirt, not the blue one.',
+ come:'My cousins ___ to my party last Saturday.',cost:'My new trainers ___ fifty euros.',cut:'Dad ___ the birthday cake.',
+ do:'I ___ my homework after school yesterday.',draw:'She ___ a picture of her cat.',dream:'Last night I ___ about dragons.',
+ drink:'He ___ a glass of milk at breakfast.',drive:'My uncle ___ us to the airport.',eat:'We ___ pizza for dinner last night.',
+ fall:'I ___ off my bike in the park.',feel:'I ___ very tired after the match.'
+};
+
+/* --- Vocabulario Unit 2: las 52 palabras, cada una con su frase --- */
+/* [inglés, español, grupo (n=nombre, a=adjetivo, v=acción, b=be…at/in), frase con ___, forma que va en el hueco (si cambia)] */
+const VOCAB = [
+ ['actor','actor','n','Tom Holland is a famous ___.'],
+ ['adventure','aventura','n','Indiana Jones is a film full of ___.'],
+ ['advice','consejo','n','My teacher gave me some good ___ for the exam.'],
+ ['afraid','con miedo','a','My little brother is ___ of the dark.'],
+ ['attractive','atractivo','a','Paris is a very ___ city. Everybody wants to visit it.'],
+ ['be bad at','ser malo en','b','I\'m ___ tennis. I never win.','bad at'],
+ ['be brilliant at','ser genial en','b','Messi is ___ football. He\'s the best!','brilliant at'],
+ ['be good at','ser bueno en','b','My sister is ___ maths. She gets good marks.','good at'],
+ ['be interested in','estar interesado en','b','I\'m ___ dinosaurs. I read lots of books about them.','interested in'],
+ ['be terrible at','ser fatal en','b','My dad is ___ cooking. His food is horrible!','terrible at'],
+ ['book','reservar','v','Can you ___ a table at the restaurant for Saturday?'],
+ ['camping','acampada','n','In summer we go ___ in the mountains.'],
+ ['club','club','n','I\'m a member of the chess ___ at school.'],
+ ['collect things','coleccionar cosas','v','Do you ___? — Yes, I\'ve got 200 football stickers!'],
+ ['comedy','comedia','n','This film is a ___. It\'s very funny!'],
+ ['competition','competición','n','Our team won the swimming ___.'],
+ ['cook','cocinar','v','My mum is in the kitchen. She likes to ___ pasta.'],
+ ['correct','correcto','a','Is your answer ___? — Yes, no mistakes!'],
+ ['countryside','el campo','n','We live in the city, but at weekends we go to the ___.'],
+ ['dance','bailar','v','Put on some music! Let\'s ___!'],
+ ['draw pictures','hacer dibujos','v','I\'ve got pencils and paper. I want to ___.'],
+ ['end','terminar','v','When does the film ___? — At eight o\'clock.'],
+ ['enjoy','disfrutar','v','I ___ reading comics. It\'s my favourite hobby.'],
+ ['glad','contento','a','I\'m ___ you can come to my party!'],
+ ['go to concerts','ir a conciertos','v','I love music. I often ___ with my parents.'],
+ ['good-looking','guapo','a','That actor is very ___.'],
+ ['hate','odiar','v','I ___ broccoli! It\'s horrible.'],
+ ['horror','terror','n','I don\'t watch ___ films. They\'re too scary.'],
+ ['idea','idea','n','Let\'s go to the beach! — Great ___!'],
+ ['join','apuntarse, unirse','v','Would you like to ___ the Theatre Club?'],
+ ['let someone know','avisar a alguien','v','Please ___ if you can come to the party.','let me know'],
+ ['(don\'t) like','(no) gustar','v','I ___ swimming. The water is too cold!','don\'t like'],
+ ['listen to songs','escuchar canciones','v','In the car, we always ___ on the radio.'],
+ ['love','encantar, querer','v','I ___ my dog. He\'s my best friend.'],
+ ['message friends','mandar mensajes a amigos','v','After school, I use my phone to ___.'],
+ ['nature','naturaleza','n','I love ___: trees, flowers and animals.'],
+ ['online','en línea, por internet','a','You can buy the tickets ___, on the internet.'],
+ ['play an instrument','tocar un instrumento','v','Can you ___? — Yes, I play the piano.'],
+ ['play computer games','jugar a videojuegos','v','On Saturdays I ___ on my console.'],
+ ['play sports','hacer deporte','v','I ___ every day: football, tennis and swimming.'],
+ ['prefer','preferir','v','Do you want tea or milk? — I ___ milk.'],
+ ['read books','leer libros','v','I go to the library to ___.'],
+ ['scared','asustado','a','Horror films make me ___.'],
+ ['sleep in a tent','dormir en una tienda de campaña','v','When we go camping, we ___.'],
+ ['spend time','pasar tiempo','v','I like to ___ with my grandparents.'],
+ ['take photos','hacer fotos','v','I\'ve got a new camera. I love to ___.'],
+ ['terrible','terrible, horrible','a','The weather was ___: rain, rain and more rain!'],
+ ['try new food','probar comida nueva','v','In Japan, I want to ___, like sushi.'],
+ ['type','tipo','n','What ___ of music do you like? — Pop!'],
+ ['watch films','ver películas','v','On Friday night we ___ at home with popcorn.'],
+ ['well-known','famoso, conocido','a','Shakira is a ___ singer. Everybody knows her.'],
+ ['worried','preocupado','a','Mum is ___ because my brother is late.'],
+];
+const VPARTS=[{l:'Parte 1 · actor → countryside',a:0,b:19},{l:'Parte 2 · dance → message friends',a:19,b:35},{l:'Parte 3 · nature → worried',a:35,b:52},{l:'Las 52 palabras',a:0,b:52}];
+const SYN={afraid:['scared'],scared:['afraid'],attractive:['good-looking'],'good-looking':['attractive'],terrible:['be terrible at'],'be terrible at':['terrible']};
 
 const VERBS = [
  ['be',['was','were'],['been'],'ser / estar',1],
@@ -197,24 +332,6 @@ const VERBS = [
  ['eat',['ate'],['eaten'],'comer',2],
  ['fall',['fell'],['fallen'],'caer(se)',2],
  ['feel',['felt'],['felt'],'sentir',2],
-];
-
-const VOCAB = [
- ['actor','actor'],['adventure','aventura'],['advice','consejo'],['afraid','asustado'],
- ['attractive','atractivo'],['be bad at','ser malo en'],['be brilliant at','ser genial en'],
- ['be good at','ser bueno en'],['be interested in','estar interesado en'],['be terrible at','ser fatal en'],
- ['book (verb)','reservar'],['camping','acampada'],['collect things','coleccionar cosas'],
- ['comedy','comedia'],['competition','competición'],['cook','cocinar'],['correct','correcto'],
- ['countryside','el campo'],['dance','bailar'],['draw pictures','hacer dibujos'],['end','terminar'],
- ['enjoy','disfrutar'],['glad','contento'],['go to concerts','ir a conciertos'],['good-looking','guapo'],
- ['hate','odiar'],['horror','terror'],['join','apuntarse, unirse'],['let someone know','avisar a alguien'],
- ['listen to songs','escuchar canciones'],['love','encantar, querer'],['message friends','mandar mensajes a amigos'],
- ['nature','naturaleza'],['online','en línea, por internet'],['play an instrument','tocar un instrumento'],
- ['play computer games','jugar a videojuegos'],['play sports','hacer deporte'],['prefer','preferir'],
- ['read books','leer libros'],['scared','asustado'],['sleep in a tent','dormir en una tienda de campaña'],
- ['spend time','pasar tiempo'],['take photos','hacer fotos'],['terrible','terrible'],
- ['try new food','probar comida nueva'],['type','tipo'],['watch films','ver películas'],
- ['well-known','famoso, conocido'],['worried','preocupado'],
 ];
 
 const TRAPS = [
@@ -241,9 +358,10 @@ let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}
 try{const s=JSON.parse(localStorage.getItem('mision_u2')||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};}catch(e){}
 function save(){try{localStorage.setItem('mision_u2',JSON.stringify({xp:XP,best:BEST,bs:BSTREAK,exam:EXAMB,hist:HIST,seeded:SEEDED,gr:GR}))}catch(e){}}
 const BLOCKS=[
- {k:'adv',n:'Adverbios de frecuencia',w:1},{k:'order',n:'Orden de la frase',w:1},
- {k:'like',n:'Do you like / Would you like',w:1},{k:'vtype',n:'Verbos irregulares (escritos)',w:2},
- {k:'vtest',n:'Vocabulario',w:1},{k:'traps',n:'Cazaerrores',w:0.5}];
+ {k:'adv',n:'Adverbios de frecuencia',w:1},{k:'order',n:'Adverbios: ordena la frase',w:1},
+ {k:'like',n:'Do you like / Would you like',w:1},{k:'ling',n:'Escribe el -ing',w:1},{k:'lord',n:'Ordena preguntas y respuestas',w:1},
+ {k:'vtype',n:'Verbos: las 3 formas (escritos)',w:2},{k:'vsent',n:'Verbos en frases (escritos)',w:1},
+ {k:'vtest',n:'Vocabulario: traducción',w:1},{k:'vfrase',n:'Vocabulario en frases',w:1},{k:'traps',n:'Cazaerrores',w:0.5}];
 function grade(k,n){n=Math.round(n*10)/10;(GR[k]=GR[k]||[]).push(n);if(GR[k].length>3)GR[k].shift();save();return n}
 function nota(k){const a=GR[k];return a&&a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null}
 function finalNota(){let s=0,w=0,miss=0;BLOCKS.forEach(b=>{const n=nota(b.k);if(n==null)miss++;else{s+=n*b.w;w+=b.w}});return{n:w?Math.round(s/w*10)/10:null,miss}}
@@ -253,9 +371,9 @@ const fmt=n=>n==null?'–':n.toFixed(1).replace('.',',');
 function hoyToca(){
   const miss=BLOCKS.find(b=>nota(b.k)==null);if(miss)return{b:miss,why:'aún no lo has jugado'};
   const w=[...BLOCKS].sort((a,b)=>nota(a.k)-nota(b.k))[0];return nota(w.k)>=8?null:{b:w,why:'es tu nota más baja'};}
-const MIC=[['adv','🌡️'],['order','🧩'],['like','💬'],['vcards','🃏'],['vtype','⌨️'],['vtest','📝'],['vocab','🧠'],['traps','🕵️'],['exam','👑']];
+const MIC=[['adv','🌡️'],['order','🧩'],['like','💬'],['ling','✍️'],['lord','🗨️'],['vcards','🃏'],['vtype','⌨️'],['vsent','📖'],['vtest','📝'],['vfrase','🔤'],['vocab','🧠'],['traps','🕵️'],['exam','👑']];
 function starLine(b){return MIC.map(([k,ic])=>{const s=(b&&b[k])||0;return `<span style="display:inline-block;background:#0c1633;border-radius:8px;padding:2px 7px;margin:2px;white-space:nowrap">${ic} <span style="color:var(--gold)">${'★'.repeat(s)}</span><span style="color:#4a5a8f">${'★'.repeat(3-s)}</span></span>`}).join('')}
-const MAP={adv:'adv',order:'order',like:'like',vtype:'vtype',vtest:'vtest',traps:'traps'};
+const MAP={adv:1,order:1,like:1,ling:1,lord:1,vtype:1,vsent:1,vtest:1,vfrase:1,traps:1};
 const totalStars=()=>Object.values(BEST).reduce((a,b)=>a+b,0);
 /* Partidas antiguas sin desglose: si sus estrellas coinciden con las actuales, se rellena */
 HIST.forEach(e=>{if(!e.sb&&e.st===totalStars())e.sb={...BEST}});save();
@@ -303,14 +421,23 @@ function quiz(title,sub,qs,key,after){
 function home(){
   STREAK=STREAK;hud();
   const M=[
-   ['adv','🌡️','Adverbios de frecuencia','always, usually, often, sometimes, never'],
+   ['#','🌡️ Adverbios de frecuencia'],
+   ['adv','🌡️','Adverbios: test','Salen los 5 adverbios'],
    ['order','🧩','Ordena la frase','¿Dónde va el adverbio?'],
-   ['like','💬','Do you like…? / Would you like…?','-ing o to + verbo'],
-   ['vcards','🃏','Verbos: tarjetas','Estudia los 20 verbos'],
-   ['vtype','⌨️','Verbos: escríbelos','Past simple y past participle'],
-   ['vtest','📝','Vocabulario: test','¿Qué significa? (cuenta para la nota)'],
-   ['vocab','🧠','Vocabulario: memory','Une inglés y español (solo XP)'],
-   ['traps','🕵️','Cazaerrores','¿Está bien traducido en el libro?'],
+   ['#','💬 Do you like…? / Would you like…?'],
+   ['like','💬','-ing o to + verbo','Y qué se responde'],
+   ['ling','✍️','Escribe el -ing','playing, dancing, swimming…'],
+   ['lord','🗨️','Ordena preguntas','Preguntas y respuestas del libro'],
+   ['#','🔤 Verbos irregulares (los 20)'],
+   ['vcards','🃏','Tarjetas','Estudia los 20 verbos'],
+   ['vtype','⌨️','Las 3 formas','Escríbelas, como en el examen'],
+   ['vsent','📖','Verbos en frases','Una frase para cada verbo'],
+   ['#','📚 Vocabulario Unit 2 (las 52 palabras)'],
+   ['vtest','📝','Traducción','¿Qué significa? Todas las palabras'],
+   ['vfrase','🔤','En frases','Una frase para cada palabra'],
+   ['vocab','🧠','Memory','Une inglés y español (solo XP)'],
+   ['traps','🕵️','Cazaerrores','Traducciones que se apuntan mal'],
+   ['#','👑 Examen'],
    ['exam','👑','EXAMEN FINAL','20 preguntas · 10 minutos · sin pistas'],
   ];
   const NAME=lsGet('mision_name');
@@ -320,8 +447,8 @@ function home(){
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}try{localStorage.setItem('mision_name',v)}catch(e){}home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
-  app().innerHTML=`${boletin()}<p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> Completa las misiones y consigue 3 ⭐ en cada una. El viernes vas a arrasar.</p>
-  <div class="grid">${M.map(m=>`<button class="mission" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}</button>`).join('')}</div>
+  app().innerHTML=`${boletin()}<p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> Cada palabra, cada verbo y cada adverbio del examen tiene su ejercicio. Consigue 3 ⭐ en cada misión. El viernes vas a arrasar.</p>
+  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}</button>`).join('')}</div>
   <div class="box"><h2>📘 Chuleta rápida</h2>
   <table class="rules">
   <tr><td><b>always</b> 100% · <b>usually</b> 75% · <b>often</b> 50% · <b>sometimes</b> 25% · <b>never</b> 0%</td></tr>
@@ -457,38 +584,88 @@ function examRun(qs){
       <div class="center"><button class="btn" onclick="R.exam()">🔁 Otro examen</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;}
   };
 }
+/* ===== Motores genéricos ===== */
+function endScreen(icon,ok,tot,key,again,extra=''){
+  const p=tot?ok/tot:0;setBest(key,p);const g=MAP[key]?grade(key,p*10):null;if(p>=.7)confetti();
+  app().innerHTML=`<div class="box center"><div class="big">${icon}</div><h2>${ok} de ${tot} a la primera</h2>
+  ${g!=null?`<p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p>`:''}${extra}
+  <button class="btn" id="again">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
+  $('#again').onclick=again;
+}
+/* Ordenar palabras */
+function orderGame(title,sub,set,key,again,hint){
+  let i=0,ok=0;
+  function show(){
+    if(i>=set.length)return endScreen('🧩',ok,set.length,key,again);
+    const it=set[i],sol=it.w.join(' ');let built=[],first=true;
+    const ch=shuf(it.w.map((w,k)=>({w,k})));
+    app().innerHTML=`<div class="box"><h2>${title}</h2><p class="sub">${sub}</p>
+    <div class="bar"><div style="width:${i/set.length*100}%"></div></div>
+    <div class="hint">${i+1} de ${set.length} · 🇪🇸 ${esc(it.h)}</div>
+    <div class="chips" id="dst"></div><div class="chips" id="src" style="background:transparent">${ch.map(c=>`<button class="chip" data-k="${c.k}">${esc(c.w)}</button>`).join('')}</div>
+    <div class="fb" id="fb"></div><button class="btn" id="chk">Comprobar ✔</button></div>`;
+    function draw(){$('#dst').innerHTML=built.map((c,n)=>`<button class="chip" data-n="${n}">${esc(c.w)}</button>`).join('');
+      document.querySelectorAll('#src .chip').forEach(b=>b.classList.toggle('used',built.some(c=>c.k==b.dataset.k)));
+      document.querySelectorAll('#dst .chip').forEach(b=>b.onclick=()=>{built.splice(+b.dataset.n,1);draw()})}
+    document.querySelectorAll('#src .chip').forEach(b=>b.onclick=()=>{built.push({w:b.textContent,k:b.dataset.k});draw()});
+    $('#chk').onclick=()=>{
+      if(built.length<it.w.length){$('#fb').textContent='Faltan palabras 😉';return}
+      if(built.map(c=>c.w).join(' ')==sol){if(first)ok++;win();$('#fb').innerHTML='✅ ¡Perfecto! <b>'+esc(sol)+'</b>';$('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()}}
+      else{first=false;lose();$('#dst').classList.add('shake');setTimeout(()=>$('#dst')&&$('#dst').classList.remove('shake'),400);$('#fb').innerHTML='❌ Casi. '+hint}
+    };
+  }
+  show();
+}
+/* Escribir la respuesta */
+const norm=s=>s.toLowerCase().replace(/[’`´]/g,"'").trim().replace(/\s+/g,' ');
+function typeGame(title,sub,items,key,again,xp=15){
+  let i=0,ok=0;
+  function show(){
+    if(i>=items.length)return endScreen('⌨️',ok,items.length,key,again);
+    const it=items[i];
+    app().innerHTML=`<div class="box"><h2>${title}</h2><p class="sub">${sub}</p>
+    <div class="bar"><div style="width:${i/items.length*100}%"></div></div><div class="hint">${i+1} de ${items.length}</div>
+    <div class="q">${it.q}</div>${it.sub?`<div class="hint">${it.sub}</div>`:''}
+    <input class="typ" id="a" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escribe aquí">
+    <div class="fb" id="fb"></div><button class="btn" id="chk">Comprobar ✔</button></div>`;
+    const inp=$('#a');inp.focus();
+    const go=()=>{const v=norm(inp.value);if(!v){$('#fb').textContent='Escribe tu respuesta 😉';return}
+      const parts=v.split('/').map(x=>x.trim()).filter(Boolean);const right=parts.length&&parts.every(p=>it.acc.includes(p));
+      inp.classList.add(right?'ok':'bad');inp.disabled=true;
+      if(right){ok++;win(xp);$('#fb').innerHTML='✅ ¡Genial! '+(it.ex||'')}else{lose();$('#fb').innerHTML='❌ Es: <b>'+esc(it.show)+'</b>. '+(it.ex||'')}
+      $('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()};inp.onkeydown=e=>{if(e.key=='Enter')$('#chk').click()}};
+    $('#chk').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter')go()};
+  }
+  show();
+}
+/* Elegir parte */
+function chooser(title,sub,parts,run){
+  app().innerHTML=`<div class="box"><h2>${title}</h2><p class="sub">${sub}</p>
+  <div class="opts">${parts.map((p,k)=>`<button class="opt" data-k="${k}">${p.l}</button>`).join('')}</div></div>`;
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>run(parts[+b.dataset.k]));
+}
+/* Uno por adverbio + resto al azar */
+function perAdv(pool,n){const first=ADV.map(a=>pick(pool.filter(x=>x.adv==a.w),1)[0]);return shuf([...first,...pick(pool.filter(x=>!first.includes(x)),n-first.length)])}
+const pastOpts=v=>{const a=v[1][0];let o=[a,v[0]+(v[0].endsWith('e')?'d':'ed'),v[2][0],v[0]];o=[...new Set(o)];
+  while(o.length<3){const x=pick(VERBS,1)[0][1][0];if(!o.includes(x))o.push(x)}return o};
+const vocabSentQ=w=>{const f=w[4]||w[0];const DG={a:['n','b'],v:['n','a'],n:['a','b'],b:['n','v','a']};const others=shuf(VOCAB.filter(x=>DG[w[2]].includes(x[2]))).slice(0,3).map(x=>x[4]||x[0]);
+  return{q:w[3].replace('___','_____'),opts:[f,...others],a:f,ex:`${w[0]} = ${w[1]}`}};
+const vocabTransQ=w=>{const bad=new Set([w[1],...(SYN[w[0]]||[]).map(s=>VOCAB.find(x=>x[0]==s)[1])]);
+  const others=shuf(VOCAB.filter(x=>!bad.has(x[1])&&x[2]==w[2])).slice(0,3);
+  while(others.length<3){const x=pick(VOCAB,1)[0];if(!bad.has(x[1])&&!others.includes(x))others.push(x)}
+  return{q:`¿Qué significa "${w[0]}"?`,opts:[w[1],...others.map(x=>x[1])],a:w[1]}};
+
 const R={
  adv(){
-   app().innerHTML=`<div class="box"><h2>🌡️ El termómetro</h2><p class="sub">Primero mira el termómetro. Luego, a jugar.</p>
+   app().innerHTML=`<div class="box"><h2>🌡️ El termómetro</h2><p class="sub">Primero mira el termómetro. Luego, a jugar: salen los 5 adverbios.</p>
    <div class="therm">${ADV.map(a=>`<div class="pct">${a.p}</div><div class="w" style="background:${a.c}">${a.w}</div>`).join('')}</div>
    <button class="btn" id="go">¡Empezar! ▶</button></div>`;
-   $('#go').onclick=()=>quiz('🌡️ Adverbios de frecuencia','Elige el adverbio correcto',[...pick(ADV_MC,8),...pick(ADV_POS,2)],'adv',R.adv);
+   $('#go').onclick=()=>quiz('🌡️ Adverbios de frecuencia','Elige el adverbio correcto',shuf([...perAdv(ADV_MC,10),...pick(ADV_POS,4)]),'adv',R.adv);
  },
- order(){
-   const set=pick(ORDER,6);let i=0,ok=0;
-   function show(){
-     if(i>=set.length){const p=ok/set.length;setBest('order',p);const g=grade('order',p*10);if(p>=.7)confetti();
-       app().innerHTML=`<div class="box center"><div class="big">🧩</div><h2>${ok} de ${set.length} a la primera</h2><p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p><button class="btn" onclick="R.order()">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;return}
-     const it=set[i],sol=it.w.join(' ');let built=[],first=true;
-     const ch=shuf(it.w.map((w,k)=>({w,k})));
-     app().innerHTML=`<div class="box"><h2>🧩 Ordena la frase</h2><p class="sub">Toca las palabras en orden. Toca arriba para quitar.</p>
-     <div class="bar"><div style="width:${i/set.length*100}%"></div></div>
-     <div class="hint">🇪🇸 ${esc(it.h)}</div>
-     <div class="chips" id="dst"></div><div class="chips" id="src" style="background:transparent">${ch.map(c=>`<button class="chip" data-k="${c.k}">${esc(c.w)}</button>`).join('')}</div>
-     <div class="fb" id="fb"></div><button class="btn" id="chk">Comprobar ✔</button></div>`;
-     function draw(){$('#dst').innerHTML=built.map((c,n)=>`<button class="chip" data-n="${n}">${esc(c.w)}</button>`).join('');
-       document.querySelectorAll('#src .chip').forEach(b=>b.classList.toggle('used',built.some(c=>c.k==b.dataset.k)));
-       document.querySelectorAll('#dst .chip').forEach(b=>b.onclick=()=>{built.splice(+b.dataset.n,1);draw()})}
-     document.querySelectorAll('#src .chip').forEach(b=>b.onclick=()=>{built.push({w:b.textContent,k:b.dataset.k});draw()});
-     $('#chk').onclick=()=>{
-       if(built.length<it.w.length){$('#fb').textContent='Faltan palabras 😉';return}
-       if(built.map(c=>c.w).join(' ')==sol){if(first)ok++;win();$('#fb').innerHTML='✅ ¡Perfecto! <b>'+esc(sol)+'</b>';$('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()}}
-       else{first=false;lose();$('#dst').classList.add('shake');setTimeout(()=>$('#dst')&&$('#dst').classList.remove('shake'),400);$('#fb').innerHTML='❌ Casi. Pista: ¿el adverbio va delante del verbo o detrás de <i>am/is/are</i>?'}
-     };
-   }
-   show();
- },
- like(){quiz('💬 Do you like…? / Would you like…?','¿-ing o to + verbo?',[...pick(LIKE,9),...pick(ING,3)],'like',R.like)},
+ order(){orderGame('🧩 Ordena la frase','Toca las palabras en orden. Toca arriba para quitar.',perAdv(ORDER,8),'order',R.order,'Pista: ¿el adverbio va delante del verbo o detrás de <i>am/is/are</i>?')},
+ like(){quiz('💬 Do you like…? / Would you like…?','¿-ing o to + verbo? ¿Qué se responde?',pick(LIKE,15),'like',R.like)},
+ ling(){typeGame('✍️ Escribe el -ing','Como en "Do you like playing…?"',pick(ING,12).map(x=>({q:`${x[0]} → ?`,sub:'Escribe la forma -ing',acc:[x[1]],show:x[1],ex:x[2]})),'ling',R.ling,10)},
+ lord(){orderGame('🗨️ Ordena preguntas y respuestas','Toca las palabras en orden.',shuf(LORD),'lord',R.lord,'Pista: Do you like + -ing · Would you like + to + verbo.')},
  vcards(){
    let grp=0,list,i;
    function setL(){list=VERBS.filter(v=>!grp||v[4]==grp);i=0}
@@ -510,21 +687,15 @@ const R={
    show();
  },
  vtype(){
-   let grp=0;
-   app().innerHTML=`<div class="box"><h2>⌨️ Escribe los verbos</h2><p class="sub">Como en el examen: escribe past simple y past participle.</p>
-   <div class="tabs"><button class="tab on" data-g="0">Los 20</button><button class="tab" data-g="1">🟦 be → come</button><button class="tab" data-g="2">🟥 cost → feel</button></div>
-   <button class="btn" id="go">¡Empezar! ▶</button></div>`;
-   document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{grp=+t.dataset.g;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x==t))});
-   $('#go').onclick=()=>{
-     const set=pick(VERBS.filter(v=>!grp||v[4]==grp),10);let i=0,ok=0;
-     const norm=s=>s.toLowerCase().trim().replace(/\s+/g,' ');
+   chooser('⌨️ Escribe las 3 formas','Como en el examen: past simple y past participle. Salen todos los verbos de la parte que elijas.',
+    [{l:'🟦 be → come (10)',g:1},{l:'🟥 cost → feel (10)',g:2},{l:'Los 20 verbos',g:0}],part=>{
+     const set=shuf(VERBS.filter(v=>!part.g||v[4]==part.g));let i=0,ok=0;
      const good=(inp,acc)=>{const parts=norm(inp).split('/').map(x=>x.trim()).filter(Boolean);return parts.length>0&&parts.every(p=>acc.includes(p))};
      function show(){
-       if(i>=set.length){const p=ok/set.length;setBest('vtype',p);const g=grade('vtype',p*10);if(p>=.7)confetti();
-         app().innerHTML=`<div class="box center"><div class="big">⌨️</div><h2>${ok} de ${set.length} perfectos</h2><p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p><button class="btn" onclick="R.vtype()">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;return}
+       if(i>=set.length)return endScreen('⌨️',ok,set.length,'vtype',R.vtype);
        const v=set[i];
-       app().innerHTML=`<div class="box"><h2>⌨️ Escribe los verbos</h2>
-       <div class="bar"><div style="width:${i/set.length*100}%"></div></div>
+       app().innerHTML=`<div class="box"><h2>⌨️ Escribe las 3 formas</h2>
+       <div class="bar"><div style="width:${i/set.length*100}%"></div></div><div class="hint">${i+1} de ${set.length}</div>
        <div class="q">${v[0]} <span style="color:var(--mut);font-size:17px">(${v[3]})</span></div>
        <div class="row2"><div><div class="lbl">past simple</div><input class="typ" id="a" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
        <div><div class="lbl">past participle</div><input class="typ" id="b" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div></div>
@@ -534,13 +705,28 @@ const R={
          $('#a').classList.add(A?'ok':'bad');$('#b').classList.add(B?'ok':'bad');
          if(A&&B){ok++;win(15);$('#fb').innerHTML='✅ ¡Genial! '+v[0]+' · '+v[1].join('/')+' · '+v[2].join('/')}
          else{lose();$('#fb').innerHTML='❌ Es: <b>'+v[0]+' · '+v[1].join(' / ')+' · '+v[2].join(' / ')+'</b>'}
-         $('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()};};
+         $('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()};$('#b').onkeydown=e=>{if(e.key=='Enter')$('#chk').click()}};
        $('#chk').onclick=go;
-       $('#b').onkeydown=e=>{if(e.key=='Enter')$('#chk').click()};
+       $('#b').onkeydown=e=>{if(e.key=='Enter')go()};
        $('#a').onkeydown=e=>{if(e.key=='Enter')$('#b').focus()};
      }
      show();
-   };
+   });
+ },
+ vsent(){
+   chooser('📖 Verbos en frases','Escribe el verbo en pasado (past simple). Sale una frase para cada verbo.',
+    [{l:'🟦 be → come (10)',g:1},{l:'🟥 cost → feel (10)',g:2},{l:'Los 20 verbos',g:0}],part=>{
+     typeGame('📖 Verbos en frases','Escribe el verbo en past simple.',shuf(VERBS.filter(v=>!part.g||v[4]==part.g)).map(v=>({
+       q:esc(VSENT[v[0]]).replace('___','<span style="color:var(--gold)">_____</span>'),sub:`(${v[0]} · ${v[3]})`,acc:v[1],show:v[1].join(' / '),ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`})),'vsent',R.vsent);
+   });
+ },
+ vtest(){
+   chooser('📝 Vocabulario: traducción','¿Qué significa? Cada palabra de la parte sale una vez.',VPARTS,part=>
+     quiz('📝 Vocabulario: traducción',part.l,shuf(VOCAB.slice(part.a,part.b)).map(vocabTransQ),'vtest',R.vtest));
+ },
+ vfrase(){
+   chooser('🧩 Vocabulario en frases','Completa la frase con la palabra que falta. Cada palabra de la parte tiene su frase.',VPARTS,part=>
+     quiz('🧩 Vocabulario en frases',part.l,shuf(VOCAB.slice(part.a,part.b)).map(vocabSentQ),'vfrase',R.vfrase));
  },
  vocab(){
    const set=pick(VOCAB,6);let cards=shuf(set.flatMap((p,k)=>[{t:p[0],k},{t:p[1],k}]));
@@ -563,8 +749,7 @@ const R={
  traps(){
    const set=shuf(TRAPS);let i=0,ok=0;
    function show(){
-     if(i>=set.length){const p=ok/set.length;setBest('traps',p);const g=grade('traps',p*10);if(p>=.7)confetti();
-       app().innerHTML=`<div class="box center"><div class="big">🕵️</div><h2>${ok} de ${set.length}</h2><p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p><p class="sub">Corrige en el libro las que estaban mal, ¡así no te la juegan en el examen!</p><button class="btn" onclick="R.traps()">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;return}
+     if(i>=set.length)return endScreen('🕵️',ok,set.length,'traps',R.traps,'<p class="sub">Corrige en el libro las que estaban mal.</p>');
      const t=set[i];
      app().innerHTML=`<div class="box"><h2>🕵️ Cazaerrores</h2><p class="sub">Traducciones que mucha gente apunta mal en el libro. ¿Están bien o mal?</p>
      <div class="bar"><div style="width:${i/set.length*100}%"></div></div>
@@ -582,20 +767,11 @@ const R={
    }
    show();
  },
- vtest(){
-   const qs=pick(VOCAB,10).map(p=>({q:`¿Qué significa "${p[0]}"?`,opts:[p[1],...pick(VOCAB.filter(x=>x[1]!=p[1]),3).map(x=>x[1])],a:p[1]}));
-   quiz('📝 Vocabulario','Elige la traducción correcta',qs,'vtest',R.vtest);
- },
  exam(){
-   const vq=pick(VERBS,6).map((v,n)=>{
-     const ps=n%2==0;const a=ps?v[1][0]:v[2][0];
-     let opts=[a,v[0]+(v[0].endsWith('e')?'d':'ed'),ps?v[2][0]:v[1][0],v[0]];
-     opts=[...new Set(opts)];
-     while(opts.length<3)opts.push(pick(VERBS,1)[0][1][0]);
-     return{q:`${ps?'Past simple':'Past participle'} de "${v[0]}" (${v[3]})`,opts:[...new Set(opts)],a,ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`};
-   });
-   const wq=pick(VOCAB,5).map(p=>({q:`¿Qué significa "${p[0]}"?`,opts:[p[1],...pick(VOCAB.filter(x=>x[1]!=p[1]),2).map(x=>x[1])],a:p[1]}));
-   const qs=shuf([...pick(ADV_MC,4),...pick(ADV_POS,1),...pick(LIKE,4),...vq,...wq]);
+   const vq=pick(VERBS,3).map(v=>({q:VSENT[v[0]].replace('___','_____')+` (${v[0]})`,opts:pastOpts(v),a:v[1][0],ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`}));
+   const pq=pick(VERBS,2).map(v=>{const a=v[2][0];let o=[...new Set([a,v[1][0],v[0]+(v[0].endsWith('e')?'d':'ed'),v[0]])];return{q:`Past participle de "${v[0]}" (${v[3]})`,opts:o,a}});
+   const iq=pick(ING,2).map(x=>({q:`${x[0]} → -ing`,opts:[...new Set([x[1],x[0]+'ing',x[0].replace(/e$/,'')+'ing',x[0]+x[0].slice(-1)+'ing'])],a:x[1]}));
+   const qs=shuf([...perAdv(ADV_MC,5).slice(0,4),...pick(ADV_POS,1),...pick(LIKE,4),...iq,...vq,...pq,...pick(VOCAB,2).map(vocabTransQ),...pick(VOCAB,2).map(vocabSentQ)]);
    examRun(qs);
  },
 };
