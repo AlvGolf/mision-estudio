@@ -549,7 +549,7 @@ function home(){
    ['#','🔤 Verbos irregulares (los 20)'],
    ['vcards','🃏','Tarjetas','Estudia los 20 verbos'],
    ['vtype','⌨️','Las 3 formas','Escríbelas, como en el examen'],
-   ['vsent','📖','Verbos en frases','Forma el pasado con letras'],
+   ['vsent','📖','Verbos en frases','Una frase para cada verbo'],
    ['#','📚 Vocabulario Unit 2 (las 52 palabras)'],
    ['vtest','📝','Une las palabras','Con líneas: inglés ↔ español'],
    ['vfrase','🔤','En frases','Arrastra la palabra al hueco'],
@@ -1086,13 +1086,6 @@ Object.assign(R,{
  ling(){
    runSteps('✍️ Escribe el -ing',pick(ING,12).map(x=>({t:'tiles',q:`${x[0]} → ?`,sub:'Coloca las letras para formar el -ing',a:x[1],ex:x[2]})),'ling',R.ling,'✍️');
  },
- vsent(P){
-   const run=part=>runSteps('📖 Verbos en frases',shuf(VERBS.filter(v=>!part.g||v[4]==part.g)).map(v=>({t:'tiles',
-     q:esc(VSENT[v[0]]).replace('___','<span style="color:var(--gold)">_____</span>'),sub:`(${v[0]} · ${v[3]}) → forma el past simple con las letras`,a:v[1][0],ex:`${v[0]} · ${v[1].join('/')} · ${v[2].join('/')}`})),'vsent',()=>R.vsent(P),'📖');
-   if(P)return run(P);
-   chooser('📖 Verbos en frases','Forma el pasado (past simple) con las letras. Sale una frase para cada verbo.',
-    [{l:'🟦 be → come (10)',g:1},{l:'🟥 cost → feel (10)',g:2},{l:'Los 20 verbos',g:0}],run);
- },
  vtest(P){
    const run=part=>runSteps('📝 Vocabulario: traducción',chunk(shuf(VOCAB.slice(part.a,part.b)),5).map(g=>({t:'lines',q:'Une cada palabra con su traducción',pairs:g.map(w=>[w[0],w[1]]),sub:part.l})),'vtest',()=>R.vtest(P),'📝');
    if(P)return run(P);
@@ -1107,12 +1100,11 @@ Object.assign(R,{
    runSteps('🕵️ Cazaerrores',shuf(TRAPS).map(x=>({t:'swipe',w:x[0],tr:x[1],ok:x[2],ex:x[3],sub:'Desliza la tarjeta: ➡ bien · ⬅ mal'})),'traps',R.traps,'🕵️');
  },
 });
-/* vtype con parte directa (para la ruta) */
-const _vtype=R.vtype;
-R.vtype=function(P){
-  if(!P)return _vtype();
-  const realChooser=chooser;chooser=(t,s,parts,run)=>run(P);try{_vtype()}finally{chooser=realChooser}
-};
+/* vtype y vsent siguen escritos (como en el examen); con parte directa para la ruta */
+const _vtype=R.vtype,_vsent=R.vsent;
+const direct=(fn,P)=>{const realChooser=chooser;chooser=(t,s,parts,run)=>run(P);try{fn()}finally{chooser=realChooser}};
+R.vtype=function(P){if(!P)return _vtype();direct(_vtype,P)};
+R.vsent=function(P){if(!P)return _vsent();direct(_vsent,P)};
 
 /* =====================================================================
    RUTA DE ESTUDIO: de lo más difícil a lo más ligero, por estaciones
