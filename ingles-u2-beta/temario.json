@@ -1,0 +1,469 @@
+{
+ "juego": "ingles-u2",
+ "asignatura": "Inglés",
+ "curso": "5º",
+ "examen": "2026-11-20",
+ "fuente": "Sacado del juego el 19-nov-2026. Pendiente de cotejar con las fotos del libro.",
+ "gramatica": [
+  {
+   "id": "adv-significado",
+   "punto": "Adverbios de frecuencia: qué significan (always 100 % → never 0 %)",
+   "test": "ADV_MC",
+   "escribir": "ADV_ESCRIBE",
+   "ordenar": "ORDER"
+  },
+  {
+   "id": "adv-posicion",
+   "punto": "Dónde va el adverbio: delante del verbo, detrás de am/is/are",
+   "test": "ADV_POS",
+   "escribir": "POS_ESCRIBE",
+   "ordenar": "ORDER"
+  },
+  {
+   "id": "like-ing",
+   "punto": "Do you like / love / hate / enjoy / prefer + -ing",
+   "test": "LIKE",
+   "escribir": "ING",
+   "ordenar": "LORD"
+  },
+  {
+   "id": "would-like-to",
+   "punto": "Would you like + to + verbo (invitación)",
+   "test": "LIKE",
+   "escribir": "TO_ESCRIBE",
+   "ordenar": "LORD"
+  },
+  {
+   "id": "respuestas",
+   "punto": "Respuestas: Yes, I do / No, I don't · Yes, please! I'd love to / No, thanks! I'm afraid I'm busy",
+   "test": "LIKE",
+   "escribir": "RESP_ESCRIBE",
+   "ordenar": "LORD"
+  },
+  {
+   "id": "ing-ortografia",
+   "punto": "Cómo se forma el -ing (quitar la e, doblar la consonante)",
+   "test": "LIKE",
+   "escribir": "ING",
+   "ordenar": "-"
+  }
+ ],
+ "verbos": [
+  {
+   "base": "be",
+   "pasado": [
+    "was",
+    "were"
+   ],
+   "participio": [
+    "been"
+   ],
+   "es": "ser / estar"
+  },
+  {
+   "base": "become",
+   "pasado": [
+    "became"
+   ],
+   "participio": [
+    "become"
+   ],
+   "es": "convertirse, llegar a ser"
+  },
+  {
+   "base": "begin",
+   "pasado": [
+    "began"
+   ],
+   "participio": [
+    "begun"
+   ],
+   "es": "empezar"
+  },
+  {
+   "base": "break",
+   "pasado": [
+    "broke"
+   ],
+   "participio": [
+    "broken"
+   ],
+   "es": "romper"
+  },
+  {
+   "base": "build",
+   "pasado": [
+    "built"
+   ],
+   "participio": [
+    "built"
+   ],
+   "es": "construir"
+  },
+  {
+   "base": "burn",
+   "pasado": [
+    "burnt",
+    "burned"
+   ],
+   "participio": [
+    "burnt",
+    "burned"
+   ],
+   "es": "quemar"
+  },
+  {
+   "base": "buy",
+   "pasado": [
+    "bought"
+   ],
+   "participio": [
+    "bought"
+   ],
+   "es": "comprar"
+  },
+  {
+   "base": "catch",
+   "pasado": [
+    "caught"
+   ],
+   "participio": [
+    "caught"
+   ],
+   "es": "atrapar, coger"
+  },
+  {
+   "base": "choose",
+   "pasado": [
+    "chose"
+   ],
+   "participio": [
+    "chosen"
+   ],
+   "es": "elegir"
+  },
+  {
+   "base": "come",
+   "pasado": [
+    "came"
+   ],
+   "participio": [
+    "come"
+   ],
+   "es": "venir"
+  },
+  {
+   "base": "cost",
+   "pasado": [
+    "cost"
+   ],
+   "participio": [
+    "cost"
+   ],
+   "es": "costar"
+  },
+  {
+   "base": "cut",
+   "pasado": [
+    "cut"
+   ],
+   "participio": [
+    "cut"
+   ],
+   "es": "cortar"
+  },
+  {
+   "base": "do",
+   "pasado": [
+    "did"
+   ],
+   "participio": [
+    "done"
+   ],
+   "es": "hacer"
+  },
+  {
+   "base": "draw",
+   "pasado": [
+    "drew"
+   ],
+   "participio": [
+    "drawn"
+   ],
+   "es": "dibujar"
+  },
+  {
+   "base": "dream",
+   "pasado": [
+    "dreamt",
+    "dreamed"
+   ],
+   "participio": [
+    "dreamt",
+    "dreamed"
+   ],
+   "es": "soñar"
+  },
+  {
+   "base": "drink",
+   "pasado": [
+    "drank"
+   ],
+   "participio": [
+    "drunk"
+   ],
+   "es": "beber"
+  },
+  {
+   "base": "drive",
+   "pasado": [
+    "drove"
+   ],
+   "participio": [
+    "driven"
+   ],
+   "es": "conducir"
+  },
+  {
+   "base": "eat",
+   "pasado": [
+    "ate"
+   ],
+   "participio": [
+    "eaten"
+   ],
+   "es": "comer"
+  },
+  {
+   "base": "fall",
+   "pasado": [
+    "fell"
+   ],
+   "participio": [
+    "fallen"
+   ],
+   "es": "caer(se)"
+  },
+  {
+   "base": "feel",
+   "pasado": [
+    "felt"
+   ],
+   "participio": [
+    "felt"
+   ],
+   "es": "sentir"
+  }
+ ],
+ "vocabulario": [
+  {
+   "en": "actor",
+   "es": "actor"
+  },
+  {
+   "en": "adventure",
+   "es": "aventura"
+  },
+  {
+   "en": "advice",
+   "es": "consejo"
+  },
+  {
+   "en": "afraid",
+   "es": "con miedo"
+  },
+  {
+   "en": "attractive",
+   "es": "atractivo"
+  },
+  {
+   "en": "be bad at",
+   "es": "ser malo en"
+  },
+  {
+   "en": "be brilliant at",
+   "es": "ser genial en"
+  },
+  {
+   "en": "be good at",
+   "es": "ser bueno en"
+  },
+  {
+   "en": "be interested in",
+   "es": "estar interesado en"
+  },
+  {
+   "en": "be terrible at",
+   "es": "ser fatal en"
+  },
+  {
+   "en": "book",
+   "es": "reservar"
+  },
+  {
+   "en": "camping",
+   "es": "acampada"
+  },
+  {
+   "en": "club",
+   "es": "club"
+  },
+  {
+   "en": "collect things",
+   "es": "coleccionar cosas"
+  },
+  {
+   "en": "comedy",
+   "es": "comedia"
+  },
+  {
+   "en": "competition",
+   "es": "competición"
+  },
+  {
+   "en": "cook",
+   "es": "cocinar"
+  },
+  {
+   "en": "correct",
+   "es": "correcto"
+  },
+  {
+   "en": "countryside",
+   "es": "el campo"
+  },
+  {
+   "en": "dance",
+   "es": "bailar"
+  },
+  {
+   "en": "draw pictures",
+   "es": "hacer dibujos"
+  },
+  {
+   "en": "end",
+   "es": "terminar"
+  },
+  {
+   "en": "enjoy",
+   "es": "disfrutar"
+  },
+  {
+   "en": "glad",
+   "es": "contento"
+  },
+  {
+   "en": "go to concerts",
+   "es": "ir a conciertos"
+  },
+  {
+   "en": "good-looking",
+   "es": "guapo"
+  },
+  {
+   "en": "hate",
+   "es": "odiar"
+  },
+  {
+   "en": "horror",
+   "es": "terror"
+  },
+  {
+   "en": "idea",
+   "es": "idea"
+  },
+  {
+   "en": "join",
+   "es": "apuntarse, unirse"
+  },
+  {
+   "en": "let someone know",
+   "es": "avisar a alguien"
+  },
+  {
+   "en": "(don't) like",
+   "es": "(no) gustar"
+  },
+  {
+   "en": "listen to songs",
+   "es": "escuchar canciones"
+  },
+  {
+   "en": "love",
+   "es": "encantar, querer"
+  },
+  {
+   "en": "message friends",
+   "es": "mandar mensajes a amigos"
+  },
+  {
+   "en": "nature",
+   "es": "naturaleza"
+  },
+  {
+   "en": "online",
+   "es": "en línea, por internet"
+  },
+  {
+   "en": "play an instrument",
+   "es": "tocar un instrumento"
+  },
+  {
+   "en": "play computer games",
+   "es": "jugar a videojuegos"
+  },
+  {
+   "en": "play sports",
+   "es": "hacer deporte"
+  },
+  {
+   "en": "prefer",
+   "es": "preferir"
+  },
+  {
+   "en": "read books",
+   "es": "leer libros"
+  },
+  {
+   "en": "scared",
+   "es": "asustado"
+  },
+  {
+   "en": "sleep in a tent",
+   "es": "dormir en una tienda de campaña"
+  },
+  {
+   "en": "spend time",
+   "es": "pasar tiempo"
+  },
+  {
+   "en": "take photos",
+   "es": "hacer fotos"
+  },
+  {
+   "en": "terrible",
+   "es": "terrible, horrible"
+  },
+  {
+   "en": "try new food",
+   "es": "probar comida nueva"
+  },
+  {
+   "en": "type",
+   "es": "tipo"
+  },
+  {
+   "en": "watch films",
+   "es": "ver películas"
+  },
+  {
+   "en": "well-known",
+   "es": "famoso, conocido"
+  },
+  {
+   "en": "worried",
+   "es": "preocupado"
+  }
+ ],
+ "nota_formas": "En test/escribir/ordenar va la lista del juego que lo practica; null = falta; \"-\" = no aplica."
+}

@@ -18,18 +18,19 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Abierto
 
-- **Inglés Unit 2**, encontrado por el verificador el 19-nov (sin arreglar a propósito: el examen es al día siguiente y el juego funciona):
-  - Móvil (390 px), Cazaerrores: al deslizar la tarjeta, la página se ensancha unos 70 px y se puede mover de lado.
-  - El cuadro «Trae tu progreso» tiene letra de 13 px: en el iPhone hace zoom al tocarlo.
-  - Los campos de nombre no desactivan autocorrect, autocapitalize ni spellcheck.
-  - Gramática sin la forma «escribir»: los adverbios (significado y posición), Would you like + to y las respuestas. Tiene test y ordenar.
+- **Inglés Unit 2: arreglos en la beta, esperando el visto bueno del padre** (19-nov, verificador sin fallos en 390/820/1440). Prueba: https://alvgolf.github.io/mision-estudio/ingles-u2-beta/
+  - Cazaerrores en el móvil: la tarjeta ya no ensancha la página al deslizarla.
+  - «Trae tu progreso»: letra de 20 px (antes 13: el iPhone hacía zoom).
+  - Corrector apagado en los campos de nombre y de código.
+  - Gramática escrita: nuevo ejercicio «escribe la respuesta». En Adverbios, uno del adverbio y otro de la frase con el adverbio en su sitio; en Do you like / Would you like, uno de «to + verbo» y otro de las respuestas del libro. Los 36 posibles comprobados uno a uno.
+  - Al aprobar: copiar `ingles-u2-beta/index.html` y `temario.json` a `ingles-u2/` y volver a poner la redirección en la beta.
 - `ingles-u2/temario.json` se sacó del propio juego: hay que cotejarlo con las fotos del libro.
 
 ## Pendiente del padre
 
 - Rellenar la lista de nombres prohibidos (`~/.claude/mision-estudio/nombres-prohibidos.txt`, en su PC).
 - Confirmar «Lo esencial».
-- Decidir qué hacer con lo «Abierto» de Inglés después del examen (o darlo por cerrado si ya no se va a usar).
+- Probar la beta de Inglés y aprobar (o no) que pase a la versión normal.
 
 ## Para el segundo juego (decidido el 19-nov)
 

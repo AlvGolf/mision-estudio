@@ -339,6 +339,13 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       await page.mouse.up();
       break;
     }
+    case 'type': {
+      const campo = st.locator('input.typ');
+      await campo.fill(mal ? 'x' : S.acc[0]);
+      await campo.press('Enter');
+      if (!mal && !await campo.evaluate(e => e.classList.contains('ok'))) fallo(`[${tag}] «${t}»: escribir la respuesta correcta («${S.acc[0]}») la da por mala`);
+      break;
+    }
     default:
       fallo(`[${tag}] «${t}»: formato de ejercicio desconocido para el verificador (${S.t})`);
   }

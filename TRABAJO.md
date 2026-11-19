@@ -10,4 +10,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| ingles-u2-beta | Claude Code | 2026-11-19 | Arreglos que encontró el verificador (tarjeta en móvil, letra, corrector, gramática escrita) |
+| — | — | — | Nadie trabajando ahora |
