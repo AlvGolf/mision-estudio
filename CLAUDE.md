@@ -16,11 +16,12 @@ Reglas:
 2. Siempre `git pull` antes de empezar y `git push` al terminar.
 3. Trabaja uno cada vez, con turnos en `TRABAJO.md`: antes de tocar un juego, pon tu fila y súbela; al terminar, quítala. Si el juego tiene a otro, no se toca.
 4. Todo cambio grande va primero a una carpeta beta (`<juego>-beta/`). Solo se pasa a la normal cuando el padre lo aprueba; después la beta redirige a la normal.
+   - El motor común funciona igual: los cambios van a `motor-beta/` (lo cargan las betas) y, al aprobarlos, se copian a `motor/` (lo cargan los juegos normales). Así llegan a todos los juegos a la vez.
 5. Mensajes de commit en español, cortos y que digan qué cambia para el niño.
 
 ### Flujo de un juego nuevo
 1. El padre manda fotos del temario → se saca la lista de contenidos a `<juego>/temario.json` (vocabulario, verbos, gramática y fecha del examen; ver `ingles-u2/temario.json`).
-2. Claude Code crea `<juego>-beta/index.html` (p. ej. `mates-t3-beta/`), con su `GAME_ID` propio, y lo sube.
+2. Claude Code crea `<juego>-beta/index.html` (p. ej. `mates-t3-beta/`) con solo los datos y las misiones, y al final carga `../motor-beta/motor.js` (ver `ingles-u2-beta/`). Lleva su `JUEGO.id` propio y claves de guardado propias, y lo sube.
 3. Revisión: `npm run verificar -- <juego>-beta` (cobertura contra el temario, 390 / 820 / 1440 px y la ruta entera jugada arrastrando en Chrome). El Claude de la app, que no puede ejecutarlo, juega la ruta en su navegador.
 
 ## Herramientas
@@ -31,12 +32,13 @@ Reglas:
 - **`ESTADO.md`**: lo esencial de cada juego, lo abierto y lo pendiente del padre. Se lee al empezar y se pone al día al cerrar.
 - Puesta en marcha en un PC nuevo: `npm install` y `git config core.hooksPath .githooks`.
 4. El padre lo prueba en `https://alvgolf.github.io/mision-estudio/<juego>-beta/`.
-5. Aprobado → se copia a `<juego>/`, se añade la tarjeta en el `index.html` de la raíz y la beta redirige.
+5. Aprobado → se copia a `<juego>/` cambiando `motor-beta` por `motor` en sus dos enlaces, se añade la tarjeta en el `index.html` de la raíz y la beta redirige.
 
 ## Estructura
 
 - `index.html` — menú con una tarjeta por juego.
-- `<juego>/index.html` — cada juego es un único archivo HTML autocontenido.
+- `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura.
+- `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que el motor. (`ingles-u2/` sigue con todo dentro hasta que se apruebe su beta.)
 - `apps-script/Code.gs` — copia de referencia del script del ranking. El que funciona está en Google Apps Script; si cambias este, avisa al padre para que lo pegue y redespliegue.
 - Web: https://alvgolf.github.io/mision-estudio/ (GitHub Pages, rama `main`, raíz).
 

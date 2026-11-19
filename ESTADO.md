@@ -18,7 +18,9 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Abierto
 
-- Nada abierto. (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo: el examen es el 20-nov. Desde el próximo juego, el temario sale de las fotos.)
+- **Motor común en beta (19-nov).** `motor-beta/` y `ingles-u2-beta/` (solo datos y misiones). Verificador sin fallos y 32 pantallas idénticas a la normal. Se pasa a la normal **después del examen del 20-nov**, cuando el padre lo apruebe: copiar `motor-beta/` a `motor/` y la beta a `ingles-u2/` cambiando los enlaces.
+- Siguiente: aspecto visual del motor, con un artefacto de opciones (el padre pidió que puede cambiar el aspecto de Inglés).
+- (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo.)
 
 ## Pendiente del padre
 
@@ -26,5 +28,5 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Para el segundo juego (decidido el 19-nov)
 
-- Separar el motor común de los datos de cada juego.
+- ~~Separar el motor común de los datos de cada juego.~~ Hecho en beta el 19-nov.
 - Skill «juego nuevo» con el flujo desde las fotos hasta la beta.
