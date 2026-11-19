@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run verificar*)",
+      "Bash(npm run -s verificar*)",
+      "Bash(node scripts/verificar.mjs*)",
+      "Bash(node scripts/guarda-nombres.mjs*)"
+    ]
+  }
+}

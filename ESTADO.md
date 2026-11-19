@@ -4,7 +4,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Lo esencial
 
-> Borrador del 19-nov-2026, pendiente de confirmar con el padre.
+> Confirmado con el padre el 19-nov-2026.
 
 | Pieza | Estado | Nota |
 |---|---|---|
@@ -14,16 +14,15 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 | Pruebas automáticas (`npm run verificar`) | ✅ hecho | Ruta entera a 390/820/1440 px, cobertura y examen |
 | Guarda de nombres antes de subir | 🟡 montada | Falta que el padre rellene la lista privada |
 | Turnos entre los dos Claudes (`TRABAJO.md`) | ✅ hecho | |
-| Juego de 2º | ⚪ sin empezar | Falta el temario (fotos) |
+| Juego de 2º | ⚪ sin empezar | Sin fecha: de momento no hay próximo juego (19-nov). Empieza cuando el padre mande las fotos del temario |
 
 ## Abierto
 
-- `ingles-u2/temario.json` se sacó del propio juego: hay que cotejarlo con las fotos del libro.
+- Nada abierto. (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo: el examen es el 20-nov. Desde el próximo juego, el temario sale de las fotos.)
 
 ## Pendiente del padre
 
-- Rellenar la lista de nombres prohibidos (`~/.claude/mision-estudio/nombres-prohibidos.txt`, en su PC).
-- Confirmar «Lo esencial».
+- Rellenar la lista de nombres prohibidos (`~/.claude/mision-estudio/nombres-prohibidos.txt`, en su PC). Mientras esté vacía, la guarda no revisa nada.
 
 ## Para el segundo juego (decidido el 19-nov)
 
