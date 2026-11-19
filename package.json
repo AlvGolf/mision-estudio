@@ -1,0 +1,11 @@
+{
+  "name": "mision-estudio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verificar": "node scripts/verificar.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}

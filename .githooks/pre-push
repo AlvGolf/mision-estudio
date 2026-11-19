@@ -1,0 +1,3 @@
+#!/bin/sh
+# Guarda de privacidad: no deja subir nombres de la lista privada (ver scripts/guarda-nombres.mjs).
+exec node "$(git rev-parse --show-toplevel)/scripts/guarda-nombres.mjs" "$@"

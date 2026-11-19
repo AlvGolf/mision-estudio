@@ -14,14 +14,22 @@ Objetivo: que los niños estudien de forma fácil, rápida, dinámica y gamifica
 Reglas:
 1. La única fuente de verdad es GitHub (`AlvGolf/mision-estudio`, rama `main`). Nada de copiar código a mano entre sitios.
 2. Siempre `git pull` antes de empezar y `git push` al terminar.
-3. Trabaja uno cada vez. Si el otro Claude tiene trabajo a medias, no se toca el mismo juego.
+3. Trabaja uno cada vez, con turnos en `TRABAJO.md`: antes de tocar un juego, pon tu fila y súbela; al terminar, quítala. Si el juego tiene a otro, no se toca.
 4. Todo cambio grande va primero a una carpeta beta (`<juego>-beta/`). Solo se pasa a la normal cuando el padre lo aprueba; después la beta redirige a la normal.
 5. Mensajes de commit en español, cortos y que digan qué cambia para el niño.
 
 ### Flujo de un juego nuevo
-1. El padre manda fotos del temario → se saca la lista de contenidos (vocabulario, verbos, gramática…).
+1. El padre manda fotos del temario → se saca la lista de contenidos a `<juego>/temario.json` (vocabulario, verbos, gramática y fecha del examen; ver `ingles-u2/temario.json`).
 2. Claude Code crea `<juego>-beta/index.html` (p. ej. `mates-t3-beta/`), con su `GAME_ID` propio, y lo sube.
-3. Revisión: cobertura del temario, prueba a 390 / 820 / 1440 px y la ruta entera jugada en navegador real.
+3. Revisión: `npm run verificar -- <juego>-beta` (cobertura contra el temario, 390 / 820 / 1440 px y la ruta entera jugada arrastrando en Chrome). El Claude de la app, que no puede ejecutarlo, juega la ruta en su navegador.
+
+## Herramientas
+
+- **`npm run verificar [-- <juego>]`** (`scripts/verificar.mjs`): cobertura, desbordes, campos de texto, ruta entera, examen y nota final. Claude Code lo pasa **antes de cada subida que toque un juego**; con un FALLO no se sube. Los avisos no bloquean, pero se apuntan en `ESTADO.md`. Capturas en `verificacion/` (fuera de git).
+  - Para que el verificador pueda jugar, cada juego mantiene los nombres de `ingles-u2`: listas `VOCAB`, `VERBS`, `VSENT`, `VPARTS`, `vocabSentQ`, y `window._S` / `window._O` con el ejercicio actual.
+- **Guarda de nombres** (`scripts/guarda-nombres.mjs`, gancho `.githooks/pre-push`): no deja subir nada que contenga un nombre de la lista privada, que está fuera del repo, en el PC del padre. El Claude de la app no tiene el gancho: antes de subir, revisa a mano que no haya nombres de niños, del colegio ni del profesor.
+- **`ESTADO.md`**: lo esencial de cada juego, lo abierto y lo pendiente del padre. Se lee al empezar y se pone al día al cerrar.
+- Puesta en marcha en un PC nuevo: `npm install` y `git config core.hooksPath .githooks`.
 4. El padre lo prueba en `https://alvgolf.github.io/mision-estudio/<juego>-beta/`.
 5. Aprobado → se copia a `<juego>/`, se añade la tarjeta en el `index.html` de la raíz y la beta redirige.
 
