@@ -75,7 +75,7 @@ function home(){
    <p class="sub">Así tu boletín y el ranking llevarán tu nombre.</p>
    <input class="typ" id="nm" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu nombre" style="max-width:320px;text-align:center"><br>
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
-   const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}try{localStorage.setItem(JUEGO.claves.nombre,v)}catch(e){}home()};
+   const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}const vuelve=recuperaPerfil(v);try{localStorage.setItem(JUEGO.claves.nombre,vuelve||v)}catch(e){}if(vuelve)return location.reload();home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
   app().innerHTML=`${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos 30 minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button><p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> ${JUEGO.saludo}</p>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
@@ -85,7 +85,8 @@ function home(){
   wireFame();
   document.querySelectorAll('.mission').forEach(b=>b.onclick=()=>R[b.dataset.k]());
   const ht=$('#hoy');if(ht)ht.onclick=()=>R[ht.dataset.k]();
-  const cn=$('#chn');if(cn)cn.onclick=()=>{try{localStorage.removeItem(JUEGO.claves.nombre)}catch(e){}home()};
+  /* Recargar: si no, la XP y las notas que hay en memoria pasarían al siguiente niño */
+  const cn=$('#chn');if(cn)cn.onclick=()=>{apartaPerfil();location.reload()};
 }
 
 function boletin(){
@@ -169,10 +170,21 @@ function fame(){
   <p class="sub" style="font-size:13px;margin-top:10px">Tus partidas se guardan en este dispositivo.</p></div>`;
 }
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+/* Perfiles: cada niño guarda su progreso aparte en el mismo dispositivo.
+   El progreso activo sigue en las claves de siempre. «No soy yo» lo aparta con su nombre;
+   al escribir un nombre que ya jugó aquí, se recupera el suyo. */
+const PERFIL_K=['estado','ruta','arcade'];
+const perfilClave=n=>'perfil:'+JUEGO.id+':'+n.trim().toLowerCase();
+function apartaPerfil(){try{const n=lsGet(JUEGO.claves.nombre);
+  if(n)localStorage.setItem(perfilClave(n),JSON.stringify({nombre:n,...Object.fromEntries(PERFIL_K.map(k=>[k,lsGet(JUEGO.claves[k])]))}));
+  PERFIL_K.forEach(k=>localStorage.removeItem(JUEGO.claves[k]));localStorage.removeItem(JUEGO.claves.nombre)}catch(e){}}
+function recuperaPerfil(n){try{const p=JSON.parse(localStorage.getItem(perfilClave(n))||'null');if(!p)return false;
+  PERFIL_K.forEach(k=>p[k]==null?localStorage.removeItem(JUEGO.claves[k]):localStorage.setItem(JUEGO.claves[k],p[k]));
+  localStorage.removeItem(perfilClave(n));return p.nombre||n}catch(e){return false}}
 function wireFame(){
   $('#fsave').onclick=()=>{
     const n=($('#fn').value||'').trim().slice(0,20)||'Jugador';
-    try{localStorage.setItem(JUEGO.claves.nombre,n)}catch(e){}
+    if(!lsGet(JUEGO.claves.nombre))try{localStorage.setItem(JUEGO.claves.nombre,n)}catch(e){}
     const fN=finalNota();HIST.push({n,xp:XP,st:totalStars(),bs:BSTREAK,ex:nota('exam')!=null?fmt(nota('exam')):null,no:fN.miss?null:fmt(fN.n),sb:{...BEST},d:new Date().toISOString()});
     save();confetti();home();
     setTimeout(()=>{const f=$('#ffb');if(f){f.textContent='✅ ¡Guardado! Mira tu puesto en el ranking.';$('#fame').scrollIntoView({behavior:'smooth'})}},50);
@@ -233,7 +245,8 @@ function orderGame(title,sub,set,key,again,hint){
     document.querySelectorAll('#src .chip').forEach(b=>b.onclick=()=>{built.push({w:b.textContent,k:b.dataset.k});draw()});
     $('#chk').onclick=()=>{
       if(built.length<it.w.length){$('#fb').textContent='Faltan palabras 😉';return}
-      if(built.map(c=>c.w).join(' ')==sol){if(first)ok++;win();$('#fb').innerHTML='✅ ¡Perfecto! <b>'+esc(sol)+'</b>';$('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()}}
+      const hecho=built.map(c=>c.w).join(' ').toLowerCase(),acierto=[sol,...(it.alt||[])].find(x=>x.toLowerCase()==hecho);
+      if(acierto){if(first)ok++;win();$('#fb').innerHTML='✅ ¡Perfecto! <b>'+esc(acierto)+'</b>';$('#chk').textContent='Siguiente ➜';$('#chk').onclick=()=>{i++;show()}}
       else{first=false;lose();$('#dst').classList.add('shake');setTimeout(()=>$('#dst')&&$('#dst').classList.remove('shake'),400);$('#fb').innerHTML='❌ Casi. '+hint}
     };
   }
@@ -482,7 +495,7 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   $('#rnext').onclick=startStation;
 };
 R.route=function(){
-  const resume=ROUTE&&ROUTE.on&&ROUTE.i>0;
+  const resume=ROUTE&&ROUTE.i>0;
   if(!ROUTE)ROUTE={i:0,part:0,on:false};
   app().innerHTML=`<div class="box"><h2>🧭 Ruta de estudio</h2>
   <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos 30 minutos. Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero. Cuenta igual que las misiones sueltas.</p>

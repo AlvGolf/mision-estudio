@@ -23,11 +23,11 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 ### Plan de desarrollo (20-nov, tras el informe de investigación; catálogo en `MODALIDADES.md`)
 
 1. **Después del examen de Inglés (20-nov), arreglos en la beta:**
-   - **[esencial]** «no soy yo» separa el progreso de cada niño en el mismo dispositivo. Hoy el siguiente hereda las notas del anterior y podría subirlas al ranking con su nombre.
-   - Las 4 preguntas de *Do you like ____?* que tienen *to play*, *to do*… como opción falsa piden «con -ing, como en el libro».
-   - Reanudar la ruta: al volver del menú dice «Seguir por la estación N» y deja empezar de cero.
-   - «Ordena la frase» acepta *sometimes* al principio.
-   - Pasar el motor común a la normal.
+   - ✅ (en beta, 20-nov) **[esencial]** «no soy yo» separa el progreso de cada niño en el mismo dispositivo. Hoy el siguiente hereda las notas del anterior y podría subirlas al ranking con su nombre.
+   - ✅ (en beta) Las 4 preguntas de *Do you like ____?* que tienen *to play*, *to do*… como opción falsa piden «con -ing, como en el libro».
+   - ✅ (en beta) Reanudar la ruta: al volver del menú dice «Seguir por la estación N» y deja empezar de cero.
+   - ✅ (en beta) «Ordena la frase» y «escribe la frase» aceptan *sometimes* al principio.
+   - Pasar el motor común y estos arreglos a la normal: **falta que el padre pruebe la beta y lo apruebe**.
 2. **Artefacto «Modalidades nuevas»** con maquetas jugables: las seis para hacer ya (escuchar, dictado, detectar y reparar, crucigrama, número, primera letra) y las tres a evaluar (historia ramificada, construir una escena, miniinvestigación).
 3. **Construir en `motor-beta/`** las modalidades elegidas.
 4. **Extras de los puntos 6.1 y 6.4 del informe:** apuntar la nota real del colegio y compararla con la «nota prevista»; guardar en el dispositivo cuánto tarda de verdad cada estación de la ruta.

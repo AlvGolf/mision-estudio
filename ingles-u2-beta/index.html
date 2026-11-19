@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Misión Inglés · Unit 2</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=1">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=2">
 </head>
 <body>
 <header>
@@ -89,10 +89,10 @@ const ADV_ESCRIBE = [
  {q:'"A veces" en inglés es…',a:'sometimes'},{q:'"Nunca" en inglés es…',a:'never'}].map(x=>({q:x.q,acc:[x.a],show:x.a}));
 /* --- Do you like / Would you like --- */
 const LIKE = [
- {q:'Do you like ____ computer games?',opts:['playing','to play','play'],a:'playing',ex:'Do you like + -ing'},
- {q:'Do you like ____ homework?',opts:['doing','to do','do'],a:'doing',ex:'Do you like + -ing'},
- {q:'Do you like ____ to songs?',opts:['listening','to listen','listen'],a:'listening',ex:'Do you like + -ing'},
- {q:'Do you like ____ in a tent?',opts:['sleeping','to sleep','sleep'],a:'sleeping',ex:'Do you like + -ing'},
+ {q:'Do you like ____ computer games? (con -ing, como en el libro)',opts:['playing','to play','play'],a:'playing',ex:'Do you like + -ing'},
+ {q:'Do you like ____ homework? (con -ing, como en el libro)',opts:['doing','to do','do'],a:'doing',ex:'Do you like + -ing'},
+ {q:'Do you like ____ to songs? (con -ing, como en el libro)',opts:['listening','to listen','listen'],a:'listening',ex:'Do you like + -ing'},
+ {q:'Do you like ____ in a tent? (con -ing, como en el libro)',opts:['sleeping','to sleep','sleep'],a:'sleeping',ex:'Do you like + -ing'},
  {q:'I enjoy ____ books.',opts:['reading','to read','read'],a:'reading',ex:'enjoy + -ing'},
  {q:'I enjoy ____ new food.',opts:['trying','to try','try'],a:'trying',ex:'enjoy + -ing'},
  {q:'I prefer ____ films.',opts:['watching','to watching','watch'],a:'watching',ex:'prefer + -ing'},
@@ -146,7 +146,9 @@ const LORD = [
  {w:['No, thanks!','I\'m afraid','I\'m','busy.'],h:'¡No, gracias! Me temo que estoy ocupado.'},
 ];
 
-const POS_ESCRIBE = ORDER.map(o=>{const rest=o.w.filter(w=>w!==o.adv);return{q:`Escribe la frase con <b>${o.adv}</b> en su sitio:<br><span style="color:var(--gold)">${rest.join(' · ')}</span>`,sub:'🇪🇸 '+o.h,acc:[o.w.join(' ')],show:o.w.join(' ')}});
+/* «Sometimes» también puede ir al principio: se acepta al ordenar y al escribir */
+ORDER.forEach(o=>{if(o.adv!='sometimes')return;const r=o.w.filter(w=>w!==o.adv);o.alt=['Sometimes '+[r[0]=='I'?r[0]:r[0][0].toLowerCase()+r[0].slice(1),...r.slice(1)].join(' ')]});
+const POS_ESCRIBE = ORDER.map(o=>{const rest=o.w.filter(w=>w!==o.adv);return{q:`Escribe la frase con <b>${o.adv}</b> en su sitio:<br><span style="color:var(--gold)">${rest.join(' · ')}</span>`,sub:'🇪🇸 '+o.h,acc:[o.w.join(' '),...(o.alt||[])],show:o.w.join(' ')}});
 const TO_ESCRIBE = LIKE.filter(x=>/^to /.test(x.a)).map(x=>({q:x.q.replace('____','_____')+` <span style="color:var(--mut)">(${x.a.slice(3)})</span>`,sub:'Escribe lo que va en el hueco',acc:[x.a],show:x.a,ex:x.ex}));
 const RESP_ESCRIBE = [
  {q:'Do you like dancing? <span style="color:var(--mut)">(sí, te gusta)</span>',acc:['yes, i do'],show:'Yes, I do.'},
@@ -555,6 +557,6 @@ const JUEGO={
  },
 };
 </script>
-<script src="../motor-beta/motor.js?v=1"></script>
+<script src="../motor-beta/motor.js?v=2"></script>
 </body>
 </html>
