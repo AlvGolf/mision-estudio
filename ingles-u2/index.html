@@ -169,6 +169,60 @@ table.rules td{padding:8px;border-bottom:1px solid #34509f;vertical-align:top}
 }
 .mission.locked{opacity:.75;border:2px dashed #4a5a8f}
 .mission.arc{background:linear-gradient(160deg,#141c38,#0d1329);border:1.5px solid #a78bfa}
+/* ===== Interacción ===== */
+.ghost{position:fixed;pointer-events:none;z-index:60;transform:translate(-50%,-50%) scale(1.08);opacity:.92;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.dragging{opacity:.3}
+.drop.over{outline:3px dashed var(--acc);outline-offset:2px}
+.pulse{animation:pulse .45s}@keyframes pulse{40%{transform:scale(1.08);filter:brightness(1.3)}}
+.opts.two{grid-template-columns:1fr 1fr}
+.tray{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;justify-content:center}
+.tray .chip.right{box-shadow:0 0 0 3px var(--yes)}
+.gapq{font-size:22px;font-weight:600;line-height:2.1}
+.gap{display:inline-block;min-width:120px;min-height:38px;border:3px dashed var(--acc);border-radius:12px;text-align:center;padding:0 10px;margin:0 4px;color:var(--gold);vertical-align:middle;line-height:32px}
+.gap.ok{border:3px solid var(--yes);background:#1f6b45;color:#fff}.gap.bad{border:3px solid var(--no);background:#5e2230;color:#fff}
+.gap s{opacity:.6}
+.lines{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0 56px;margin-top:6px}
+.lines svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.lines .col{display:flex;flex-direction:column;gap:10px}
+.li{font-family:inherit;padding:12px 10px;border-radius:12px;background:var(--card2);border:3px solid #34509f;color:#fff;font-size:17px;cursor:pointer;min-height:52px;user-select:none}
+.li.sel{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,200,61,.3)}
+.li.done{border-color:var(--yes);background:#1f6b45;cursor:default}
+line.okl{stroke:var(--yes);stroke-width:4;stroke-linecap:round}
+line.badl{stroke:var(--no);stroke-width:4;stroke-dasharray:6 6;stroke-linecap:round}
+.slots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px}
+.slot{width:44px;height:52px;border-radius:10px;border:3px dashed #4a5a8f;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+.slot.f{border-style:solid;border-color:var(--acc);background:#0c1633;cursor:pointer}
+.slot.ok{border-color:var(--yes);background:#1f6b45}.slot.bad{border-color:var(--no);background:#5e2230}
+.chip.lt{width:48px;height:52px;font-size:24px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.swipezone{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+.sw-l,.sw-r{font-weight:700;opacity:.35;font-size:15px;white-space:nowrap}.sw-l{color:var(--no)}.sw-r{color:var(--yes)}
+.scard{width:min(320px,62vw);padding:26px 14px;border-radius:22px;background:linear-gradient(160deg,#2a3f8f,#1b2b5c);border:2px solid #4a5a8f;text-align:center;cursor:grab;user-select:none;transition:transform .25s,opacity .25s;box-shadow:0 12px 30px -12px #000}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.bins.thermo{grid-template-columns:1fr}
+.bin{min-height:74px;border:3px dashed #4a5a8f;border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;align-content:flex-start;cursor:pointer}
+.bin .lab{width:100%;font-size:14px;color:var(--mut);font-weight:600}
+.bins.thermo .bin{min-height:52px;flex-wrap:nowrap}.bins.thermo .bin .lab{width:56px;flex:none;font-size:17px;color:#fff}
+.bins.thermo .bin:nth-child(1){border-color:#e8344e}.bins.thermo .bin:nth-child(2){border-color:#f0613a}.bins.thermo .bin:nth-child(3){border-color:#f08a2e}.bins.thermo .bin:nth-child(4){border-color:#f0a62a}.bins.thermo .bin:nth-child(5){border-color:#c98a14}
+.chip.placed{background:var(--yes);color:#fff}
+.chip.sel{box-shadow:0 0 0 3px #fff}
+.routebtn{display:block;width:100%;text-align:left;margin:12px 0 0;padding:16px 18px;border-radius:18px;background:linear-gradient(135deg,#3dd6ff,#2a7fff);color:#04223a}
+.routebtn small{display:block;font-weight:500;font-size:14px;margin-top:2px}
+.rmap{display:grid;grid-template-columns:repeat(5,1fr);gap:10px 6px;margin-top:8px}
+.rst{text-align:center;opacity:.55}.rst.done{opacity:1}.rst.now{opacity:1}
+.rdot{width:44px;height:44px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;background:#0c1633;border:3px solid #34509f}
+.rst.done .rdot{background:var(--yes);border-color:var(--yes);font-weight:700}
+.rst.now .rdot{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,200,61,.25);animation:pulse 1.6s infinite}
+.rname{font-size:12px;margin-top:4px;color:var(--mut);line-height:1.2}
+.routeend{margin-top:16px;border-top:1px solid #34509f;padding-top:12px}
+@media(max-width:600px){
+ .gapq{font-size:19px}.gap{min-width:96px}
+ .opts.two{grid-template-columns:1fr}
+ .lines{gap:0 34px}.li{font-size:15px;padding:10px 6px;min-height:48px}
+ .slot{width:36px;height:46px;font-size:22px}.chip.lt{width:42px;height:46px;font-size:21px}
+ .bins{grid-template-columns:1fr}
+ .rmap{grid-template-columns:repeat(5,1fr);gap:8px 2px}.rdot{width:38px;height:38px;font-size:17px}.rname{font-size:10.5px}
+ .sw-l,.sw-r{font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -482,24 +536,25 @@ function quiz(title,sub,qs,key,after){
 /* ================== MISIONES ================== */
 function home(){
   if(typeof ARC!=='undefined')ARC.clear();
+  if(ROUTE&&ROUTE.on){ROUTE.on=false;saveRoute()}
   STREAK=STREAK;hud();
   const M=[
    ['#','🌡️ Adverbios de frecuencia'],
-   ['adv','🌡️','Adverbios: test','Salen los 5 adverbios'],
+   ['adv','🌡️','Adverbios','Termómetro, líneas y test'],
    ['order','🧩','Ordena la frase','¿Dónde va el adverbio?'],
    ['#','💬 Do you like…? / Would you like…?'],
-   ['like','💬','-ing o to + verbo','Y qué se responde'],
-   ['ling','✍️','Escribe el -ing','playing, dancing, swimming…'],
+   ['like','💬','-ing o to + verbo','Clasifica, une y completa'],
+   ['ling','✍️','Forma el -ing','Con fichas de letras'],
    ['lord','🗨️','Ordena preguntas','Preguntas y respuestas del libro'],
    ['#','🔤 Verbos irregulares (los 20)'],
    ['vcards','🃏','Tarjetas','Estudia los 20 verbos'],
    ['vtype','⌨️','Las 3 formas','Escríbelas, como en el examen'],
    ['vsent','📖','Verbos en frases','Una frase para cada verbo'],
    ['#','📚 Vocabulario Unit 2 (las 52 palabras)'],
-   ['vtest','📝','Traducción','¿Qué significa? Todas las palabras'],
-   ['vfrase','🔤','En frases','Una frase para cada palabra'],
+   ['vtest','📝','Une las palabras','Con líneas: inglés ↔ español'],
+   ['vfrase','🔤','En frases','Arrastra la palabra al hueco'],
    ['vocab','🧠','Memory','Une inglés y español (solo XP)'],
-   ['traps','🕵️','Cazaerrores','Traducciones que se apuntan mal'],
+   ['traps','🕵️','Cazaerrores','Desliza: bien o mal'],
    ['#','👑 Examen'],
    ['exam','👑','EXAMEN FINAL','20 preguntas · 10 minutos · sin pistas'],
    ['#','🎮 Arcade'],
@@ -512,7 +567,7 @@ function home(){
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}try{localStorage.setItem('mision_name',v)}catch(e){}home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
-  app().innerHTML=`${boletin()}<p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> Cada palabra, cada verbo y cada adverbio del examen tiene su ejercicio. Consigue 3 ⭐ en cada misión. El viernes vas a arrasar.</p>
+  app().innerHTML=`${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos 30 minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de 10 · toca para seguir</small>`:'<small>Las 10 misiones seguidas, de lo más difícil a lo más ligero</small>'}</button><p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> Cada palabra, cada verbo y cada adverbio del examen tiene su ejercicio. Consigue 3 ⭐ en cada misión. El viernes vas a arrasar.</p>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
   <div class="box"><h2>📘 Chuleta rápida</h2>
   <table class="rules">
@@ -662,7 +717,7 @@ function orderGame(title,sub,set,key,again,hint){
   let i=0,ok=0;
   function show(){
     if(i>=set.length)return endScreen('🧩',ok,set.length,key,again);
-    const it=set[i],sol=it.w.join(' ');let built=[],first=true;
+    const it=set[i],sol=it.w.join(' ');let built=[],first=true;window._O=it;
     const ch=shuf(it.w.map((w,k)=>({w,k})));
     app().innerHTML=`<div class="box"><h2>${title}</h2><p class="sub">${sub}</p>
     <div class="bar"><div style="width:${i/set.length*100}%"></div></div>
@@ -849,6 +904,272 @@ const R={
    examRun(qs);
  },
 };
+/* =====================================================================
+   INTERACCIÓN: arrastrar al hueco, unir con líneas, fichas de letras,
+   deslizar tarjetas y clasificar. Mismo contenido, otra forma de jugar.
+   ===================================================================== */
+/* Arrastrar con el dedo o el ratón; si no se mueve, cuenta como toque */
+function dnd(el,{onDrop,onTap}){
+  el.style.touchAction='none';
+  el.addEventListener('pointerdown',e=>{
+    if(el.disabled||el.classList.contains('used'))return;
+    const sx=e.clientX,sy=e.clientY;let moved=false,ghost=null;
+    try{el.setPointerCapture(e.pointerId)}catch(_){}
+    const over=ev=>{const t=document.elementFromPoint(ev.clientX,ev.clientY);return t&&t.closest('.drop')};
+    const mv=ev=>{
+      if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>7){moved=true;ghost=el.cloneNode(true);ghost.classList.add('ghost');ghost.style.width=el.offsetWidth+'px';document.body.appendChild(ghost);el.classList.add('dragging')}
+      if(moved){ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px';document.querySelectorAll('.drop.over').forEach(x=>x.classList.remove('over'));const d=over(ev);if(d)d.classList.add('over')}
+    };
+    const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
+      if(moved){const d=over(ev);ghost.remove();el.classList.remove('dragging');document.querySelectorAll('.drop.over').forEach(x=>x.classList.remove('over'));if(onDrop)onDrop(d)}
+      else if(ev.type=='pointerup'&&onTap)onTap()};
+    el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  });
+}
+const sparkle=(el)=>{if(!el)return;el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse')};
+
+/* Cada paso pinta su ejercicio en "st" y llama a done(aciertos, total, mensaje) */
+const STEP={
+  /* Test de siempre */
+  mc(st,s,done){
+    const long=s.opts.some(o=>o.length>22);
+    st.innerHTML=`<div class="q">${esc(s.q)}</div><div class="opts ${long?'':'two'}">${shuf(s.opts).map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`;
+    st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      st.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent==s.a)x.classList.add('ok')});
+      const ok=b.textContent==s.a;if(!ok){b.classList.add('bad');b.classList.add('shake')}
+      ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Correcto! ':'❌ Era: <b>'+esc(s.a)+'</b>. ')+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''));
+    });
+  },
+  /* Arrastra la palabra al hueco (o tócala) */
+  gap(st,s,done){
+    const [pre,post]=s.q.split(/_{3,}/);
+    st.innerHTML=`<div class="gapq">${esc(pre||'')}<span class="gap drop" id="gp">&nbsp;</span>${esc(post||'')}</div>
+    <div class="hint" style="margin-top:6px">Arrastra la respuesta al hueco o tócala</div>
+    <div class="tray">${shuf(s.opts).map(o=>`<button class="chip">${esc(o)}</button>`).join('')}</div>`;
+    let over=false;
+    const put=b=>{if(over)return;over=true;const gp=$('#gp');gp.textContent=b.textContent;const ok=b.textContent==s.a;
+      st.querySelectorAll('.tray .chip').forEach(c=>{c.disabled=true;if(c.textContent==s.a)c.classList.add('right')});b.classList.add('used');
+      gp.classList.add(ok?'ok':'bad');sparkle(gp);if(!ok){gp.innerHTML=`<s>${esc(b.textContent)}</s> ${esc(s.a)}`}
+      ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Encaja! ':'❌ Era: <b>'+esc(s.a)+'</b>. ')+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''))};
+    st.querySelectorAll('.tray .chip').forEach(b=>dnd(b,{onTap:()=>put(b),onDrop:d=>{if(d&&d.id=='gp')put(b)}}));
+  },
+  /* Une con líneas */
+  lines(st,s,done){
+    const L=s.pairs.map((p,i)=>({t:p[0],i})),Rt=shuf(s.pairs.map((p,i)=>({t:p[1],i})));
+    st.innerHTML=`<div class="q" style="font-size:19px">${esc(s.q||'Une cada palabra con su pareja')}</div>
+    <div class="lines" id="ln"><svg id="sv"></svg>
+      <div class="col">${L.map(x=>`<button class="li lft" data-i="${x.i}">${esc(x.t)}</button>`).join('')}</div>
+      <div class="col">${Rt.map(x=>`<button class="li rgt drop" data-i="${x.i}">${esc(x.t)}</button>`).join('')}</div></div>
+    <div class="hint" style="margin-top:8px">Toca una de la izquierda y luego su pareja, o arrastra de una a otra</div>`;
+    let sel=null,okc=0,left=s.pairs.length;const missed=new Set();const box=$('#ln'),sv=$('#sv');
+    const line=(a,b,cls)=>{const r=box.getBoundingClientRect(),A=a.getBoundingClientRect(),B=b.getBoundingClientRect();
+      const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',A.right-r.left);l.setAttribute('y1',A.top+A.height/2-r.top);
+      l.setAttribute('x2',B.left-r.left);l.setAttribute('y2',B.top+B.height/2-r.top);l.setAttribute('class',cls);sv.appendChild(l);return l};
+    const tryPair=(a,b)=>{if(!a||!b||a.classList.contains('done')||b.classList.contains('done'))return;
+      if(a.dataset.i==b.dataset.i){a.classList.add('done');b.classList.add('done');a.classList.remove('sel');line(a,b,'okl');sfxOk();sparkle(b);
+        if(!missed.has(a.dataset.i)){okc++;win(5)}left--;sel=null;
+        if(!left)done(okc,s.pairs.length,okc==s.pairs.length?'✅ ¡Todas a la primera!':`👍 ${okc} de ${s.pairs.length} a la primera`)}
+      else{missed.add(a.dataset.i);lose();const l=line(a,b,'badl');b.classList.add('shake');setTimeout(()=>{l.remove();b.classList.remove('shake')},500)}};
+    st.querySelectorAll('.lft').forEach(a=>dnd(a,{onTap:()=>{if(a.classList.contains('done'))return;st.querySelectorAll('.lft').forEach(x=>x.classList.remove('sel'));a.classList.add('sel');sel=a},
+      onDrop:d=>{if(d&&d.classList.contains('rgt'))tryPair(a,d)}}));
+    st.querySelectorAll('.rgt').forEach(b=>b.onclick=()=>{if(sel)tryPair(sel,b)});
+  },
+  /* Construye la palabra con fichas de letras */
+  tiles(st,s,done){
+    const target=s.a.toLowerCase();const extra=shuf('abcdefghiklmnoprstuwy'.split('').filter(c=>!target.includes(c))).slice(0,2);
+    const pool=shuf([...target,...extra]).map((c,k)=>({c,k}));let slots=Array(target.length).fill(null),first=true,over=false,tries=0;
+    st.innerHTML=`<div class="q">${s.q}</div>${s.sub?`<div class="hint">${s.sub}</div>`:''}
+    <div class="slots" id="sl"></div><div class="tray" id="tp"></div>
+    <div class="center"><button class="btn sec" id="clr" style="margin-top:4px">⌫ Borrar</button></div>`;
+    function draw(){
+      $('#sl').innerHTML=slots.map((x,n)=>`<div class="slot drop ${x?'f':''}" data-n="${n}">${x?x.c:''}</div>`).join('');
+      $('#tp').innerHTML=pool.map(t=>`<button class="chip lt ${slots.includes(t)?'used':''}" data-k="${t.k}">${t.c}</button>`).join('');
+      st.querySelectorAll('.slot.f').forEach(e=>e.onclick=()=>{if(over)return;slots[+e.dataset.n]=null;draw()});
+      st.querySelectorAll('#tp .chip').forEach(b=>{const t=pool.find(x=>x.k==b.dataset.k);dnd(b,{onTap:()=>place(t),onDrop:d=>{if(d&&d.classList.contains('slot'))place(t,+d.dataset.n)}})});
+    }
+    function place(t,n){if(over||slots.includes(t))return;if(n==null||slots[n])n=slots.indexOf(null);if(n<0)return;slots[n]=t;sfxTap();draw();
+      if(!slots.includes(null))check()}
+    function check(){const w=slots.map(x=>x.c).join('');
+      if(w==target){over=true;st.querySelectorAll('.slot').forEach(e=>e.classList.add('ok'));sparkle($('#sl'));first?win(10):null;
+        done(first?1:0,1,(first?'✅ ¡Perfecto! ':'✅ Ahora sí. ')+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''))}
+      else{tries++;if(first){first=false;lose()}$('#sl').classList.add('shake');setTimeout(()=>$('#sl')&&$('#sl').classList.remove('shake'),400);
+        if(tries>=2){over=true;slots=[...target].map(c=>({c}));draw();st.querySelectorAll('.slot').forEach(e=>e.classList.add('bad'));done(0,1,`❌ Es <b>${esc(s.a)}</b>. `+(s.ex?esc(s.ex):''))}
+        else{$('#fb').innerHTML='❌ Casi. Toca las letras de arriba para quitarlas y prueba otra vez.'}}}
+    $('#clr').onclick=()=>{if(over)return;const n=slots.map((x,i)=>x?i:-1).filter(i=>i>=0).pop();if(n!=null&&n>=0){slots[n]=null;draw()}};
+    draw();
+  },
+  /* Desliza: derecha = bien, izquierda = mal */
+  swipe(st,s,done){
+    st.innerHTML=`<div class="swipezone"><div class="sw-l">❌ MAL</div><div class="scard" id="sc"><div style="font-size:15px;color:var(--mut)">¿Está bien traducido?</div>
+      <div style="font-size:28px;font-weight:700;margin-top:8px">${esc(s.w)}</div><div style="font-size:24px;color:var(--gold)">= ${esc(s.tr)}</div></div><div class="sw-r">BIEN ✅</div></div>
+    <div class="tf" style="margin-top:12px"><button class="opt center" data-v="0">⬅ ❌ Mal</button><button class="opt center" data-v="1">✅ Bien ➡</button></div>`;
+    const card=$('#sc');let over=false;
+    const decide=v=>{if(over)return;over=true;const ok=(v==1)==s.ok;card.style.transform=`translateX(${v?160:-160}px) rotate(${v?14:-14}deg)`;card.style.opacity=.15;
+      st.querySelectorAll('.opt').forEach(x=>x.disabled=true);ok?win():lose();done(ok?1:0,1,(ok?'✅ ':'❌ ')+esc(s.ex))};
+    st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>decide(+b.dataset.v));
+    let sx=null;card.style.touchAction='none';
+    card.addEventListener('pointerdown',e=>{sx=e.clientX;try{card.setPointerCapture(e.pointerId)}catch(_){}card.style.transition='none'});
+    card.addEventListener('pointermove',e=>{if(sx==null||over)return;const dx=e.clientX-sx;card.style.transform=`translateX(${dx}px) rotate(${dx/14}deg)`;
+      st.querySelector('.sw-r').style.opacity=dx>30?1:.35;st.querySelector('.sw-l').style.opacity=dx<-30?1:.35});
+    card.addEventListener('pointerup',e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;card.style.transition='';
+      if(Math.abs(dx)>80)decide(dx>0?1:0);else card.style.transform=''});
+  },
+  /* Clasifica en cajas (cada ficha va a una caja) */
+  bins(st,s,done){
+    const items=shuf(s.items.map((it,k)=>({...it,k})));let okc=0,left=items.length;const missed=new Set();let sel=null;
+    st.innerHTML=`<div class="q" style="font-size:19px">${esc(s.q)}</div>
+    <div class="bins ${s.thermo?'thermo':''}">${s.bins.map((b,n)=>`<div class="bin drop" data-b="${n}"><span class="lab">${b}</span></div>`).join('')}</div>
+    <div class="tray" id="bt">${items.map(it=>`<button class="chip" data-k="${it.k}">${esc(it.t)}</button>`).join('')}</div>
+    <div class="hint center">Arrastra cada ficha a su sitio (o tócala y luego toca el sitio)</div>`;
+    const drop=(it,el,binEl)=>{if(!binEl)return;const n=+binEl.dataset.b;
+      if(s.thermo&&binEl.querySelector('.chip'))return;
+      if(n==it.b){el.classList.add('used');const c=document.createElement('span');c.className='chip placed';c.textContent=it.t;binEl.appendChild(c);sparkle(binEl);sfxOk();
+        if(!missed.has(it.k)){okc++;win(5)}left--;sel=null;st.querySelectorAll('#bt .chip').forEach(x=>x.classList.remove('sel'));
+        if(!left)done(okc,items.length,okc==items.length?'✅ ¡Todo en su sitio a la primera!':`👍 ${okc} de ${items.length} a la primera`)}
+      else{missed.add(it.k);lose();binEl.classList.add('shake');setTimeout(()=>binEl.classList.remove('shake'),400)}};
+    st.querySelectorAll('#bt .chip').forEach(el=>{const it=items.find(x=>x.k==el.dataset.k);
+      dnd(el,{onTap:()=>{st.querySelectorAll('#bt .chip').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');sel={it,el}},onDrop:d=>drop(it,el,d)})});
+    st.querySelectorAll('.bin').forEach(b=>b.onclick=()=>{if(sel)drop(sel.it,sel.el,b)});
+  },
+};
+function sfxOk(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
+function sfxTap(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
+
+/* Ejecuta una lista de pasos y da la nota del bloque */
+function runSteps(title,steps,key,again,icon='⭐'){
+  let i=0,ok=0,tot=0;
+  function next(){
+    if(i>=steps.length)return endScreen(icon,ok,tot,key,again);
+    const s=steps[i];window._S=s;
+    app().innerHTML=`<div class="box"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>${title}</h2>${routeTag()}</div>
+    <p class="sub">${s.t=='tiles'?'':(s.sub||'')}</p><div class="bar"><div style="width:${i/steps.length*100}%"></div></div><div class="hint">${i+1} de ${steps.length}</div>
+    <div id="stage"></div><div class="fb" id="fb"></div><div id="nx"></div></div>`;
+    STEP[s.t]($('#stage'),s,(o,t,msg)=>{ok+=o;tot+=t;$('#fb').innerHTML=msg||'';
+      $('#nx').innerHTML=`<button class="btn">${i+1<steps.length?'Siguiente ➜':'Ver resultado 🏁'}</button>`;$('#nx .btn').onclick=()=>{i++;next()};
+      $('#nx .btn').focus({preventScroll:true})});
+  }
+  next();
+}
+const gapOf=q=>({t:'gap',q:q.q,opts:q.opts,a:q.a,ex:q.ex});
+const mcOf=q=>({t:'mc',q:q.q,opts:q.opts,a:q.a,ex:q.ex});
+const hasGap=q=>/_{3,}/.test(q.q);
+const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
+
+/* Parejas pregunta → respuesta del libro */
+const LIKE_PAIRS=[
+ ['Do you like dancing? (sí)','Yes, I do.'],['Do you like horror films? (no)','No, I don\'t.'],
+ ['Would you like to play tennis? (sí)','Yes, please! I\'d love to.'],['Would you like to come to my party? (estás ocupado)','No, thanks! I\'m afraid I\'m busy.'],
+];
+const LIKE_BINS=[
+ ['playing tennis',0],['reading books',0],['cooking',0],['taking photos',0],
+ ['to join the club',1],['to come to my party',1],['to watch a film',1],['to go camping',1]];
+const ADV_ES={always:'siempre',usually:'normalmente',often:'a menudo',sometimes:'a veces',never:'nunca'};
+
+/* ===== Los bloques, con el mismo contenido y formas variadas ===== */
+Object.assign(R,{
+ adv(){
+   const qs=perAdv(ADV_MC,10);
+   runSteps('🌡️ Adverbios de frecuencia',[
+     {t:'bins',thermo:true,q:'Coloca cada adverbio en su temperatura',bins:ADV.map(a=>`${a.p}`),items:ADV.map((a,n)=>({t:a.w,b:n})),sub:'Del 100 % al 0 %'},
+     {t:'lines',q:'Une cada adverbio con su significado',pairs:shuf(ADV.map(a=>[a.w,ADV_ES[a.w]]))},
+     ...qs.map(q=>hasGap(q)?gapOf(q):mcOf(q)),
+     ...pick(ADV_POS,4).map(mcOf)],'adv',R.adv,'🌡️');
+ },
+ like(){
+   const gaps=pick(LIKE.filter(hasGap),9),other=pick(LIKE.filter(q=>!hasGap(q)&&!/^Do you like (dancing|horror)|^Would you like to (play tennis|come to my party)/.test(q.q)),3);
+   runSteps('💬 Do you like…? / Would you like…?',[
+     {t:'bins',q:'¿Con qué pregunta va cada trozo?',bins:['Do you like…?  (+ -ing)','Would you like…?  (+ to)'],items:pick(LIKE_BINS.filter(x=>!x[1]),3).concat(pick(LIKE_BINS.filter(x=>x[1]),3)).map(x=>({t:x[0],b:x[1]}))},
+     ...gaps.slice(0,5).map(gapOf),
+     {t:'lines',q:'Une cada pregunta con su respuesta',pairs:LIKE_PAIRS},
+     ...gaps.slice(5).map(gapOf),...other.map(mcOf)],'like',R.like,'💬');
+ },
+ ling(){
+   runSteps('✍️ Escribe el -ing',pick(ING,12).map(x=>({t:'tiles',q:`${x[0]} → ?`,sub:'Coloca las letras para formar el -ing',a:x[1],ex:x[2]})),'ling',R.ling,'✍️');
+ },
+ vtest(P){
+   const run=part=>runSteps('📝 Vocabulario: traducción',chunk(shuf(VOCAB.slice(part.a,part.b)),5).map(g=>({t:'lines',q:'Une cada palabra con su traducción',pairs:g.map(w=>[w[0],w[1]]),sub:part.l})),'vtest',()=>R.vtest(P),'📝');
+   if(P)return run(P);
+   chooser('📝 Vocabulario: traducción','Une con líneas cada palabra con su traducción. Cada palabra de la parte sale una vez.',VPARTS,run);
+ },
+ vfrase(P){
+   const run=part=>runSteps('🔤 Vocabulario en frases',shuf(VOCAB.slice(part.a,part.b)).map(w=>({...gapOf(vocabSentQ(w)),sub:part.l})),'vfrase',()=>R.vfrase(P),'🔤');
+   if(P)return run(P);
+   chooser('🔤 Vocabulario en frases','Arrastra la palabra que falta a su frase. Cada palabra de la parte tiene su frase.',VPARTS,run);
+ },
+ traps(){
+   runSteps('🕵️ Cazaerrores',shuf(TRAPS).map(x=>({t:'swipe',w:x[0],tr:x[1],ok:x[2],ex:x[3],sub:'Desliza la tarjeta: ➡ bien · ⬅ mal'})),'traps',R.traps,'🕵️');
+ },
+});
+/* vtype y vsent siguen escritos (como en el examen); con parte directa para la ruta */
+const _vtype=R.vtype,_vsent=R.vsent;
+const direct=(fn,P)=>{const realChooser=chooser;chooser=(t,s,parts,run)=>run(P);try{fn()}finally{chooser=realChooser}};
+R.vtype=function(P){if(!P)return _vtype();direct(_vtype,P)};
+R.vsent=function(P){if(!P)return _vsent();direct(_vsent,P)};
+
+/* =====================================================================
+   RUTA DE ESTUDIO: de lo más difícil a lo más ligero, por estaciones
+   ===================================================================== */
+const ROUTE_ST=[
+ {k:'vtype',n:'Las 3 formas de los verbos',ic:'⌨️',min:5,d:'Lo más difícil, con la cabeza fresca'},
+ {k:'vsent',n:'Verbos en frases',ic:'📖',min:3},
+ {k:'vfrase',n:'Vocabulario en frases',ic:'🔤',min:4},
+ {k:'ling',n:'Escribe el -ing',ic:'✍️',min:3},
+ {k:'like',n:'Do you like / Would you like',ic:'💬',min:4},
+ {k:'vtest',n:'Une las palabras',ic:'📝',min:3},
+ {k:'lord',n:'Ordena preguntas',ic:'🗨️',min:3},
+ {k:'adv',n:'Adverbios',ic:'🌡️',min:3},
+ {k:'order',n:'Ordena la frase',ic:'🧩',min:2},
+ {k:'traps',n:'Cazaerrores',ic:'🕵️',min:2,d:'Lo más ligero, para terminar'},
+];
+let ROUTE=null;
+try{ROUTE=JSON.parse(localStorage.getItem('mision_route')||'null')}catch(e){}
+function saveRoute(){try{ROUTE?localStorage.setItem('mision_route',JSON.stringify(ROUTE)):localStorage.removeItem('mision_route')}catch(e){}}
+function routePart(){const n=(ROUTE&&ROUTE.part)||0;return VPARTS[n%3]}
+function routeTag(){return ROUTE&&ROUTE.on?`<span class="pill" style="font-size:13px">🧭 ${ROUTE.i+1}/${ROUTE_ST.length}</span>`:''}
+function startStation(){
+  const s=ROUTE_ST[ROUTE.i];saveRoute();
+  const part=routePart();
+  if(s.k=='vtype')return R.vtype({g:0});
+  if(s.k=='vsent')return R.vsent({g:0});
+  if(s.k=='vfrase')return R.vfrase(part);
+  if(s.k=='vtest')return R.vtest(part);
+  R[s.k]();
+}
+function routeMap(){
+  const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+s.min,0);
+  return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=!ROUTE?'':n<ROUTE.i?'done':n==ROUTE.i?'now':'';
+    return `<div class="rst ${st}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div></div>`}).join('')}</div>
+    <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
+}
+const _end=endScreen;
+endScreen=function(icon,ok,tot,key,again,extra=''){
+  _end(icon,ok,tot,key,again,extra);
+  if(!(ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==key))return;
+  ROUTE.i++;XP+=20;hud();save();
+  const box=document.querySelector('.box');
+  if(ROUTE.i>=ROUTE_ST.length){
+    ROUTE.part=((ROUTE.part||0)+1)%3;ROUTE.on=false;ROUTE.i=0;saveRoute();confetti();setTimeout(confetti,600);
+    box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="big">🏁</div><h2>¡Ruta completada!</h2><p style="font-size:18px">+20 XP por estación. La próxima ruta trae otras palabras del vocabulario.</p>
+      <button class="btn" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
+    box.querySelector('#again').remove();return}
+  saveRoute();const nx=ROUTE_ST[ROUTE.i];
+  box.querySelector('#again').outerHTML=`<button class="btn" id="rnext">▶ Siguiente estación: ${nx.ic} ${nx.n}</button>`;
+  box.insertAdjacentHTML('beforeend',`<div style="margin-top:14px">${routeMap()}</div><p class="center" style="color:var(--gold)">+20 XP por estación completada</p>`);
+  $('#rnext').onclick=startStation;
+};
+R.route=function(){
+  const resume=ROUTE&&ROUTE.on&&ROUTE.i>0;
+  if(!ROUTE)ROUTE={i:0,part:0,on:false};
+  app().innerHTML=`<div class="box"><h2>🧭 Ruta de estudio</h2>
+  <p class="sub">10 estaciones seguidas, unos 30 minutos. Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero. Cuenta igual que las misiones sueltas.</p>
+  ${routeMap()}
+  <p class="sub center">Vocabulario de esta ruta: <b>${routePart().l}</b></p>
+  <div class="center">${resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${ROUTE.i+1}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ruta</button>`}
+  <button class="btn sec" onclick="home()">🏠 Menú</button></div></div>`;
+  $('#rgo').onclick=()=>{ROUTE.on=true;startStation()};
+  const rn=$('#rnew');if(rn)rn.onclick=()=>{ROUTE.i=0;ROUTE.on=true;startStation()};
+};
+
 /* ===== ARCADE (se desbloquea al jugar todos los bloques) ===== */
 const ARC=(()=>{
 /* ===== Banco de preguntas: los mismos ejercicios del juego ===== */
