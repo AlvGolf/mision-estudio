@@ -22,7 +22,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
-- Decidir si se borra del historial el nombre de la marca de prueba (sale en el commit 32d677d, ya público).
+- Nada pendiente. (19-nov: el nombre de la marca de prueba sigue en el commit antiguo 32d677d; el padre decidió dejarlo así.)
 
 ## Para el segundo juego (decidido el 19-nov)
 
