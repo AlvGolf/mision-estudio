@@ -10,4 +10,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| — | — | — | Nadie trabajando ahora |
+| motor-beta, ingles-u2-beta | Claude Code | 19-nov-2026 | Separar el motor común de los datos de Inglés (sin cambios visibles) |

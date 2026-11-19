@@ -14,7 +14,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 | Pruebas automáticas (`npm run verificar`) | ✅ hecho | Ruta entera a 390/820/1440 px, cobertura y examen |
 | Guarda de nombres antes de subir | ✅ hecho | Lista con 7 nombres (19-nov). Repaso de todo el repo: limpio |
 | Turnos entre los dos Claudes (`TRABAJO.md`) | ✅ hecho | |
-| Juego de 2º | ⚪ sin empezar | Sin fecha: de momento no hay próximo juego (19-nov). Empieza cuando el padre mande las fotos del temario |
+| Juego de 2º | ⚪ sin empezar | Sin examen a la vista: el padre mandará temario la semana del 23-nov. Hasta entonces, tampoco hay examen nuevo de 5º: tiempo para mejorar la app |
 
 ## Abierto
 
