@@ -46,7 +46,7 @@ Reglas:
 - URL: `https://script.google.com/macros/s/AKfycbw7rxTYPt-c99ucT8Rxjcwj1_gMRJkSq0mmjagZlZjuOnpyWtTjAFE299CbkA2MViuwaQ/exec`
 - `GET ?juego=<id>` devuelve las filas. `POST` con JSON `{juego, nombre, nota, examen, xp, estrellas, racha, desglose}` añade una fila.
 - Cada juego tiene su `GAME_ID` (p. ej. `ingles-u2`). La beta comparte el `GAME_ID` y el progreso de la normal.
-- El ranking muestra la última marca de cada nombre. La marca de prueba del padre se llama "Mr. Martin".
+- El ranking muestra la última marca de cada nombre. El padre tiene una marca de prueba; su nombre no se escribe aquí (está en la lista privada de nombres).
 
 ## Juegos sin personalizar
 
