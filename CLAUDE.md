@@ -64,9 +64,12 @@ Reglas:
 - Cada punto de gramática sale al menos una vez en cada partida.
 - La gramática se practica de tres formas: test, escribir la respuesta y ordenar frases.
 - En las frases con hueco, las opciones falsas son de otro tipo de palabra, para que solo encaje una.
+- Ninguna opción falsa puede ser correcta, salvo que el enunciado lo restrinja («con -ing, como en el libro»). Se revisa antes de subir.
+- Cada punto del temario se practica al menos una vez sin opciones.
 
 ## Interacción (para mantener la atención ~30 min)
 
+- **Catálogo de modalidades:** `MODALIDADES.md` (hechas, para hacer ya, a evaluar, para más adelante y descartadas). Cada juego nuevo se elige con la pregunta «¿qué aprendizaje no puede demostrar todavía el niño?».
 - Solo cambian de formato los bloques que se hacen largos o repetitivos.
 - Formatos (dedo o ratón): arrastrar al hueco · unir con líneas (5 parejas por pantalla) · fichas de letras (2 intentos y luego la solución) · deslizar tarjeta (derecha = bien, izquierda = mal) · clasificar en cajas (incluido "termómetro").
 - Lo más parecido al examen se queda escrito a mano (p. ej. las 3 formas de los verbos y los verbos en frases).

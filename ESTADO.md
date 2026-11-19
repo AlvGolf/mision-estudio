@@ -19,11 +19,24 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 ## Abierto
 
 - **Motor común en beta (19-nov).** `motor-beta/` y `ingles-u2-beta/` (solo datos y misiones). Verificador sin fallos y 32 pantallas idénticas a la normal. Se pasa a la normal **después del examen del 20-nov**, cuando el padre lo apruebe: copiar `motor-beta/` a `motor/` y la beta a `ingles-u2/` cambiando los enlaces.
-- Siguiente: aspecto visual del motor, con un artefacto de opciones (el padre pidió que puede cambiar el aspecto de Inglés).
+
+### Plan de desarrollo (20-nov, tras el informe de investigación; catálogo en `MODALIDADES.md`)
+
+1. **Después del examen de Inglés (20-nov), arreglos en la beta:**
+   - **[esencial]** «no soy yo» separa el progreso de cada niño en el mismo dispositivo. Hoy el siguiente hereda las notas del anterior y podría subirlas al ranking con su nombre.
+   - Las 4 preguntas de *Do you like ____?* que tienen *to play*, *to do*… como opción falsa piden «con -ing, como en el libro».
+   - Reanudar la ruta: al volver del menú dice «Seguir por la estación N» y deja empezar de cero.
+   - «Ordena la frase» acepta *sometimes* al principio.
+   - Pasar el motor común a la normal.
+2. **Artefacto «Modalidades nuevas»** con maquetas jugables: las seis para hacer ya (escuchar, dictado, detectar y reparar, crucigrama, número, primera letra) y las tres a evaluar (historia ramificada, construir una escena, miniinvestigación).
+3. **Construir en `motor-beta/`** las modalidades elegidas.
+4. **Extras de los puntos 6.1 y 6.4 del informe:** apuntar la nota real del colegio y compararla con la «nota prevista»; guardar en el dispositivo cuánto tarda de verdad cada estación de la ruta.
+5. **Aspecto visual** del motor, con un artefacto de opciones.
 - (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo.)
 
 ## Pendiente del padre
 
+- La nota real del examen de Inglés Unit 2 (20-nov), cuando la sepa, para compararla con la «nota prevista» del juego.
 - Nada pendiente. (19-nov: el nombre de la marca de prueba sigue en el commit antiguo 32d677d; el padre decidió dejarlo así.)
 
 ## Para el segundo juego (decidido el 19-nov)
