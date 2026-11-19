@@ -9,14 +9,14 @@
    "id": "adv-significado",
    "punto": "Adverbios de frecuencia: qué significan (always 100 % → never 0 %)",
    "test": "ADV_MC",
-   "escribir": null,
+   "escribir": "ADV_ESCRIBE",
    "ordenar": "ORDER"
   },
   {
    "id": "adv-posicion",
    "punto": "Dónde va el adverbio: delante del verbo, detrás de am/is/are",
    "test": "ADV_POS",
-   "escribir": null,
+   "escribir": "POS_ESCRIBE",
    "ordenar": "ORDER"
   },
   {
@@ -30,14 +30,14 @@
    "id": "would-like-to",
    "punto": "Would you like + to + verbo (invitación)",
    "test": "LIKE",
-   "escribir": null,
+   "escribir": "TO_ESCRIBE",
    "ordenar": "LORD"
   },
   {
    "id": "respuestas",
    "punto": "Respuestas: Yes, I do / No, I don't · Yes, please! I'd love to / No, thanks! I'm afraid I'm busy",
    "test": "LIKE",
-   "escribir": null,
+   "escribir": "RESP_ESCRIBE",
    "ordenar": "LORD"
   },
   {

@@ -39,7 +39,7 @@ h2{margin:0 0 6px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:56px;padding:8px;border-radius:14px;background:#0c1633;margin-bottom:10px}
 .chip{font-family:inherit;font-size:19px;padding:10px 14px;border-radius:12px;border:0;background:var(--gold);color:#3a2700;font-weight:600;cursor:pointer}
 .chip.used{opacity:.25;pointer-events:none}
-input.typ{font-family:inherit;font-size:20px;padding:12px;border-radius:12px;border:3px solid #34509f;background:#0c1633;color:#fff;width:100%;margin-bottom:10px}
+input.typ,textarea.typ{font-family:inherit;font-size:20px;padding:12px;border-radius:12px;border:3px solid #34509f;background:#0c1633;color:#fff;width:100%;margin-bottom:10px}
 input.typ.ok{border-color:var(--yes)} input.typ.bad{border-color:var(--no)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lbl{font-size:14px;color:var(--mut);margin-bottom:4px}
@@ -194,7 +194,7 @@ line.badl{stroke:var(--no);stroke-width:4;stroke-dasharray:6 6;stroke-linecap:ro
 .slot.f{border-style:solid;border-color:var(--acc);background:#0c1633;cursor:pointer}
 .slot.ok{border-color:var(--yes);background:#1f6b45}.slot.bad{border-color:var(--no);background:#5e2230}
 .chip.lt{width:48px;height:52px;font-size:24px;padding:0;display:inline-flex;align-items:center;justify-content:center}
-.swipezone{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+.swipezone{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;overflow:hidden;padding:18px 0}
 .sw-l,.sw-r{font-weight:700;opacity:.35;font-size:15px;white-space:nowrap}.sw-l{color:var(--no)}.sw-r{color:var(--yes)}
 .scard{width:min(320px,62vw);padding:26px 14px;border-radius:22px;background:linear-gradient(160deg,#2a3f8f,#1b2b5c);border:2px solid #4a5a8f;text-align:center;cursor:grab;user-select:none;transition:transform .25s,opacity .25s;box-shadow:0 12px 30px -12px #000}
 .bins{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
@@ -297,6 +297,13 @@ const ORDER = [
  {w:['I','never','go to bed','at lunchtime.'],h:'Nunca me acuesto a la hora de comer.',adv:'never'},
 ];
 
+/* Escribir la respuesta (gramática): una de cada en cada partida */
+const ADV_ESCRIBE = [
+ {q:'I ____ go to bed at night. (100%)',a:'always'},{q:'I ____ go to bed at 10.00. (75%)',a:'usually'},
+ {q:'I ____ go to bed at 11.00 at the weekend. (50%)',a:'often'},{q:'I ____ go to bed at midnight. (25%)',a:'sometimes'},
+ {q:'I ____ go to bed at lunchtime. (0%)',a:'never'},
+ {q:'"Siempre" en inglés es…',a:'always'},{q:'"Normalmente" en inglés es…',a:'usually'},{q:'"A menudo" en inglés es…',a:'often'},
+ {q:'"A veces" en inglés es…',a:'sometimes'},{q:'"Nunca" en inglés es…',a:'never'}].map(x=>({q:x.q,acc:[x.a],show:x.a}));
 /* --- Do you like / Would you like --- */
 const LIKE = [
  {q:'Do you like ____ computer games?',opts:['playing','to play','play'],a:'playing',ex:'Do you like + -ing'},
@@ -356,6 +363,13 @@ const LORD = [
  {w:['No, thanks!','I\'m afraid','I\'m','busy.'],h:'¡No, gracias! Me temo que estoy ocupado.'},
 ];
 
+const POS_ESCRIBE = ORDER.map(o=>{const rest=o.w.filter(w=>w!==o.adv);return{q:`Escribe la frase con <b>${o.adv}</b> en su sitio:<br><span style="color:var(--gold)">${rest.join(' · ')}</span>`,sub:'🇪🇸 '+o.h,acc:[o.w.join(' ')],show:o.w.join(' ')}});
+const TO_ESCRIBE = LIKE.filter(x=>/^to /.test(x.a)).map(x=>({q:x.q.replace('____','_____')+` <span style="color:var(--mut)">(${x.a.slice(3)})</span>`,sub:'Escribe lo que va en el hueco',acc:[x.a],show:x.a,ex:x.ex}));
+const RESP_ESCRIBE = [
+ {q:'Do you like dancing? <span style="color:var(--mut)">(sí, te gusta)</span>',acc:['yes, i do'],show:'Yes, I do.'},
+ {q:'Do you like horror films? <span style="color:var(--mut)">(no te gustan)</span>',acc:["no, i don't","no, i do not"],show:"No, I don't."},
+ {q:'Would you like to play tennis with me? <span style="color:var(--mut)">(sí, quieres)</span>',acc:["yes, please! i'd love to","yes, please! i would love to"],show:"Yes, please! I'd love to."},
+ {q:'Would you like to come to my party? <span style="color:var(--mut)">(no puedes: estás ocupado)</span>',acc:["no, thanks! i'm afraid i'm busy","no, thanks! i am afraid i am busy"],show:"No, thanks! I'm afraid I'm busy."}];
 /* --- Verbos en frases (past simple) --- */
 const VSENT = {
  be:'Yesterday I ___ at home all day.',become:'The caterpillar ___ a butterfly.',begin:'The film ___ at six o\'clock yesterday.',
@@ -563,7 +577,7 @@ function home(){
   const NAME=lsGet('mision_name');
   if(!NAME){app().innerHTML=`<div class="box center" style="margin-top:30px"><div class="big">👋</div><h2>¡Hola! ¿Cómo te llamas?</h2>
    <p class="sub">Así tu boletín y el ranking llevarán tu nombre.</p>
-   <input class="typ" id="nm" maxlength="20" placeholder="Tu nombre" style="max-width:320px;text-align:center"><br>
+   <input class="typ" id="nm" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu nombre" style="max-width:320px;text-align:center"><br>
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}try{localStorage.setItem('mision_name',v)}catch(e){}home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
@@ -624,7 +638,7 @@ function classBox(){
 }
 function importBox(){return `<details style="margin-top:14px"><summary style="cursor:pointer;color:var(--mut)">📥 ¿Jugabas en la página antigua? Trae tu progreso</summary>
   <p class="sub" style="margin-top:8px">En la página antigua pulsa <b>📦 Pasar mi progreso</b>, copia el código y pégalo aquí.</p>
-  <textarea class="typ" id="imp" rows="3" placeholder="MISION1:..."></textarea><button class="btn sec" id="impok" style="margin-top:0">Traer progreso</button><div class="fb" id="impfb"></div></details>`}
+  <textarea class="typ" id="imp" rows="3" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="MISION1:..."></textarea><button class="btn sec" id="impok" style="margin-top:0">Traer progreso</button><div class="fb" id="impfb"></div></details>`}
 function wireClass(){
   const rel=$('#crel');if(rel)rel.onclick=()=>{CLASS_STATE='cargando';$('#clase').outerHTML=classBox();wireClass();loadClass()};
   const s=$('#fsend');if(s)s.onclick=sendScore;
@@ -659,7 +673,7 @@ function fame(){
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="fame"><h2>🏅 Mis partidas</h2>
   <p class="sub">Tu marcador ahora: <b>⭐ ${XP} XP</b> · <b>${totalStars()}/${MAXST} estrellas</b> · <b>🔥 mejor racha ${BSTREAK}</b>${nota('exam')!=null?` · <b>👑 examen ${fmt(nota('exam'))}</b>`:''}</p>
-  <div class="row2"><input class="typ" id="fn" maxlength="20" value="${esc(lsGet('mision_name')||'')}" placeholder="Tu nombre">
+  <div class="row2"><input class="typ" id="fn" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value="${esc(lsGet('mision_name')||'')}" placeholder="Tu nombre">
   <button class="btn" id="fsave" style="margin-top:0">💾 Guardar mi puntuación</button></div>
   <div class="fb" id="ffb"></div>
   ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)} <small>${new Date(r.d).toLocaleDateString('es-ES',{day:'numeric',month:'short'})} ${new Date(r.d).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</small></div><div class="rk-s"><span>⭐ ${r.xp}</span><span>★ ${r.st}</span><span>🔥 ${r.bs}</span>${r.no?`<span>📊 ${r.no}</span>`:''}${r.ex?`<span>👑 ${r.ex}</span>`:''}</div><div class="rk-st">${r.sb?starLine(r.sb):'<span style="color:var(--mut)">Sin desglose de estrellas</span>'}</div></div><button class="tab fdel" data-ix="${r.ix}" title="Borrar">🗑️</button></div>`).join('')}</div>`:'<p class="sub">Aún no hay marcas. ¡Sé el primero!</p>'}
@@ -940,6 +954,19 @@ const STEP={
       ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Correcto! ':'❌ Era: <b>'+esc(s.a)+'</b>. ')+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''));
     });
   },
+  /* Escribe la respuesta (solo cuenta el primer intento) */
+  type(st,s,done){
+    st.innerHTML=`<div class="q">${s.q}</div>
+    <input class="typ" id="wa" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Escribe aquí">
+    <button class="btn" id="wchk" style="margin-top:0">Comprobar ✔</button>`;
+    const inp=$('#wa');inp.focus({preventScroll:true});
+    const limpia=x=>norm(x).replace(/[.,;:!?¡¿]/g,' ').replace(/\s+/g,' ').trim();
+    const go=()=>{const v=limpia(inp.value);if(!v){$('#fb').textContent='Escribe tu respuesta 😉';return}
+      const ok=s.acc.some(a=>limpia(a)==v);inp.classList.add(ok?'ok':'bad');inp.disabled=true;$('#wchk').remove();
+      ok?win(15):lose();done(ok?1:0,1,(ok?'✅ ¡Genial! ':'❌ Es: <b>'+esc(s.show)+'</b>. ')+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''))};
+    /* preventDefault: si no, el mismo Enter pulsa «Siguiente» y el niño no ve la corrección */
+    $('#wchk').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};
+  },
   /* Arrastra la palabra al hueco (o tócala) */
   gap(st,s,done){
     const [pre,post]=s.q.split(/_{3,}/);
@@ -1073,7 +1100,9 @@ Object.assign(R,{
      {t:'bins',thermo:true,q:'Coloca cada adverbio en su temperatura',bins:ADV.map(a=>`${a.p}`),items:ADV.map((a,n)=>({t:a.w,b:n})),sub:'Del 100 % al 0 %'},
      {t:'lines',q:'Une cada adverbio con su significado',pairs:shuf(ADV.map(a=>[a.w,ADV_ES[a.w]]))},
      ...qs.map(q=>hasGap(q)?gapOf(q):mcOf(q)),
-     ...pick(ADV_POS,4).map(mcOf)],'adv',R.adv,'🌡️');
+     ...pick(ADV_POS,4).map(mcOf),
+     ...pick(ADV_ESCRIBE,1).map(x=>({t:'type',...x,sub:'Escribe el adverbio'})),
+     ...pick(POS_ESCRIBE,1).map(x=>({t:'type',...x}))],'adv',R.adv,'🌡️');
  },
  like(){
    const gaps=pick(LIKE.filter(hasGap),9),other=pick(LIKE.filter(q=>!hasGap(q)&&!/^Do you like (dancing|horror)|^Would you like to (play tennis|come to my party)/.test(q.q)),3);
@@ -1081,7 +1110,9 @@ Object.assign(R,{
      {t:'bins',q:'¿Con qué pregunta va cada trozo?',bins:['Do you like…?  (+ -ing)','Would you like…?  (+ to)'],items:pick(LIKE_BINS.filter(x=>!x[1]),3).concat(pick(LIKE_BINS.filter(x=>x[1]),3)).map(x=>({t:x[0],b:x[1]}))},
      ...gaps.slice(0,5).map(gapOf),
      {t:'lines',q:'Une cada pregunta con su respuesta',pairs:LIKE_PAIRS},
-     ...gaps.slice(5).map(gapOf),...other.map(mcOf)],'like',R.like,'💬');
+     ...gaps.slice(5).map(gapOf),...other.map(mcOf),
+     ...pick(TO_ESCRIBE,1).map(x=>({t:'type',...x})),
+     ...pick(RESP_ESCRIBE,1).map(x=>({t:'type',...x,sub:'Escribe la respuesta como en el libro'}))],'like',R.like,'💬');
  },
  ling(){
    runSteps('✍️ Escribe el -ing',pick(ING,12).map(x=>({t:'tiles',q:`${x[0]} → ?`,sub:'Coloca las letras para formar el -ing',a:x[1],ex:x[2]})),'ling',R.ling,'✍️');
