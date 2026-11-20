@@ -75,7 +75,7 @@ function quiz(title,sub,qs,key,after){
   function end(){const p=ok/qs.length;setBest(key,p);const g=MAP[key]?grade(key,p*10):null;if(p>=.7)confetti();
     app().innerHTML=`<div class="box center"><div class="big">${p>=.9?'🏆':p>=.7?'🥈':p>=.5?'👍':'💪'}</div>
     <h2>${ok} de ${qs.length}</h2>${g!=null?`<p style="font-size:22px;margin:4px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p>`:''}<div class="stars" style="font-size:34px;color:var(--gold)">${'★'.repeat(starsFor(p))}${'☆'.repeat(3-starsFor(p))}</div>
-    <p class="sub">${p>=.9?'¡Nivel experto!':p>=.7?'¡Muy bien! Repite para las 3 estrellas.':'Repite la misión, a la segunda sale mejor.'}</p>
+    ${guia(p>=.9?'¡Nivel experto! 🎉':p>=.7?'¡Muy bien! Repite para las 3 estrellas.':'Repite el examen: a la segunda sale mejor.',{saluda:p>=.9,salta:p>=.7})}
     <button class="btn" id="again">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
     $('#again').onclick=after;}
   show();
@@ -95,7 +95,7 @@ function home(){
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}const vuelve=recuperaPerfil(v);try{localStorage.setItem(JUEGO.claves.nombre,vuelve||v)}catch(e){}if(vuelve)return location.reload();home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
-  app().innerHTML=`${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button><p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> ${JUEGO.saludo}</p>
+  app().innerHTML=`${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
@@ -264,7 +264,7 @@ function examRun(qs){
 function endScreen(icon,ok,tot,key,again,extra=''){
   const p=tot?ok/tot:0;setBest(key,p);const g=MAP[key]?grade(key,p*10):null;if(p>=.7)confetti();
   app().innerHTML=`<div class="box center"><div class="big">${icon}</div><h2>${ok} de ${tot} a la primera</h2>
-  ${g!=null?`<p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p>`:''}${extra}
+  ${g!=null?`<p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p>`:''}${guiaFin(p)}${extra}
   <button class="btn" id="again">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
   $('#again').onclick=again;
 }
@@ -671,9 +671,9 @@ function escPersona(p){
   return `<ellipse class="aro" cx="0" cy="0" rx="17" ry="5"/><ellipse cx="0" cy="0" rx="10" ry="2.8" fill="rgba(0,0,0,.22)"/><g class="cuerpo">
     ${p.extra=='mochila'?`<rect x="-11" y="-33" width="7" height="14" rx="2.5" fill="#7a5530" ${o}/>`:''}
     <path d="M-3 -17 v15 M3 -17 v15" stroke="${L}" stroke-width="5.4" stroke-linecap="round"/><path d="M-3 -17 v15 M3 -17 v15" stroke="#2c3e66" stroke-width="3.4" stroke-linecap="round"/>
-    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 M7.5 -32 q3.5 6 3.2 12.5" stroke="${L}" stroke-width="5" stroke-linecap="round" fill="none"/>
-    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 M7.5 -32 q3.5 6 3.2 12.5" stroke="${p.ropa}" stroke-width="3" stroke-linecap="round" fill="none"/>
-    <circle cx="-10.7" cy="-19" r="2" fill="${p.piel}" ${o}/><circle cx="10.7" cy="-19" r="2" fill="${p.piel}" ${o}/>
+    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 ${p.saluda?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${L}" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 ${p.saluda?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${p.ropa}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="-10.7" cy="-19" r="2" fill="${p.piel}" ${o}/><circle cx="${p.saluda?13.6:10.7}" cy="${p.saluda?-46:-19}" r="2" fill="${p.piel}" ${o}/>
     <path d="M-7.8 -32.5 q0 -3 3 -3 h9.6 q3 0 3 3 l-1.4 16 h-12.8z" fill="${p.ropa}" ${o}/>
     ${atras?`<g ${t} ${pst}>${atras}</g>`:''}<circle cx="0" cy="${hy}" r="${hr}" fill="${p.piel}" ${o}/>
     <ellipse cx="-2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/><ellipse cx="2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/>
@@ -697,6 +697,11 @@ function escSVG(sitios,luz,encima,etiqueta){
   const spot=k=>{const i=sitios.findIndex(z=>z.k==k),d=ESC_SITIOS[k];return d&&i>=0?{x:d.spot.x+(i-d.col)*100,y:d.spot.y}:{x:i*100+50,y:190}};
   return {svg,spot,W};
 }
+/* Personaje guía (rediseño, 20-nov): uno por juego (JUEGO.guia o el del grupo de estilos), con bocadillo.
+   Sale en el menú, al empezar la ruta y en los resultados; el ejercicio queda limpio. */
+function guia(txt,o={}){const p={...ESC_DEF[(((JUEGO.estilo|0)%6)+6)%6],...(JUEGO.guia||{}),...(o.saluda?{saluda:1}:{}),n:''};
+  return `<div class="guia${o.salta?' salta':''}"><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(p)}</svg><div class="bocadillo">${txt}</div></div>`}
+function guiaFin(p){return p>=.9?guia('¡Lo bordaste! 🎉',{saluda:1,salta:1}):p>=.7?guia('¡Muy bien! Repite y a por las tres estrellas.',{salta:1}):p>=.5?guia('Vas bien. A la segunda sale mejor.'):guia('No pasa nada: repítela y verás cómo mejora. ¡Tú puedes!')}
 const escQuieto=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 Object.assign(STEP,{
@@ -895,6 +900,7 @@ R.route=function(){
   const resume=ROUTE&&ROUTE.i>0;
   if(!ROUTE)ROUTE={i:0,part:0,on:false};
   app().innerHTML=`<div class="box"><h2>🧭 Ruta de estudio</h2>
+  ${guia(resume?`¡Seguimos! Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length}.`:'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
   <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero. Cuenta igual que las misiones sueltas.</p>
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}

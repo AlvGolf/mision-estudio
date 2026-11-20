@@ -1,7 +1,7 @@
 /* Misión Estudio · motor común (estilos). Lo cargan todos los juegos. */
 :root{--bg:#0f1b3d;--card:#1b2b5c;--card2:#24387a;--yes:#2ecc71;--no:#ff5c5c;--gold:#ffc83d;--txt:#fff;--mut:#b8c4ee;--acc:#3dd6ff;
   --acctxt:#06243a;--line:var(--line);--line2:var(--line2);--sunk:var(--sunk);--sunk2:var(--sunk2);--page:radial-gradient(circle at 20% 0%,#2a3f8f 0,#0f1b3d 60%);--hdr:rgba(15,27,61,.92);--hdrline:#2a3f8f;
-  --ft:'Fredoka',system-ui,sans-serif;--fb:'Fredoka',system-ui,sans-serif;--cline:transparent;--bw:3px;--sh:none}
+  --ft:'Fredoka',system-ui,sans-serif;--fb:'Fredoka',system-ui,sans-serif;--cline:transparent;--bw:3px;--sh:none;--bub:#fff;--bubtxt:#17224a}
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--fb);background:var(--page);color:var(--txt);min-height:100vh}
 h1,h2,h3,.q,.sect,.btn,.routebtn{font-family:var(--ft)}
@@ -397,3 +397,24 @@ html.c2[data-fam=D] .grid>.mission.arc h3,html.c2[data-fam=D] .grid>.mission.loc
  html[data-estilo=C2] .grid>.mission .ic,html.c2[data-estilo=C1] .grid>.mission .ic{width:46px;height:46px}
 }
 @media (prefers-reduced-motion:reduce){html[data-estilo=B2] .grid>.mission{transform:none!important}}
+
+/* ===== Personaje guía con bocadillo (rediseño, 20-nov) ===== */
+.guia{display:flex;gap:8px;align-items:flex-end;margin:2px 0 14px;text-align:left}
+.box.center .guia{justify-content:center;margin:10px auto 6px;max-width:440px}
+.guia svg{width:58px;height:auto;flex:none;overflow:visible}
+.guia .cuerpo{transform-box:fill-box;transform-origin:50% 100%}
+.guia.salta .cuerpo{animation:esc-salta .45s ease .2s 2}
+.bocadillo{position:relative;background:var(--bub);color:var(--bubtxt);border:var(--bw) solid var(--cline);box-shadow:var(--sh);border-radius:16px;padding:9px 13px;font-size:16px;font-weight:700;line-height:1.35;margin-bottom:14px}
+.bocadillo::before{content:"";position:absolute;left:-7px;bottom:12px;width:12px;height:12px;background:var(--bub);border-left:var(--bw) solid var(--cline);border-bottom:var(--bw) solid var(--cline);transform:rotate(45deg)}
+.bocadillo .tab{color:var(--bubtxt);border-color:currentColor;margin-left:4px;vertical-align:middle}
+html[data-fam=A]{--bub:#fff3e3;--bubtxt:#4a2340}
+html[data-estilo=A3]{--bub:#ff7e6b;--bubtxt:#2a0a05}
+html[data-estilo=A3] .guia svg{background:radial-gradient(circle at 50% 60%,#ffb36b 0,#ff7e6b55 45%,transparent 70%);border-radius:50%}
+html[data-fam=B]{--bub:#fff;--bubtxt:#141a3a}
+html[data-estilo=B2] .bocadillo{background:#ffe14d;--bub:#ffe14d}
+html[data-fam=C]{--bub:#24387a;--bubtxt:#fff}
+html[data-estilo=C3]{--bub:#0f3a3a;--bubtxt:#dffcf2}
+html[data-fam=D]{--bub:#fff;--bubtxt:#14213d}
+html.c2 .bocadillo{font-size:19px}html.c2 .guia svg{width:70px}
+@media(max-width:600px){.guia svg{width:50px}.bocadillo{font-size:15px}html.c2 .guia svg{width:58px}html.c2 .bocadillo{font-size:17px}}
+@media (prefers-reduced-motion:reduce){.guia .cuerpo{animation:none!important}}
