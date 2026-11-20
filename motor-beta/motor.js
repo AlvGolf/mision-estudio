@@ -66,7 +66,7 @@ function hud(){const x=document.getElementById('xp'),s=document.getElementById('
   else{x.classList.remove('sube');void x.offsetWidth;x.classList.add('sube');const t0=performance.now(),meta=XP;const paso=t=>{if(HUDXP!==meta)return;const k=Math.min(1,(t-t0)/600);x.textContent='⭐ '+Math.round(de+(meta-de)*k)+' XP';if(k<1)requestAnimationFrame(paso)};requestAnimationFrame(paso)}
   if(HUDST!=null&&STREAK>HUDST&&!escQuieto()){s.classList.remove('llama');void s.offsetWidth;s.classList.add('llama')}HUDST=STREAK;s.textContent='🔥 '+STREAK}
 function win(n=10){STREAK++;if(STREAK>BSTREAK)BSTREAK=STREAK;XP+=n+(STREAK>=3?5:0);hud();save();if(STREAK%5==0)confetti()}
-function lose(){STREAK=0;hud()}
+function lose(){STREAK=0;hud();son('bad')}
 const $=s=>document.querySelector(s);
 const app=()=>document.getElementById('app');
 const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -112,11 +112,12 @@ function home(){
   STREAK=STREAK;hud();
   const M=JUEGO.menu;
   const NAME=lsGet(JUEGO.claves.nombre);
-  if(!NAME){app().innerHTML=`<div class="box center" style="margin-top:30px"><div class="big">👋</div><h2>¡Hola! ¿Cómo te llamas?</h2>
+  if(!NAME){app().innerHTML=`<div class="box center" style="margin-top:30px">${guia('¡Hola! Soy tu guía en Misión Estudio. ¿Cómo te llamas?',{saluda:1,salta:1})}<h2>¿Cómo te llamas?</h2>
    <p class="sub">Así tu boletín y el ranking llevarán tu nombre.</p>
    <input class="typ" id="nm" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu nombre" style="max-width:320px;text-align:center"><br>
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}const vuelve=recuperaPerfil(v);try{localStorage.setItem(JUEGO.claves.nombre,vuelve||v)}catch(e){}if(vuelve)return location.reload();home()};
+   if(!escQuieto())[...app().querySelector('.box').children].forEach((el,i)=>{el.style.setProperty('--i',i);el.classList.add('ent')});
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
   app().innerHTML=`${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
@@ -186,7 +187,7 @@ function classBox(){
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="clase"><h2>🏫 Ranking de la clase</h2>
   <p class="sub">Pulsa 📤 para subir tu marca. Ordenado por nota; si empatan, por XP. <button class="tab" id="crel" style="font-size:12px;padding:3px 10px">🔄 actualizar</button></p>
-  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MAXST}</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
+  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk${String(r.n||'').trim().toLowerCase()===String(lsGet(JUEGO.claves.nombre)||'').trim().toLowerCase()?' yo':''}" style="--i:${Math.min(i,12)}"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MAXST}</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
   :'<p style="font-size:18px">Todavía no hay nadie. ¡Juega, pulsa 📤 y sé el primero!</p>'}
   <button class="btn" id="fsend">📤 Subir mi marca al ranking</button>
   <div class="fb" id="sfb"></div>${importBox()}</div>`;
@@ -265,8 +266,9 @@ function wireFame(){
 function examRun(qs){
   qs=qs.map(q=>({...q,opts:shuf(q.opts)}));let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
   app().innerHTML=`<div class="box"><h2>👑 EXAMEN FINAL</h2><p class="sub">Sin pistas. Las correcciones salen al final. Tienes ${JUEGO.examen.min} minutos.</p>
+  ${guia('Sin pistas, pero tú puedes. ¡Respira y a por ello!',{saluda:1})}
   <button class="btn" id="go">Empezar el examen ⏱️</button></div>`;
-  $('#go').onclick=()=>{const t=setInterval(()=>{left--;const el=$('#clk');if(el)el.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(left<=0){clearInterval(t);finish(true)}},1000);
+  $('#go').onclick=()=>{const t=setInterval(()=>{left--;const el=$('#clk');if(el){el.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(left<=60)el.classList.add('prisa')}if(left===60)son('cuenta');if(left<=0){clearInterval(t);finish(true)}},1000);
     function show(){if(done)return;if(i>=qs.length){clearInterval(t);return finish(false)}
       const q=qs[i];
       app().innerHTML=`<div class="box"><div style="display:flex;justify-content:space-between"><h2>👑 Examen</h2><span class="pill" id="clk">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></div>
@@ -276,12 +278,15 @@ function examRun(qs){
     show();
     function finish(timeout){if(done)return;done=true;
       qs.slice(i).forEach(q=>wrong.push({q:q.q,yo:'(sin contestar)',a:q.a}));
-      const g=grade('exam',ok/qs.length*10);setBest('exam',ok/qs.length);XP+=ok*10;hud();save();if(g>=7)confetti();
-      app().innerHTML=`<div class="box center"><div class="big">${g>=9?'🏆':g>=7?'🥈':g>=5?'👍':'💪'}</div>
-      <h2>${timeout?'⏰ ¡Tiempo! ':''}${ok} de ${qs.length}</h2><p style="font-size:26px;margin:4px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p>
-      <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p></div>
+      const g=grade('exam',ok/qs.length*10),p=ok/qs.length,s=starsFor(p);setBest('exam',p);XP+=ok*10;hud();save();
+      app().innerHTML=`<div class="box center celebra"><div class="big">${g>=9?'🏆':g>=7?'🥈':g>=5?'👍':'💪'}</div>
+      <h2>${timeout?'⏰ ¡Tiempo! ':''}${ok} de ${qs.length}</h2><p style="font-size:26px;margin:4px">Nota: <b data-cuenta="${g}">${fmt(g)}</b> <span class="cf-lab">· ${label(g)} ${sem(g)}</span></p>
+      <div class="cf-estr" aria-label="${s} de 3 estrellas">${[0,1,2].map(k=>`<span class="${k<s?'si':'no'}">${k<s?'★':'☆'}</span>`).join('')}</div>
+      ${p>=.5?`<div class="cf-sello"><span>¡${label(g).toUpperCase()}!</span></div>`:''}
+      <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p>${guiaFin(p)}</div>
       ${wrong.length?`<div class="box"><h2>📌 Repasa estas</h2><table class="rules">${wrong.map(w=>`<tr><td>${esc(w.q)}<br><span style="color:var(--no)">Tú: ${esc(w.yo)}</span> · <span style="color:var(--yes)">Bien: ${esc(w.a)}</span></td></tr>`).join('')}</table></div>`:''}
-      <div class="center"><button class="btn" onclick="R.exam()">🔁 Otro examen</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;}
+      <div class="center"><button class="btn" onclick="R.exam()">🔁 Otro examen</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
+      celebra(app().querySelector('.box'),p,g);}
   };
 }
 /* ===== Motores genéricos ===== */
@@ -299,12 +304,12 @@ function endScreen(icon,ok,tot,key,again,extra=''){
    después el sello y por último el confeti. Los botones funcionan desde el principio: no hace esperar. */
 function celebra(box,p,g){const q=escQuieto(),T=(ms,f)=>setTimeout(()=>{if(box.isConnected)f()},q?0:ms);
   box.classList.add('cf');const n=box.querySelector('[data-cuenta]');if(n)cuentaNum(n,0,g,q?0:900,250);
-  box.querySelectorAll('.cf-estr span').forEach((e,k)=>T(1150+k*250,()=>e.classList.add('ve')));
+  box.querySelectorAll('.cf-estr span').forEach((e,k)=>T(1150+k*250,()=>{e.classList.add('ve');if(e.classList.contains('si'))son('estrella',k)}));
   T(1950,()=>{const l=box.querySelector('.cf-lab');if(l)l.classList.add('ve');const gd=box.querySelector('.guia');if(!gd)return;
     gd.querySelector('.bocadillo').classList.remove('oculto');
     if(p>=.7){gd.querySelector('svg').innerHTML=escPersona(guiaP({celebra:1}));gd.classList.remove('salta');void gd.offsetWidth;gd.classList.add('salta')}});
-  T(2600,()=>{const s=box.querySelector('.cf-sello');if(s)s.classList.add('ve')});
-  if(p>=.7)T(3150,confetti)}
+  T(2600,()=>{const s=box.querySelector('.cf-sello');if(s){s.classList.add('ve');setTimeout(()=>son('sello'),q?0:300)}});
+  if(p>=.7)T(3150,()=>{confetti();son('fanfarria')})}
 /* Cuenta un número de «desde» a «hasta» (nota con coma o puntos enteros) */
 function cuentaNum(el,desde,hasta,dur,espera=0,entero){const f=v=>entero?String(Math.round(v)):fmt(Math.round(v*10)/10);
   if(!dur||escQuieto()){el.textContent=f(hasta);return}el.textContent=f(desde);
@@ -872,8 +877,33 @@ Object.assign(STEP,{
     });
   },
 });
-function sfxOk(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
-function sfxTap(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
+/* ================== SONIDOS (20-nov) ==================
+   Suaves y cortos, sintetizados (sin archivos). Encendidos al principio; el botón 🔊 de la cabecera los apaga y se recuerda en el dispositivo.
+   El arcade sigue con los suyos (aparcado). */
+let SONIDO=lsGet('mision_sonido')!=='0';
+function son(t,k=0){if(!SONIDO)return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());if(A.state==='suspended')A.resume();const n0=A.currentTime+.01;
+  const nota=(f,a,d,tipo='triangle',v=.06,f2)=>{const o=A.createOscillator(),g=A.createGain();o.type=tipo;o.connect(g);g.connect(A.destination);o.frequency.setValueAtTime(f,n0+a);if(f2)o.frequency.exponentialRampToValueAtTime(f2,n0+a+d);
+    g.gain.setValueAtTime(.0001,n0+a);g.gain.exponentialRampToValueAtTime(v,n0+a+.012);g.gain.exponentialRampToValueAtTime(.0001,n0+a+d);o.start(n0+a);o.stop(n0+a+d+.02)};
+  const ruido=(d,v,f1,f2,q=1)=>{const b=A.createBuffer(1,Math.ceil(A.sampleRate*d),A.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
+    const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain();s.buffer=b;fl.type='bandpass';fl.Q.value=q;fl.frequency.setValueAtTime(f1,n0);fl.frequency.exponentialRampToValueAtTime(f2,n0+d);
+    g.gain.setValueAtTime(v,n0);g.gain.exponentialRampToValueAtTime(.0001,n0+d);s.connect(fl);fl.connect(g);g.connect(A.destination);s.start(n0);s.stop(n0+d)};
+  ({ok:()=>{nota(660,0,.1);nota(990,.08,.16)},
+    bad:()=>nota(330,0,.2,'sine',.07,220),
+    tap:()=>nota(520,0,.07,'sine',.04),
+    estrella:()=>nota([784,988,1175][k]||1175,0,.16,'triangle',.06),
+    sello:()=>{ruido(.12,.12,500,180,.8);nota(120,0,.16,'sine',.14,70)},
+    fanfarria:()=>[523,659,784,1047].forEach((f,i)=>nota(f,i*.09,i==3?.32:.15,'triangle',.05)),
+    cuenta:()=>nota(523,0,.12,'square',.03),
+    ya:()=>{nota(784,0,.1,'square',.03);nota(1047,.08,.26,'square',.035)},
+    asoma:()=>{nota(880,0,.06,'sine',.05);nota(1320,.05,.09,'sine',.05)},
+    pasa:()=>ruido(.38,.05,350,2200,1.2)})[t]()}catch(e){}}
+function botonSonido(){const h=document.querySelector('header .hud');if(!h||document.getElementById('sonido'))return;
+  const b=document.createElement('button');b.id='sonido';b.className='pill sonido';b.type='button';
+  const pon=()=>{b.textContent=SONIDO?'🔊':'🔇';b.setAttribute('aria-label',SONIDO?'Quitar el sonido':'Poner el sonido');b.setAttribute('aria-pressed',String(!SONIDO))};
+  b.onclick=()=>{SONIDO=!SONIDO;try{localStorage.setItem('mision_sonido',SONIDO?'1':'0')}catch(e){}pon();son('tap')};pon();h.appendChild(b)}
+botonSonido();
+function sfxOk(){son('ok');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
+function sfxTap(){son('tap');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
 
 /* Ejecuta una lista de pasos y da la nota del bloque */
 function runSteps(title,steps,key,again,icon='⭐'){
@@ -931,8 +961,10 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){
     ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;saveRoute();confetti();setTimeout(confetti,600);
-    box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="big">🏁</div><h2>¡Ruta completada!</h2><p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
-      <button class="btn" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
+    box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="big">🏁</div><h2>¡Ruta completada!</h2>
+      <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
+      ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
+      <button class="btn destaca" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
     box.querySelector('#again').remove();return}
   saveRoute();const nx=ROUTE_ST[ROUTE.i];
   box.querySelector('#again').outerHTML=`<button class="btn" id="rnext">▶ Siguiente estación: ${nx.ic} ${nx.n}</button>`;
@@ -1135,22 +1167,23 @@ let TOQUE=null;document.addEventListener('pointerdown',e=>{TOQUE=e.target},true)
 function flotaXP(n){if(escQuieto())return;const el=TOQUE&&TOQUE.isConnected?TOQUE.closest('.opt,.btn,.li,.chip,.tok,.pj,.zona,.per,button,input')||TOQUE:document.getElementById('fb');if(!el||!el.getBoundingClientRect)return;
   const r=el.getBoundingClientRect(),f=document.createElement('div');f.className='flotaxp';f.textContent='+'+n;f.style.left=Math.min(innerWidth-50,r.right-30)+'px';f.style.top=(r.top-6)+'px';
   document.body.appendChild(f);setTimeout(()=>f.remove(),1100)}
-const _win=win;win=function(n=10){_win(n);flotaXP(n+(STREAK>=3?5:0))};
+const _win=win;win=function(n=10){_win(n);flotaXP(n+(STREAK>=3?5:0));son('ok')};
 /* La barra de progreso crece desde donde iba, con un brillo */
 let BARRA=0;new MutationObserver(()=>{const d=app().querySelector('.box .bar>div');if(!d||d.dataset.v)return;d.dataset.v=1;const w=parseFloat(d.style.width)||0;
   if(w>BARRA&&!escQuieto()){const meta=d.style.width;d.style.transition='none';d.style.width=BARRA+'%';void d.offsetWidth;d.style.transition='';requestAnimationFrame(()=>{d.style.width=meta;d.parentNode.classList.add('reluce')})}
   BARRA=w}).observe(app(),{childList:true,subtree:true});
 /* Cuenta atrás antes del examen final */
 function cuentaAtras(fn){if(escQuieto())return fn();const o=document.createElement('div');o.className='cuentaatras';o.setAttribute('aria-live','assertive');
-  o.innerHTML=['3','2','1','¡Ya!'].map((n,i)=>`<span style="--i:${i}">${n}</span>`).join('');document.body.appendChild(o);setTimeout(()=>{o.remove();fn()},3000)}
+  o.innerHTML=['3','2','1','¡Ya!'].map((n,i)=>`<span style="--i:${i}">${n}</span>`).join('');document.body.appendChild(o);[0,750,1500].forEach(ms=>setTimeout(()=>son('cuenta'),ms));setTimeout(()=>son('ya'),2250);setTimeout(()=>{o.remove();fn()},3000)}
 const _examRun=examRun;examRun=function(qs){_examRun(qs);const b=$('#go');if(!b)return;const f=b.onclick;b.onclick=()=>{b.disabled=true;cuentaAtras(f)}};
 /* El guía asoma por el borde para dar un aviso */
 function asoma(txt){if(escQuieto())return;const a=document.createElement('div');a.className='asoma';a.setAttribute('aria-live','polite');
-  a.innerHTML=`<div class="bocadillo">${txt}</div><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(guiaP({saluda:1}))}</svg>`;document.body.appendChild(a);setTimeout(()=>a.remove(),4200)}
+  a.innerHTML=`<div class="bocadillo">${txt}</div><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(guiaP({saluda:1}))}</svg>`;document.body.appendChild(a);setTimeout(()=>son('asoma'),350);setTimeout(()=>a.remove(),4200)}
 /* Transiciones de escena: se turnan la cortinilla de cine, pasar página y el viaje de cámara */
 let TRANS_N=0;
 function transEscena(svg,titulo){if(!svg||escQuieto())return;let w=svg.parentNode;if(!w.classList.contains('escw')){w=document.createElement('div');w.className='escw';svg.parentNode.insertBefore(w,svg);w.appendChild(svg)}
   w.querySelectorAll('.franja,.tit').forEach(x=>x.remove());w.classList.remove('h1','h2','h3');void w.offsetWidth;const k=TRANS_N++%3;w.classList.add('h'+(k+1));
+  son('pasa');
   if(k===0)w.insertAdjacentHTML('beforeend',`<div class="franja ar"></div><div class="franja ab"></div>${titulo?`<div class="tit">${esc(titulo)}</div>`:''}`);
   setTimeout(()=>{w.classList.remove('h'+(k+1));w.querySelectorAll('.franja,.tit').forEach(x=>x.remove())},3400)}
 for(const t of ['scene','probe']){const f=STEP[t];if(f)STEP[t]=function(st,s,done){const r=f.call(this,st,s,done);transEscena(st.querySelector('svg.esc'),s.titulo||'');return r}}
