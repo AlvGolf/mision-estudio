@@ -50,18 +50,18 @@ Condiciones de juego, no modalidades: **examen** (sin pistas, con tiempo) y **ru
 
 **Orden:** primero las cinco sencillas en `motor-beta/` (hecho); después escena, historia y miniinvestigación, en ese orden. Las tres cuentan para la nota, solo la primera respuesta.
 
-**Construir una escena, hecha en `motor-beta/` (20-nov)** como paso `scene`: `{sitios:[{k, l}], gente:[{n, t, z, ropa?, pelo?, piel?, pein?, extra?}], luz?, q?}`.
+**Construir una escena, hecha en el motor (20-nov; en `motor/` desde el mismo día)** como paso `scene`: `{sitios:[{k, l}], gente:[{n, t, z, ropa?, pelo?, piel?, pein?, extra?}], luz?, q?}`.
 - Sitios de la biblioteca (`ESC_SITIOS`): `cocina`, `teatro`, `campamento` y `campo`; de 2 a 4 por escena. Un sitio nuevo se dibuja una vez en el motor y sirve para todos los juegos.
 - Personajes (`escPersona`): peinado `corto`, `coleta`, `rizos` o `melena`; objeto `gorro`, `mochila`, `mascara`, `camara`, `libro` o `balon`. Sin colores, toma unos por defecto: conviene darlos, para que pelo y nombre encajen.
 - Para que el último no salga por descarte: más sitios que personas, o dos personas en el mismo sitio.
 - Se toca, no se arrastra. Cuenta cada persona a la primera.
 
-**Historia ramificada, hecha en `motor-beta/` (20-nov)** como paso `story`: `{titulo?, sitios, luz?, reparto:[{n, aspecto…}], fin, nodos:[{relato, donde:{nombre: sitio}, luz?, q, opts+a | acc+show, repaso, bien?}]}`.
+**Historia ramificada, hecha en el motor (20-nov; en `motor/` desde el mismo día)** como paso `story`: `{titulo?, sitios, luz?, reparto:[{n, aspecto…}], fin, nodos:[{relato, donde:{nombre: sitio}, luz?, q, opts+a | acc+show, repaso, bien?}]}`.
 - La escena se queda arriba; entre decisiones los personajes caminan al sitio de `donde` (el que no sale, se esconde). Un nodo con otra `luz` cambia la hora (por ejemplo, la última decisión por la noche).
 - Cada decisión es un ejercicio del temario: test (`opts`) o escrita sin opciones (`acc`). Al fallar, repaso corto y otra oportunidad, que ya no puntúa; al segundo fallo enseña la respuesta y la historia sigue. Las ramas se juntan siempre.
 - Cuenta cada decisión a la primera. El verificador prueba en cada historia los tres caminos (a la primera, con repaso y con dos fallos).
 
-**Miniinvestigación, hecha en `motor-beta/` (20-nov)** como paso `probe`: `{quien:{n, aspecto…}, ficha:[[icono, texto]], agenda?:[[día, texto]], agendaT?, q, opts, a, ex?, sitios?, planes?:{opción: sitio}, luz?}`.
+**Miniinvestigación, hecha en el motor (20-nov; en `motor/` desde el mismo día)** como paso `probe`: `{quien:{n, aspecto…}, ficha:[[icono, texto]], agenda?:[[día, texto]], agendaT?, q, opts, a, ex?, sitios?, planes?:{opción: sitio}, luz?}`.
 - Ficha de gustos y agenda del personaje, con su retrato; una pregunta de test por paso (varios pasos pueden compartir la misma ficha).
 - Con `sitios` y `planes`, al elegir el personaje camina al sitio del plan elegido: salta si encaja y tiembla si no.
 - Cuenta a la primera, como un test. Riesgo que vigilar: demasiada lectura (ficha corta, de 3 a 5 líneas).

@@ -545,6 +545,246 @@ Object.assign(STEP,{
     $('#wchk').onclick=go;
   },
 });
+/* =====================================================================
+   ESCENAS (20-nov, MODALIDADES.md): dibujo SVG animado, elegido por el padre
+   en el artefacto. Personajes de cómic con contorno, fondo al atardecer
+   (luz 'dia' o 'noche' cuando una historia lo pida) y una biblioteca de
+   sitios que cualquier juego elige por nombre. Un sitio nuevo se dibuja
+   una vez aquí y sirve para todos los juegos.
+   ===================================================================== */
+const ESC_L='#1d2033';let ESC_UID=0;
+const ESC_LUZ={
+  atardecer:{cielo:['#433b80','#c8608a','#ffb36b'],estrellas:1,sol:'#ffd98a',mont:['#7a5c9e','#a46a9c'],colina:'#7f8f4c',suelo:['#5e7c3e','#36532c'],camino:'#c9a674',velo:'#ff8a3d',
+    s:{muro:'#e9c79a',muroS:'#c9a274',tejado:'#b2463a',ventana:'#ffd56b',fronton:'#d1a07a',teatro:'#e0bb9c',tienda:'#e0782a',arbol:'#2f7a45',arbol2:'#36884c',brillo:1}},
+  dia:{cielo:['#6fbcef','#cfeefd','#fff2cf'],nubes:1,sol:'#ffe27a',solAlto:1,mont:['#b9cde8','#cddcee'],colina:'#a8d983',suelo:['#8cc864','#4c8c3c'],camino:'#ecd59e',
+    s:{muro:'#f6e3b8',muroS:'#e6cd95',tejado:'#d2553f',ventana:'#a9dcf5',fronton:'#e8c39a',teatro:'#f3dcc4',tienda:'#f08a2e',arbol:'#3e9b4f',arbol2:'#4aab58'}},
+  noche:{cielo:['#0e1430','#1d2a5a','#34407a'],estrellas:2,luna:1,mont:['#2a3466','#34407a'],colina:'#2f4a3a',suelo:['#2c4634','#1c3024'],camino:'#6b6250',velo:'#1d2a5a',
+    s:{muro:'#9c8b74',muroS:'#7d6f5c',tejado:'#6e3a33',ventana:'#ffd56b',fronton:'#8a7464',teatro:'#968272',tienda:'#a3561f',arbol:'#1f4f30',arbol2:'#245a36',brillo:1}}
+};
+/* Cielo, montañas, colinas y camino. W = ancho (100 por sitio) */
+function escFondo(W,L,u){
+  const c=L.cielo,sx=Math.round(W*.75);
+  return `<defs><linearGradient id="ec${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".45" stop-color="${c[1]}"/><stop offset=".8" stop-color="${c[2]}"/></linearGradient>
+    <linearGradient id="es${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${L.suelo[0]}"/><stop offset="1" stop-color="${L.suelo[1]}"/></linearGradient></defs>
+    <rect width="${W}" height="300" fill="url(#ec${u})"/>
+    ${L.estrellas?`<g fill="#fff" opacity="${L.estrellas>1?.95:.8}">${[[30,14],[90,28],[150,10],[200,24],[330,16],[380,30],[260,8],[60,46],[230,40]].slice(0,L.estrellas>1?9:7).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1"/>`).join('')}</g>`:''}
+    ${L.luna?`<circle cx="${sx}" cy="40" r="11" fill="#fff3c4"/><circle cx="${sx+6}" cy="36" r="10" fill="${c[0]}"/>`:''}
+    ${L.sol&&L.solAlto?`<circle cx="${sx}" cy="34" r="12" fill="${L.sol}" stroke="#f2b84b" stroke-width="3"/>`:''}
+    ${L.sol&&!L.solAlto?`<circle cx="${sx}" cy="122" r="26" fill="${L.sol}"/><circle cx="${sx}" cy="122" r="36" fill="${L.sol}" opacity=".25"/>`:''}
+    ${L.nubes?[[40,22,1.1],[214,12,.8]].map(([x,y,s])=>`<path class="nube" transform="translate(${x} ${y}) scale(${s})" d="M0 8 a7 7 0 0 1 9 -8 a10 10 0 0 1 18 1 a7 7 0 0 1 5 11 h-28 a5 5 0 0 1 -4 -4z" fill="#fff" stroke="${ESC_L}" stroke-width="1.2" vector-effect="non-scaling-stroke"/>`).join(''):''}
+    <path d="M0 118 L44 92 L90 112 L140 82 L188 108 L236 88 L284 112 L330 90 L372 104 L400 96 V170 H0Z" fill="${L.mont[0]}"/>
+    <path d="M0 136 L50 114 L104 132 L160 112 L214 132 L270 116 L330 134 L400 118 V170 H0Z" fill="${L.mont[1]}"/>
+    <path d="M0 150 C60 132 110 142 160 148 S260 132 310 142 S380 142 400 140 V300 H0Z" fill="${L.colina}" stroke="${ESC_L}" stroke-width="1.4"/>
+    <path d="M0 166 C80 158 160 170 240 164 S360 160 400 166 V300 H0Z" fill="url(#es${u})" stroke="${ESC_L}" stroke-width="1.4"/>
+    <path d="M118 300 C140 252 176 232 150 168 L158 168 C190 228 172 252 226 300Z" fill="${L.camino}" stroke="${ESC_L}" stroke-width="1.4"/>`;
+}
+/* Biblioteca de sitios. Cada uno se dibujó en su columna (col) de una escena de 4; el motor lo traslada a la que le toque.
+   spot = dónde se queda el personaje cuando acierta */
+const ESC_O=`stroke="${ESC_L}" stroke-width="1.4" stroke-linejoin="round"`;
+const ESC_SITIOS={
+  cocina:{col:0,spot:{x:44,y:190},svg:p=>`
+    <rect x="16" y="106" width="72" height="62" fill="${p.muro}"/><rect x="70" y="106" width="18" height="62" fill="${p.muroS}"/><rect x="16" y="106" width="72" height="62" fill="none" ${ESC_O}/>
+    <rect x="70" y="76" width="9" height="20" fill="#a8402e" ${ESC_O}/>
+    <g class="vapor"><circle cx="75" cy="68" r="3" fill="#fff" opacity=".85"/><circle cx="79" cy="60" r="4" fill="#fff" opacity=".7"/></g>
+    <path d="M8 110 L52 72 L96 110Z" fill="${p.tejado}" ${ESC_O}/><path d="M33 89 h38 M22 100 h60" stroke="#00000033" stroke-width="1.3"/>
+    <rect x="24" y="118" width="30" height="22" rx="2" fill="${p.ventana}" ${ESC_O}/><path d="M39 118 v22" stroke="${ESC_L}" stroke-width="1"/>
+    <path d="M28 135 h13 a3 3 0 0 1 -3 3 h-7 a3 3 0 0 1 -3 -3z" fill="#444"/><path d="M41 135.5 h5" stroke="#444" stroke-width="1.5"/>
+    <rect x="62" y="132" width="17" height="36" rx="2" fill="#8b5a2b" ${ESC_O}/><circle cx="75" cy="151" r="1.4" fill="#ffd75e"/>`},
+  teatro:{col:1,spot:{x:152,y:151},svg:p=>`
+    <path d="M100 86 L152 62 L204 86Z" fill="${p.fronton}" ${ESC_O}/><circle cx="152" cy="77" r="5" fill="#ffd75e" ${ESC_O}/>
+    <rect x="106" y="86" width="92" height="80" fill="${p.teatro}" ${ESC_O}/>
+    <rect x="114" y="100" width="76" height="52" fill="#2a1d45" ${ESC_O}/><polygon class="foco" points="142,100 162,100 178,150 126,150" fill="#fff6b0"/>
+    <path d="M114 100 h18 q-6 26 0 52 h-18z" fill="#c0392b" ${ESC_O}/><path d="M120 102 q-3 24 0 48 M126 102 q-3 24 0 48" stroke="#8e2a20" stroke-width="1" fill="none"/>
+    <path d="M190 100 h-18 q6 26 0 52 h18z" fill="#c0392b" ${ESC_O}/><path d="M184 102 q3 24 0 48 M178 102 q3 24 0 48" stroke="#8e2a20" stroke-width="1" fill="none"/>
+    <g fill="#ffd75e" stroke="${ESC_L}" stroke-width=".7">${[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${117+i*10}" cy="93" r="2"/>`).join('')}</g>
+    <rect x="108" y="150" width="88" height="16" fill="#8a5a32" ${ESC_O}/>`},
+  campamento:{col:2,spot:{x:226,y:193},svg:p=>`
+    <path d="M206 172 L242 112 L278 172Z" fill="${p.tienda}" ${ESC_O}/><path d="M242 112 L278 172 L262 172Z" fill="#00000026"/><path d="M234 172 L242 146 L250 172Z" fill="#5e2e0d" ${ESC_O}/>
+    <path d="M242 112 l-2 -6 M206 172 l-8 4 M278 172 l8 4" stroke="${ESC_L}" stroke-width="1.1"/>
+    <g transform="translate(288 172)">${p.brillo?`<circle r="16" fill="#ffb02e" opacity=".22"/>`:''}
+      <g fill="#9a9a9a" stroke="${ESC_L}" stroke-width=".8"><circle cx="-9" cy="1" r="2.6"/><circle cx="9" cy="1" r="2.6"/><circle cx="-4" cy="3" r="2.4"/><circle cx="4" cy="3" r="2.4"/></g>
+      <rect x="-9" y="-3" width="18" height="4" rx="2" fill="#6b4b2a" stroke="${ESC_L}" stroke-width=".8" transform="rotate(15)"/><rect x="-9" y="-3" width="18" height="4" rx="2" fill="#6b4b2a" stroke="${ESC_L}" stroke-width=".8" transform="rotate(-15)"/>
+      <path class="llama" d="M0 -3 q-7 -6 -2 -14 q1 5 4 6 q2 -4 1 -9 q6 6 3 15z" fill="#ffb02e" stroke="#c0661b" stroke-width=".8"/></g>`},
+  campo:{col:3,spot:{x:346,y:191},svg:p=>`
+    <g fill="#d9b27c" ${ESC_O}>${[0,1,2,3,4].map(i=>`<rect x="${306+i*21}" y="150" width="4" height="18" rx="1"/>`).join('')}<rect x="304" y="154" width="92" height="3"/><rect x="304" y="161" width="92" height="3"/></g>
+    <rect x="316" y="114" width="7" height="40" fill="#7a5230" ${ESC_O}/><path d="M300 118 a13 13 0 0 1 6 -20 a14 14 0 0 1 26 -2 a12 12 0 0 1 5 22z" fill="${p.arbol}" ${ESC_O}/><circle cx="312" cy="104" r="4" fill="#ffffff2e"/>
+    <rect x="370" y="108" width="7" height="46" fill="#7a5230" ${ESC_O}/><path d="M352 112 a15 15 0 0 1 6 -24 a17 17 0 0 1 32 -2 a14 14 0 0 1 4 26z" fill="${p.arbol2}" ${ESC_O}/><circle cx="366" cy="96" r="5" fill="#ffffff2e"/>
+    <g stroke="${ESC_L}" stroke-width=".7">${[[330,182,'#ff7aa8'],[358,186,'#ffe14d'],[388,180,'#ff7aa8'],[342,192,'#ffe14d'],[376,190,'#b28dff']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="${c}"/>`).join('')}</g>`},
+};
+/* Personajes de cómic con contorno. Si el juego no da colores, se toman en orden de aquí */
+const ESC_DEF=[{ropa:'#3dd6ff',pelo:'#5a3a1a',piel:'#f2c9a0',pein:'corto'},{ropa:'#a78bfa',pelo:'#2b1a0f',piel:'#c98e62',pein:'coleta'},
+  {ropa:'#ff7a45',pelo:'#e0b04a',piel:'#f5d2b0',pein:'rizos'},{ropa:'#2ecc71',pelo:'#7a2e12',piel:'#e8b48a',pein:'melena'},
+  {ropa:'#ff5c8a',pelo:'#1b1b1b',piel:'#8d5a3b',pein:'rizos'},{ropa:'#ffc83d',pelo:'#c0392b',piel:'#f6d7bd',pein:'coleta'}];
+function escPersona(p){
+  const L=ESC_L,o=`stroke="${L}" stroke-width="1.1"`,hy=-45,hr=7.4,sc=hr/6.5,NS='vector-effect="non-scaling-stroke"';
+  const t=`transform="translate(0 ${hy}) scale(${sc})"`,pst=`fill="${p.pelo}" stroke="${L}" stroke-width="1.1" ${NS}`;
+  const atras=p.pein=='coleta'?`<ellipse cx="7.2" cy="1.5" rx="2.6" ry="5"/>`:p.pein=='melena'?`<rect x="-7.6" y="-5" width="15.2" height="14" rx="5"/>`:'';
+  const delante=p.pein=='rizos'?`<circle cx="-5" cy="-3" r="3"/><circle cx="-1.7" cy="-5.6" r="3"/><circle cx="2" cy="-5.6" r="3"/><circle cx="5" cy="-3" r="3"/>`
+    :`<path d="M-6.7 -.6 a6.7 6.7 0 0 1 13.4 0 q-3 -2.6 -6.7 -2.1 q-3.7 -.5 -6.7 2.1z"/>`;
+  const ex={
+    gorro:`<path transform="translate(0 ${hy-hr+1.5}) scale(${sc})" d="M-6 0 h12 v-4 a4.5 4.5 0 0 0 -2.5 -7 a4.5 4.5 0 0 0 -7 0 a4.5 4.5 0 0 0 -2.5 7z" fill="#fff" stroke="${L}" stroke-width="1.1" ${NS}/>`,
+    mascara:`<path transform="translate(11 -19)" d="M-4.5 -2 q4.5 -3.4 9 0 q-1 5.5 -4.5 5.5 q-3.5 0 -4.5 -5.5z" fill="#ffc83d" ${o}/>`,
+    camara:`<path d="M-6 -34 L0 -31 L6 -34" stroke="#222" stroke-width=".8" fill="none"/><g transform="translate(0 -28)"><rect x="-5" y="-3.5" width="10" height="7" rx="1.5" fill="#222" ${o}/><circle r="2" fill="#7fd3ff"/></g>`,
+    libro:`<g transform="translate(11 -19) rotate(-10)"><rect x="-4" y="-5" width="8" height="10" rx="1" fill="#3d7bd9" ${o}/><path d="M-2 -3 h4 M-2 -1 h4" stroke="#fff" stroke-width=".7"/></g>`,
+    balon:`<circle cx="12" cy="-17" r="4" fill="#fff" ${o}/><path d="M12 -19.5 l2 1.5 l-.8 2.3 h-2.4 l-.8 -2.3z" fill="${L}"/>`
+  }[p.extra]||'';
+  return `<ellipse class="aro" cx="0" cy="0" rx="17" ry="5"/><ellipse cx="0" cy="0" rx="10" ry="2.8" fill="rgba(0,0,0,.22)"/><g class="cuerpo">
+    ${p.extra=='mochila'?`<rect x="-11" y="-33" width="7" height="14" rx="2.5" fill="#7a5530" ${o}/>`:''}
+    <path d="M-3 -17 v15 M3 -17 v15" stroke="${L}" stroke-width="5.4" stroke-linecap="round"/><path d="M-3 -17 v15 M3 -17 v15" stroke="#2c3e66" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 M7.5 -32 q3.5 6 3.2 12.5" stroke="${L}" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 M7.5 -32 q3.5 6 3.2 12.5" stroke="${p.ropa}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="-10.7" cy="-19" r="2" fill="${p.piel}" ${o}/><circle cx="10.7" cy="-19" r="2" fill="${p.piel}" ${o}/>
+    <path d="M-7.8 -32.5 q0 -3 3 -3 h9.6 q3 0 3 3 l-1.4 16 h-12.8z" fill="${p.ropa}" ${o}/>
+    ${atras?`<g ${t} ${pst}>${atras}</g>`:''}<circle cx="0" cy="${hy}" r="${hr}" fill="${p.piel}" ${o}/>
+    <ellipse cx="-2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/><ellipse cx="2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/>
+    <circle cx="-2.3" cy="-43.8" r="1.1" fill="${L}"/><circle cx="3.1" cy="-43.8" r="1.1" fill="${L}"/><circle cx="-1.9" cy="-44.3" r=".4" fill="#fff"/><circle cx="3.5" cy="-44.3" r=".4" fill="#fff"/>
+    <path d="M-4.4 -47.6 q1.6 -1 3.2 -.3 M1.2 -47.9 q1.6 -.7 3.2 .3" stroke="${L}" stroke-width=".8" fill="none" stroke-linecap="round"/>
+    <circle cx="-4.6" cy="-41.4" r="1.2" fill="#ff8a8a" opacity=".55"/><circle cx="4.6" cy="-41.4" r="1.2" fill="#ff8a8a" opacity=".55"/>
+    <path d="M-2.2 -40.6 q2.2 2.6 4.4 0z" fill="#8a2e2e" stroke="${L}" stroke-width=".6"/>
+    <g ${t} ${pst}>${delante}</g>${ex}</g>
+    <text y="13" text-anchor="middle" class="nom">${esc(p.n)}</text>`;
+}
+/* Dibuja una escena: sitios [{k, l}] (de 2 a 4), luz y lo que vaya encima (personajes). Devuelve el SVG y dónde se coloca cada uno */
+function escSVG(sitios,luz,encima,etiqueta){
+  const L=ESC_LUZ[luz]||ESC_LUZ.atardecer,W=sitios.length*100,u=++ESC_UID;
+  const svg=`<svg class="esc" viewBox="0 0 ${W} 300" style="max-width:${Math.round(W*1.3)}px" role="img" aria-label="${esc(etiqueta||sitios.map(z=>z.l).join(', '))}">${escFondo(W,L,u)}
+    ${sitios.map((z,i)=>{const d=ESC_SITIOS[z.k];if(!d){console.error(`Escena: no hay dibujo del sitio «${z.k}» (los que hay: ${Object.keys(ESC_SITIOS).join(', ')})`);return ''}
+      return `<g transform="translate(${(i-d.col)*100} 0)">${d.svg(L.s)}</g>`}).join('')}
+    ${L.velo?`<rect width="${W}" height="300" fill="${L.velo}" opacity=".08" pointer-events="none"/>`:''}
+    ${sitios.map((z,i)=>`<g class="cartel"><rect x="${i*100+12}" y="50" width="76" height="16" rx="8"/><text x="${i*100+50}" y="62" text-anchor="middle">${esc(z.l)}</text></g>`).join('')}
+    ${sitios.map((z,i)=>`<rect class="zona" data-z="${esc(z.k)}" x="${i*100+2}" y="46" width="96" height="178" rx="10" tabindex="0" role="button" aria-label="${esc(z.l)}"/>`).join('')}
+    ${encima||''}</svg>`;
+  const spot=k=>{const i=sitios.findIndex(z=>z.k==k),d=ESC_SITIOS[k];return d&&i>=0?{x:d.spot.x+(i-d.col)*100,y:d.spot.y}:{x:i*100+50,y:190}};
+  return {svg,spot,W};
+}
+const escQuieto=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+Object.assign(STEP,{
+  /* 🏞️ Construir una escena: {sitios:[{k,l}], gente:[{n, t, z, ropa?, pelo?, piel?, pein?, extra?}], luz?, q?}
+     Lee la frase de cada persona y la lleva a su sitio (tocar, no arrastrar). Cuenta cada persona a la primera.
+     Para que el último no salga por descarte: más sitios que personas, o dos personas en el mismo sitio. */
+  scene(st,s,done){
+    const G=s.gente.map((p,k)=>({...ESC_DEF[k%ESC_DEF.length],...p}));
+    const E=escSVG(s.sitios,s.luz,'',s.q);
+    const esp=shuf(G.map((_,k)=>Math.round(E.W*(k+.5)/G.length)));
+    const gente=G.map((p,k)=>`<g class="pj" data-pj="${k}" style="transform:translate(${esp[k]}px,276px)" tabindex="0" role="button" aria-label="${esc(p.n)}">${escPersona(p)}</g>`).join('');
+    st.innerHTML=`<div class="q">${esc(s.q||'Lee y lleva a cada uno a su sitio')}</div>
+      ${E.svg.replace('</svg>',gente+'</svg>')}
+      <div class="pers">${G.map((p,k)=>`<button class="per" data-p="${k}"><span class="sw" style="background:${p.ropa}"></span><span><b>${esc(p.n)}</b><br>${esc(p.t)}</span></button>`).join('')}</div>`;
+    let sel=null,ok=0,puestos=0;const fallo=new Set(),enSitio={};
+    const fb=m=>{$('#fb').innerHTML=m};
+    const pj=k=>st.querySelector(`.pj[data-pj="${k}"]`),card=k=>st.querySelector(`.per[data-p="${k}"]`);
+    const elegir=k=>{if(card(k).classList.contains('puesto'))return;sel=k;sfxTap();
+      st.querySelectorAll('.per').forEach(x=>x.classList.toggle('sel',+x.dataset.p===k));st.querySelectorAll('.pj').forEach(g=>g.classList.toggle('sel',+g.dataset.pj===k));
+      fb(`¿Dónde va <b>${esc(G[k].n)}</b>?`)};
+    st.querySelectorAll('.per').forEach(b=>b.onclick=()=>elegir(+b.dataset.p));
+    st.querySelectorAll('.pj').forEach(g=>{g.addEventListener('click',()=>elegir(+g.dataset.pj));g.addEventListener('keydown',e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();elegir(+g.dataset.pj)}})});
+    st.querySelectorAll('.zona').forEach(z=>{
+      const go=()=>{if(sel==null){fb('Primero toca a una persona 😉');return}
+        const k=sel,p=G[k],g=pj(k);
+        if(z.dataset.z!==p.z){
+          if(!fallo.has(k)){fallo.add(k);lose()}
+          z.classList.add('mal');g.classList.remove('err');void g.getBBox();g.classList.add('err');setTimeout(()=>{z.classList.remove('mal');g.classList.remove('err')},450);
+          fb(`❌ Ahí no. Vuelve a leer: «${esc(p.t)}»`);return}
+        if(!fallo.has(k)){ok++;win(10)}else sfxOk();
+        puestos++;sel=null;st.querySelectorAll('.pj').forEach(x=>x.classList.remove('sel'));
+        const c=card(k);c.classList.remove('sel');c.classList.add('puesto');c.disabled=true;
+        const n=enSitio[p.z]=(enSitio[p.z]||0)+1,sp=E.spot(p.z),dx=[0,28,-28,56,-56][n-1]||0;
+        g.classList.add('anda');g.style.transform=`translate(${sp.x+dx}px,${sp.y}px)`;g.style.pointerEvents='none';g.removeAttribute('tabindex');
+        setTimeout(()=>{g.classList.remove('anda');g.classList.add('salta')},escQuieto()?0:900);
+        if(puestos<G.length){fb(`✅ ¡Bien! ${esc(p.n)} ya está en su sitio.`);return}
+        st.querySelectorAll('.zona').forEach(x=>{x.removeAttribute('tabindex');x.style.pointerEvents='none'});
+        done(ok,G.length,ok==G.length?'✅ ¡Escena completa, todos a la primera!':`👍 Escena completa: ${ok} de ${G.length} a la primera.`)};
+      z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();go()}})});
+  },
+});
+Object.assign(STEP,{
+  /* 📖 Historia ramificada: {titulo?, sitios:[{k,l}], luz?, reparto:[{n, ropa?, pelo?, piel?, pein?, extra?}], fin,
+       nodos:[{relato, donde:{nombre:sitio}, luz?, q, opts+a | acc+show, repaso, bien?}]}
+     Cada decisión es un ejercicio del temario. La escena se queda arriba y los personajes caminan de un sitio a otro.
+     Si falla: repaso corto y otra oportunidad (ya no puntúa). Al segundo fallo se enseña la respuesta y la historia sigue
+     (las ramas se juntan siempre). Cuenta cada decisión a la primera. */
+  story(st,s,done){
+    const RP=s.reparto.map((p,k)=>({...ESC_DEF[k%ESC_DEF.length],...p})),N=s.nodos,tildes=JUEGO.tildesCuentan??false;
+    let i=0,primera=0,luz=null,E=null;const desvio=new Set();
+    st.innerHTML=`${s.titulo?`<div class="hint" style="margin-top:0">📖 ${esc(s.titulo)}</div>`:''}<div class="mapa" id="hmapa" aria-label="Camino de la historia"></div>
+      <div id="hesc"></div><div class="relato" id="hrel"></div><div id="hrep"></div><div class="q" id="hq"></div><div id="hans"></div><div class="fb" id="hfb"></div><div id="hnx"></div>`;
+    const mapa=()=>{$('#hmapa').innerHTML=N.map((_,k)=>`<span class="nodo ${k<i?'done':k==i?'now':''}">${k<i?'✓':k+1}${desvio.has(k)?'<span class="rep">↺ repaso</span>':''}</span><span class="tramo"></span>`).join('')+`<span class="nodo ${i>=N.length?'done':''}">🏁</span>`};
+    const pj=k=>$('#hesc').querySelector(`.pj[data-pj="${k}"]`);
+    /* Coloca a cada personaje en su sitio del nodo; los que no salen se esconden */
+    const coloca=(n,anim)=>{const cuenta={};
+      RP.forEach((p,k)=>{const g=pj(k),z=n.donde&&n.donde[p.n];if(!g)return;
+        if(!anim){g.style.transition='none'}
+        if(z){const c=cuenta[z]=(cuenta[z]||0)+1,sp=E.spot(z),dx=[0,28,-28,56,-56][c-1]||0,estaba=!g.classList.contains('fuera');g.classList.remove('fuera');
+          const antes=g.style.transform,ahora=`translate(${sp.x+dx}px,${sp.y}px)`;g.style.transform=ahora;
+          if(anim&&estaba&&antes!==ahora){g.classList.add('anda');setTimeout(()=>g.classList.remove('anda'),escQuieto()?0:900)}}
+        else g.classList.add('fuera');
+        if(!anim){void g.getBBox();g.style.transition=''}})};
+    const pinta=n=>{const lz=n.luz||s.luz||'atardecer';
+      if(lz!==luz){luz=lz;E=escSVG(s.sitios,lz,'',s.titulo);
+        $('#hesc').innerHTML=E.svg.replace('</svg>',RP.map((p,k)=>`<g class="pj fuera" data-pj="${k}" style="transform:translate(${E.W/2}px,276px)">${escPersona(p)}</g>`).join('')+'</svg>');
+        $('#hesc').querySelectorAll('.zona').forEach(z=>{z.removeAttribute('tabindex');z.removeAttribute('role');z.style.pointerEvents='none'});
+        coloca(n,false)}else coloca(n,true)};
+    const reacciona=c=>{RP.forEach((_,k)=>{const g=pj(k);if(!g||g.classList.contains('fuera'))return;g.classList.remove('salta','err');void g.getBBox();g.classList.add(c)})};
+    const seguir=()=>{const ult=i+1>=N.length;$('#hnx').innerHTML=`<button class="btn" id="hs">${ult?'Final de la historia 🏁':'Seguir la historia ➜'}</button>`;
+      $('#hs').onclick=()=>{i++;ult?final():show(0)};$('#hs').focus({preventScroll:true})};
+    const final=()=>{mapa();st.removeAttribute('data-nodo');['#hrep','#hq','#hans','#hfb','#hnx'].forEach(x=>$(x).innerHTML='');
+      $('#hrel').textContent=s.fin||'¡Fin de la historia!';confetti();
+      done(primera,N.length,primera==N.length?'✅ ¡Todas las decisiones a la primera!':`👍 ${primera} de ${N.length} decisiones a la primera.`)};
+    function show(intento){
+      const n=N[i];st.dataset.nodo=i;mapa();pinta(n);
+      $('#hrel').textContent=n.relato;$('#hfb').innerHTML='';$('#hnx').innerHTML='';
+      $('#hrep').innerHTML=intento?`<div class="repaso">↺ <b>Repaso rápido:</b> ${esc(n.repaso)} Prueba otra vez.</div>`:'';
+      $('#hq').textContent=n.q;
+      const responde=(ok,bueno)=>{
+        if(ok){if(!intento){primera++;win(10)}else sfxOk();reacciona('salta');
+          $('#hfb').innerHTML='✅ '+esc(n.bien||'¡Bien! La historia sigue.');seguir();return}
+        reacciona('err');
+        if(!intento){desvio.add(i);lose();$('#hfb').innerHTML='❌ Esa no encaja. Un repaso rápido…';setTimeout(()=>show(1),900);return}
+        $('#hfb').innerHTML=`❌ Era: <b>${esc(bueno)}</b>. ${esc(n.repaso)}`;seguir()};
+      if(n.opts){
+        $('#hans').innerHTML=`<div class="opts ${n.opts.some(o=>o.length>22)?'':'two'}">${shuf(n.opts).map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+        $('#hans').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.o===n.a;
+          $('#hans').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.o===n.a&&(ok||intento))x.classList.add('ok')});
+          if(!ok){b.classList.add('bad','shake')}responde(ok,n.a)});
+      }else{
+        $('#hans').innerHTML=`<input class="typ" id="wa" ${NOAUTO} placeholder="Escribe aquí"><button class="btn" id="wchk" style="margin-top:0">Comprobar ✔</button>`;
+        const inp=$('#wa');inp.focus({preventScroll:true});
+        const go=()=>{const v=limpiaR(inp.value,tildes);if(!v){$('#hfb').textContent='Escribe tu respuesta 😉';return}
+          const ok=n.acc.some(a=>limpiaR(a,tildes)==v);inp.classList.add(ok?'ok':'bad');inp.disabled=true;$('#wchk').remove();responde(ok,n.show||n.acc[0])};
+        $('#wchk').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};
+      }
+    }
+    show(0);
+  },
+});
+Object.assign(STEP,{
+  /* 🔎 Miniinvestigación (5º): {quien:{n, aspecto…}, ficha:[[icono, texto]], agenda?:[[día, texto]], agendaT?, q, opts, a, ex?,
+       sitios?, planes?:{opción: sitio}, luz?}
+     Consulta la ficha y la agenda de un personaje y decide. Con sitios y planes, al elegir el personaje camina
+     al sitio de ese plan: salta si encaja y tiembla si no. Cuenta a la primera, como un test. */
+  probe(st,s,done){
+    const P={...ESC_DEF[0],...s.quien},E=s.sitios?escSVG(s.sitios,s.luz,'',s.q):null;
+    const dibujo=E?E.svg.replace('</svg>',`<g class="pj" data-pj="0" style="transform:translate(${E.W/2}px,276px)">${escPersona(P)}</g></svg>`)
+      :`<svg class="retrato" viewBox="-24 -60 48 78" aria-hidden="true">${escPersona(P)}</svg>`;
+    st.innerHTML=`${E?dibujo:''}<div class="dossier"><section><div class="quien">${E?'':dibujo}<h4>📇 ${esc(P.n)}</h4></div>
+      <table>${s.ficha.map(([i,t])=>`<tr><td>${i}</td><td>${esc(t)}</td></tr>`).join('')}</table></section>
+      ${s.agenda?`<section><h4>📅 ${esc(s.agendaT||'Agenda')}</h4><table>${s.agenda.map(([d,t])=>`<tr><td><b>${esc(d)}</b></td><td>${esc(t)}</td></tr>`).join('')}</table></section>`:''}</div>
+      <div class="q">${esc(s.q)}</div><div class="opts">${shuf(s.opts).map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+    if(E)st.querySelectorAll('.zona').forEach(z=>{z.removeAttribute('tabindex');z.removeAttribute('role');z.style.pointerEvents='none'});
+    st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const ok=b.dataset.o===s.a;
+      st.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.o===s.a)x.classList.add('ok')});
+      if(!ok)b.classList.add('bad','shake');
+      const g=st.querySelector('.pj'),z=s.planes&&s.planes[b.dataset.o];
+      if(g&&z&&E){const sp=E.spot(z);g.classList.add('anda');g.style.transform=`translate(${sp.x}px,${sp.y}px)`;
+        setTimeout(()=>{g.classList.remove('anda');g.classList.add(ok?'salta':'err')},escQuieto()?0:900)}
+      else if(g){g.classList.add(ok?'salta':'err')}
+      else{const r=st.querySelector('.retrato .cuerpo');if(r){r.parentNode.classList.add(ok?'salta':'err')}}
+      ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Buena investigación! ':'❌ Era: <b>'+esc(s.a)+'</b>'+(/[.!?]$/.test(s.a)?' ':'. '))+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''));
+    });
+  },
+});
 function sfxOk(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
 function sfxTap(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
 
