@@ -20,8 +20,27 @@ function aplicaEstilo(){const e=estiloAhora(),h=document.documentElement,c2=Stri
   h.dataset.estilo=e;h.dataset.fam=e[0];h.classList.toggle('c2',c2);
   const fams=['Nunito:wght@400;600;700;800',ESTILO_LETRAS[e]||ESTILO_LETRAS[e[0]]];if(c2&&(e[0]==='B'||e==='D2'))fams.push(ESTILO_LETRAS.c2);
   const href='https://fonts.googleapis.com/css2?family='+fams.join('&family=')+'&display=swap';
+  let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc)}tc.content={A:'#2b2357',B:'#18214a',C:'#0e1636',D:'#7cc6f2'}[e[0]];
   let l=document.getElementById('estilo-letras');if(!l){l=document.createElement('link');l.id='estilo-letras';l.rel='stylesheet';document.head.appendChild(l)}if(l.href!==href)l.href=href}
 aplicaEstilo();
+/* ================== APP INSTALABLE (20-nov) ==================
+   Icono en la pantalla de inicio, pantalla completa y sin conexión (../sw.js). La beta solo controla su carpeta;
+   el motor normal, todo el sitio. En el menú sale «Instalar la app» (Android y ordenador) o cómo hacerlo en el iPhone. */
+let INSTALA=null;
+(function(){const beta=/motor-beta\//.test((document.currentScript||{}).src||'');
+  const add=(t,a)=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));document.head.appendChild(e)};
+  if(!document.querySelector('link[rel="manifest"]'))add('link',{rel:'manifest',href:'../manifest.webmanifest'});
+  if(!document.querySelector('link[rel="apple-touch-icon"]'))add('link',{rel:'apple-touch-icon',href:'../iconos/apple-touch-icon.png'});
+  add('meta',{name:'apple-mobile-web-app-capable',content:'yes'});add('meta',{name:'mobile-web-app-capable',content:'yes'});add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio'});
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('../sw.js',{scope:beta?'./':'../'}).catch(()=>{});
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALA=e;pintaInstalar()});
+  addEventListener('appinstalled',()=>{INSTALA=null;pintaInstalar()})})();
+function pintaInstalar(){const b=document.getElementById('instalar');if(!b)return;
+  if(matchMedia('(display-mode: standalone)').matches||navigator.standalone){b.innerHTML='';return}
+  if(INSTALA){b.innerHTML='<button class="btn sec" id="inst">📲 Instalar la app en este dispositivo</button>';
+    document.getElementById('inst').onclick=async()=>{const e=INSTALA;INSTALA=null;e.prompt();try{await e.userChoice}catch(x){}pintaInstalar()};return}
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  b.innerHTML=ios?'<p class="sub">📲 Para tenerla como una app: toca <b>Compartir</b> y luego <b>«Añadir a pantalla de inicio»</b>.</p>':''}
 /* ================== ESTADO ================== */
 let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}, REAL=null;
 try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;}catch(e){}
@@ -103,8 +122,8 @@ function home(){
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
-  ${fame()}`;
-  wireFame();wireReal();
+  ${fame()}<div id="instalar"></div>`;
+  wireFame();wireReal();pintaInstalar();
   document.querySelectorAll('.mission').forEach(b=>b.onclick=()=>R[b.dataset.k]());
   const ht=$('#hoy');if(ht)ht.onclick=()=>R[ht.dataset.k]();
   /* Recargar: si no, la XP y las notas que hay en memoria pasarían al siguiente niño */
