@@ -51,7 +51,7 @@ Es algo importante, así que el plan tiene que estar completo antes de empezar.
 - **Qué preguntar:**
   - los bloques con nota y su peso;
   - qué formato lleva cada bloque;
-  - la ruta, de lo más difícil a lo más ligero, con sus minutos;
+  - la ruta, de lo más difícil a lo más ligero, con sus minutos: en total, de 15 a 20 en 2º y de 30 a 35 en 5º;
   - el examen: número de preguntas y fecha;
   - las dudas del temario;
   - si hay historia ramificada o miniinvestigación, y de qué trata.
@@ -68,7 +68,7 @@ Es algo importante, así que el plan tiene que estar completo antes de empezar.
   - `saludo`, `notaBoletin`, `menu`, `chuleta`;
   - `examen` (`min`, `dia`, `preguntas()`), `ruta`, `arcade` (`bloques`, `jefes`, `test`, `deletreo`);
   - `voz` (`en-GB` en Inglés, `es-ES` en Lengua o Ciencias) y `tildesCuentan` (`true` en Lengua de 5º).
-- **Además de `JUEGO`:** `BLOCKS` (con `w:2` en lo más parecido al examen), `MIC`, `ROUTE_ST` (de lo más difícil a lo más ligero) y `R` (una función por misión).
+- **Además de `JUEGO`:** `BLOCKS` (con `w:2` en lo más parecido al examen), `MIC`, `ROUTE_ST` (de lo más difícil a lo más ligero; sus `min` suman de 15 a 20 en 2º y de 30 a 35 en 5º, y `JUEGO.ruta.minutos` lo dice: «15 a 20» o «30 a 35») y `R` (una función por misión).
 - **Para que el verificador juegue:** en Inglés se mantienen los nombres `VOCAB`, `VERBS`, `VSENT`, `VPARTS` y `vocabSentQ`. En cualquier juego, las listas que nombre `temario.json`.
 - **Revisa a mano antes de seguir:**
   - en las frases con hueco, las opciones falsas son de otro tipo de palabra;

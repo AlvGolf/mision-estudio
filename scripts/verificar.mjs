@@ -142,6 +142,16 @@ for (const juego of juegos) {
     await page.screenshot({ path: path.join(dirCapturas, `${A.n}-menu.png`), fullPage: true });
 
     /* ---------- 2. La ruta entera ---------- */
+    /* Duración de la ruta según el curso (el padre, 20-nov): 2º, de 15 a 20 minutos en total; 5º, de 30 a 35 */
+    if (A === ANCHOS[0]) {
+      const d = await page.evaluate(() => ({ suma: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.reduce((a, s) => a + (s.min || 0), 0) : null, min: typeof JUEGO !== 'undefined' && JUEGO.ruta ? JUEGO.ruta.minutos : null }));
+      const curso = temario && String(temario.curso || '');
+      const pide = /2/.test(curso) ? [15, 20] : /5/.test(curso) ? [30, 35] : null;
+      if (d.suma != null && pide) {
+        if (d.suma < pide[0] || d.suma > pide[1]) aviso(`La ruta suma ${d.suma} minutos y en ${curso} tiene que durar de ${pide[0]} a ${pide[1]}: ajusta los «min» de ROUTE_ST`);
+        if (!d.min) aviso(`JUEGO.ruta.minutos no está puesto: el botón dirá «unos 30 minutos» (en ${curso}: «${pide[0]} a ${pide[1]}»)`);
+      }
+    }
     const tieneRuta = await visible('.routebtn');
     if (!tieneRuta) { aviso(`[${tag}] No hay botón de ruta de estudio: no se juega la ruta`); await ctx.close(); continue; }
     await page.click('.routebtn');

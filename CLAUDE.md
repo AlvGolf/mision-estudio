@@ -69,14 +69,14 @@ La guía paso a paso es la skill `juego-nuevo` (`.claude/skills/juego-nuevo/SKIL
 - Ninguna opción falsa puede ser correcta, salvo que el enunciado lo restrinja («con -ing, como en el libro»). Se revisa antes de subir.
 - Cada punto del temario se practica al menos una vez sin opciones.
 
-## Interacción (para mantener la atención ~30 min)
+## Interacción (para mantener la atención: 2º, de 15 a 20 minutos en total; 5º, de 30 a 35)
 
 - **Catálogo de modalidades:** `MODALIDADES.md` (hechas, para hacer ya, a evaluar, para más adelante y descartadas). Cada juego nuevo se elige con la pregunta «¿qué aprendizaje no puede demostrar todavía el niño?».
 - Solo cambian de formato los bloques que se hacen largos o repetitivos.
 - Formatos (dedo o ratón): arrastrar al hueco · unir con líneas (5 parejas por pantalla) · fichas de letras (2 intentos y luego la solución) · deslizar tarjeta (derecha = bien, izquierda = mal) · clasificar en cajas (incluido "termómetro").
 - Lo más parecido al examen se queda escrito a mano (p. ej. las 3 formas de los verbos y los verbos en frases).
 - Solo cuenta la primera respuesta. En líneas y cajas cuenta cada pareja o ficha.
-- 🧭 Ruta de estudio: todas las misiones seguidas, de lo más difícil a lo más ligero, con mapa de estaciones y tiempo restante. +20 XP por estación. Se puede seguir donde se dejó. El vocabulario rota por partes.
+- 🧭 Ruta de estudio: todas las misiones seguidas, de lo más difícil a lo más ligero, con mapa de estaciones y tiempo restante. Dura de 15 a 20 minutos en 2º y de 30 a 35 en 5º: los `min` de `ROUTE_ST` suman eso y `JUEGO.ruta.minutos` lo dice («15 a 20»). El mapa enseña además lo que tarda de verdad cada niño en cada estación. +20 XP por estación. Se puede seguir donde se dejó. El vocabulario rota por partes.
 
 ## Dos marcadores separados
 

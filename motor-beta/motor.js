@@ -77,7 +77,7 @@ function home(){
    <button class="btn" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}const vuelve=recuperaPerfil(v);try{localStorage.setItem(JUEGO.claves.nombre,vuelve||v)}catch(e){}if(vuelve)return location.reload();home()};
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
-  app().innerHTML=`${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos 30 minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button><p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> ${JUEGO.saludo}</p>
+  app().innerHTML=`${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button><p class="sub" style="font-size:17px">Hola ${esc(NAME)} 👋 <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button><br> ${JUEGO.saludo}</p>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
@@ -877,7 +877,7 @@ R.route=function(){
   const resume=ROUTE&&ROUTE.i>0;
   if(!ROUTE)ROUTE={i:0,part:0,on:false};
   app().innerHTML=`<div class="box"><h2>🧭 Ruta de estudio</h2>
-  <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos 30 minutos. Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero. Cuenta igual que las misiones sueltas.</p>
+  <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero. Cuenta igual que las misiones sueltas.</p>
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
   <div class="center">${resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${ROUTE.i+1}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ruta</button>`}
