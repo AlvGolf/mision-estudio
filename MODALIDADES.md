@@ -56,6 +56,11 @@ Condiciones de juego, no modalidades: **examen** (sin pistas, con tiempo) y **ru
 - Para que el último no salga por descarte: más sitios que personas, o dos personas en el mismo sitio.
 - Se toca, no se arrastra. Cuenta cada persona a la primera.
 
+**Historia ramificada, hecha en `motor-beta/` (20-nov)** como paso `story`: `{titulo?, sitios, luz?, reparto:[{n, aspecto…}], fin, nodos:[{relato, donde:{nombre: sitio}, luz?, q, opts+a | acc+show, repaso, bien?}]}`.
+- La escena se queda arriba; entre decisiones los personajes caminan al sitio de `donde` (el que no sale, se esconde). Un nodo con otra `luz` cambia la hora (por ejemplo, la última decisión por la noche).
+- Cada decisión es un ejercicio del temario: test (`opts`) o escrita sin opciones (`acc`). Al fallar, repaso corto y otra oportunidad, que ya no puntúa; al segundo fallo enseña la respuesta y la historia sigue. Las ramas se juntan siempre.
+- Cuenta cada decisión a la primera. El verificador prueba en cada historia los tres caminos (a la primera, con repaso y con dos fallos).
+
 **Hechas en `motor-beta/` (20-nov)**, como tipos de paso de `runSteps`: `listen` (escucha y elige), `dictado`, `repair` (detecta y repara), `cross` (crucigrama) y `first` (primera letra). Ningún juego las usa todavía: se estrenan en el próximo temario. Las juega el verificador en `pruebas-motor/`. Para usarlas en un juego: `JUEGO.voz` (idioma de la voz, por defecto `en-GB`) y `JUEGO.tildesCuentan` (por defecto no). Los datos de cada paso están comentados en `motor-beta/motor.js`.
 
 ## Para hacer ya en el motor (antes del juego de 2º)
@@ -75,7 +80,7 @@ Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/
 
 | Modalidad | Versión viable | Riesgo |
 |---|---|---|
-| Historia ramificada | Misión con historia de 4 a 6 decisiones; cada decisión es un ejercicio del temario; si falla, un desvío corto de repaso y vuelve al camino (las ramas se juntan) | decisiones de adorno que no exigen saber |
+| Historia ramificada | Hecha (paso `story`): de 4 a 6 decisiones con la escena animada; si falla, repaso corto y vuelve al camino | decisiones de adorno que no exigen saber |
 | Construir una escena | Hecha (paso `scene`): lee la frase de cada persona y la lleva a su sitio en la escena dibujada | que el dibujo delate el sitio sin leer; que dependa del dedo (por eso se toca) |
 | Miniinvestigación (5º) | Ficha visible de un personaje (gustos, agenda) y una pregunta («¿qué plan le propones?») | demasiada lectura |
 

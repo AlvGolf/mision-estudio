@@ -400,6 +400,29 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       }
       break;
     }
+    case 'story': {
+      for (const [i, n] of S.nodos.entries()) {
+        const listo = `#stage[data-nodo="${i}"] #hans ${n.opts ? '.opt:not([disabled])' : '#wa:not([disabled])'}`;
+        const responde = async bien => {
+          await page.locator(listo).first().waitFor({ timeout: 3000 });
+          if (n.opts) { const o = page.locator('#hans .opt'); const txt = await o.allTextContents(); const k = txt.indexOf(n.a); await o.nth(bien ? k : (k === 0 ? 1 : 0)).click(); }
+          else { await page.locator('#wa').fill(bien ? n.acc[0] : 'x'); await page.locator('#wa').press('Enter'); }
+        };
+        // Cada historia prueba sus tres caminos: a la primera, fallo + repaso + acierto (nodo 2) y dos fallos (nodo 3: enseña la respuesta y sigue)
+        const fallos = i === 1 || (mal && i === 0) ? 1 : i === 2 ? 2 : 0;
+        if (fallos) {
+          await responde(false);
+          if (!await page.locator('#hrep .repaso').waitFor({ timeout: 3000 }).then(() => true, () => false)) { fallo(`[${tag}] «${t}»: fallar una decisión de la historia no lleva al repaso`); break; }
+        }
+        if (fallos === 2) {
+          await responde(false);
+          if (!await page.locator('#hs').count() || !/Era:/.test(await page.locator('#hfb').innerText())) { fallo(`[${tag}] «${t}»: tras dos fallos la historia no enseña la respuesta ni sigue`); break; }
+        } else await responde(true);
+        if (!await page.locator('#hs').count()) { fallo(`[${tag}] «${t}»: la historia no sigue tras la decisión ${i + 1} bien contestada`); break; }
+        await page.click('#hs');
+      }
+      break;
+    }
     default:
       fallo(`[${tag}] «${t}»: formato de ejercicio desconocido para el verificador (${S.t})`);
   }

@@ -647,7 +647,7 @@ function escPersona(p){
 /* Dibuja una escena: sitios [{k, l}] (de 2 a 4), luz y lo que vaya encima (personajes). Devuelve el SVG y dónde se coloca cada uno */
 function escSVG(sitios,luz,encima,etiqueta){
   const L=ESC_LUZ[luz]||ESC_LUZ.atardecer,W=sitios.length*100,u=++ESC_UID;
-  const svg=`<svg class="esc" viewBox="0 0 ${W} 300" role="img" aria-label="${esc(etiqueta||sitios.map(z=>z.l).join(', '))}">${escFondo(W,L,u)}
+  const svg=`<svg class="esc" viewBox="0 0 ${W} 300" style="max-width:${Math.round(W*1.3)}px" role="img" aria-label="${esc(etiqueta||sitios.map(z=>z.l).join(', '))}">${escFondo(W,L,u)}
     ${sitios.map((z,i)=>{const d=ESC_SITIOS[z.k];if(!d){console.error(`Escena: no hay dibujo del sitio «${z.k}» (los que hay: ${Object.keys(ESC_SITIOS).join(', ')})`);return ''}
       return `<g transform="translate(${(i-d.col)*100} 0)">${d.svg(L.s)}</g>`}).join('')}
     ${L.velo?`<rect width="${W}" height="300" fill="${L.velo}" opacity=".08" pointer-events="none"/>`:''}
@@ -696,6 +696,66 @@ Object.assign(STEP,{
         st.querySelectorAll('.zona').forEach(x=>{x.removeAttribute('tabindex');x.style.pointerEvents='none'});
         done(ok,G.length,ok==G.length?'✅ ¡Escena completa, todos a la primera!':`👍 Escena completa: ${ok} de ${G.length} a la primera.`)};
       z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();go()}})});
+  },
+});
+Object.assign(STEP,{
+  /* 📖 Historia ramificada: {titulo?, sitios:[{k,l}], luz?, reparto:[{n, ropa?, pelo?, piel?, pein?, extra?}], fin,
+       nodos:[{relato, donde:{nombre:sitio}, luz?, q, opts+a | acc+show, repaso, bien?}]}
+     Cada decisión es un ejercicio del temario. La escena se queda arriba y los personajes caminan de un sitio a otro.
+     Si falla: repaso corto y otra oportunidad (ya no puntúa). Al segundo fallo se enseña la respuesta y la historia sigue
+     (las ramas se juntan siempre). Cuenta cada decisión a la primera. */
+  story(st,s,done){
+    const RP=s.reparto.map((p,k)=>({...ESC_DEF[k%ESC_DEF.length],...p})),N=s.nodos,tildes=JUEGO.tildesCuentan??false;
+    let i=0,primera=0,luz=null,E=null;const desvio=new Set();
+    st.innerHTML=`${s.titulo?`<div class="hint" style="margin-top:0">📖 ${esc(s.titulo)}</div>`:''}<div class="mapa" id="hmapa" aria-label="Camino de la historia"></div>
+      <div id="hesc"></div><div class="relato" id="hrel"></div><div id="hrep"></div><div class="q" id="hq"></div><div id="hans"></div><div class="fb" id="hfb"></div><div id="hnx"></div>`;
+    const mapa=()=>{$('#hmapa').innerHTML=N.map((_,k)=>`<span class="nodo ${k<i?'done':k==i?'now':''}">${k<i?'✓':k+1}${desvio.has(k)?'<span class="rep">↺ repaso</span>':''}</span><span class="tramo"></span>`).join('')+`<span class="nodo ${i>=N.length?'done':''}">🏁</span>`};
+    const pj=k=>$('#hesc').querySelector(`.pj[data-pj="${k}"]`);
+    /* Coloca a cada personaje en su sitio del nodo; los que no salen se esconden */
+    const coloca=(n,anim)=>{const cuenta={};
+      RP.forEach((p,k)=>{const g=pj(k),z=n.donde&&n.donde[p.n];if(!g)return;
+        if(!anim){g.style.transition='none'}
+        if(z){const c=cuenta[z]=(cuenta[z]||0)+1,sp=E.spot(z),dx=[0,28,-28,56,-56][c-1]||0,estaba=!g.classList.contains('fuera');g.classList.remove('fuera');
+          const antes=g.style.transform,ahora=`translate(${sp.x+dx}px,${sp.y}px)`;g.style.transform=ahora;
+          if(anim&&estaba&&antes!==ahora){g.classList.add('anda');setTimeout(()=>g.classList.remove('anda'),escQuieto()?0:900)}}
+        else g.classList.add('fuera');
+        if(!anim){void g.getBBox();g.style.transition=''}})};
+    const pinta=n=>{const lz=n.luz||s.luz||'atardecer';
+      if(lz!==luz){luz=lz;E=escSVG(s.sitios,lz,'',s.titulo);
+        $('#hesc').innerHTML=E.svg.replace('</svg>',RP.map((p,k)=>`<g class="pj fuera" data-pj="${k}" style="transform:translate(${E.W/2}px,276px)">${escPersona(p)}</g>`).join('')+'</svg>');
+        $('#hesc').querySelectorAll('.zona').forEach(z=>{z.removeAttribute('tabindex');z.removeAttribute('role');z.style.pointerEvents='none'});
+        coloca(n,false)}else coloca(n,true)};
+    const reacciona=c=>{RP.forEach((_,k)=>{const g=pj(k);if(!g||g.classList.contains('fuera'))return;g.classList.remove('salta','err');void g.getBBox();g.classList.add(c)})};
+    const seguir=()=>{const ult=i+1>=N.length;$('#hnx').innerHTML=`<button class="btn" id="hs">${ult?'Final de la historia 🏁':'Seguir la historia ➜'}</button>`;
+      $('#hs').onclick=()=>{i++;ult?final():show(0)};$('#hs').focus({preventScroll:true})};
+    const final=()=>{mapa();st.removeAttribute('data-nodo');['#hrep','#hq','#hans','#hfb','#hnx'].forEach(x=>$(x).innerHTML='');
+      $('#hrel').textContent=s.fin||'¡Fin de la historia!';confetti();
+      done(primera,N.length,primera==N.length?'✅ ¡Todas las decisiones a la primera!':`👍 ${primera} de ${N.length} decisiones a la primera.`)};
+    function show(intento){
+      const n=N[i];st.dataset.nodo=i;mapa();pinta(n);
+      $('#hrel').textContent=n.relato;$('#hfb').innerHTML='';$('#hnx').innerHTML='';
+      $('#hrep').innerHTML=intento?`<div class="repaso">↺ <b>Repaso rápido:</b> ${esc(n.repaso)} Prueba otra vez.</div>`:'';
+      $('#hq').textContent=n.q;
+      const responde=(ok,bueno)=>{
+        if(ok){if(!intento){primera++;win(10)}else sfxOk();reacciona('salta');
+          $('#hfb').innerHTML='✅ '+esc(n.bien||'¡Bien! La historia sigue.');seguir();return}
+        reacciona('err');
+        if(!intento){desvio.add(i);lose();$('#hfb').innerHTML='❌ Esa no encaja. Un repaso rápido…';setTimeout(()=>show(1),900);return}
+        $('#hfb').innerHTML=`❌ Era: <b>${esc(bueno)}</b>. ${esc(n.repaso)}`;seguir()};
+      if(n.opts){
+        $('#hans').innerHTML=`<div class="opts ${n.opts.some(o=>o.length>22)?'':'two'}">${shuf(n.opts).map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+        $('#hans').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.o===n.a;
+          $('#hans').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.o===n.a&&(ok||intento))x.classList.add('ok')});
+          if(!ok){b.classList.add('bad','shake')}responde(ok,n.a)});
+      }else{
+        $('#hans').innerHTML=`<input class="typ" id="wa" ${NOAUTO} placeholder="Escribe aquí"><button class="btn" id="wchk" style="margin-top:0">Comprobar ✔</button>`;
+        const inp=$('#wa');inp.focus({preventScroll:true});
+        const go=()=>{const v=limpiaR(inp.value,tildes);if(!v){$('#hfb').textContent='Escribe tu respuesta 😉';return}
+          const ok=n.acc.some(a=>limpiaR(a,tildes)==v);inp.classList.add(ok?'ok':'bad');inp.disabled=true;$('#wchk').remove();responde(ok,n.show||n.acc[0])};
+        $('#wchk').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};
+      }
+    }
+    show(0);
   },
 });
 function sfxOk(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}

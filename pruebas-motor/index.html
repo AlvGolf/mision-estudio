@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=4">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=5">
 </head>
 <body>
 <header>
@@ -50,9 +50,25 @@ const ESCENAS=[
  {q:'Por la noche: ¿dónde está cada uno?',luz:'noche',sitios:[{k:'campamento',l:'Campsite'},{k:'cocina',l:'Kitchen'},{k:'teatro',l:'Theatre'}],
   gente:[{n:'Zoe',t:'Zoe is camping with her family.',z:'campamento',pein:'melena',ropa:'#ffc83d',pelo:'#2b1a0f'},{n:'Max',t:'Max is making dinner.',z:'cocina',extra:'gorro',pein:'corto',ropa:'#2ecc71'}]}];
 
+const HISTORIA={titulo:'El Theatre Club',
+ sitios:[{k:'cocina',l:'Home'},{k:'teatro',l:'Theatre'},{k:'campo',l:'Football pitch'}],
+ reparto:[{n:'Lucy',pein:'coleta',ropa:'#ff5c8a',pelo:'#2b1a0f',piel:'#c98e62',extra:'mascara'},{n:'You',pein:'corto',ropa:'#3dd6ff'}],
+ fin:'¡Ya eres del Theatre Club! El viernes es tu primera función.',
+ nodos:[
+  {relato:'Es lunes por la tarde. Lucy, tu compañera, llama a tu puerta con un cartel del Theatre Club. Quiere invitarte.',donde:{Lucy:'cocina',You:'cocina'},
+   q:'¿Qué te dice Lucy?',opts:['Would you like to join the Theatre Club?','Do you like join the Theatre Club?'],a:'Would you like to join the Theatre Club?',repaso:'Para invitar: Would you like + to + verbo.'},
+  {relato:'¡Te apetece mucho! Tienes que contestar a la invitación.',donde:{Lucy:'cocina',You:'cocina'},
+   q:'¿Qué le contestas?',opts:['Yes, please! I’d love to.','Yes, I do.'],a:'Yes, please! I’d love to.',repaso:'«Yes, I do» contesta a Do you like…? A una invitación se responde «Yes, please! I’d love to».'},
+  {relato:'El miércoles vais juntos al teatro. La profesora quiere saber qué te gusta hacer.',donde:{Lucy:'teatro',You:'teatro'},
+   q:'Escribe la palabra que falta: «I enjoy ____ in front of people.» (act)',acc:['acting'],repaso:'Después de enjoy va siempre -ing: I enjoy acting.'},
+  {relato:'Lucy te invita a ensayar el sábado por la mañana, pero ese día tienes partido de fútbol.',donde:{Lucy:'teatro',You:'campo'},
+   q:'¿Qué le dices?',opts:['No, thanks. I’m afraid I’m busy.','Yes, please! I’d love to.'],a:'No, thanks. I’m afraid I’m busy.',repaso:'Si no puedes, se rechaza con educación: No, thanks. I’m afraid I’m busy.'},
+  {relato:'Por la noche, en casa, Lucy te pregunta: «Do you like the Theatre Club?»',luz:'noche',donde:{Lucy:'cocina',You:'cocina'},
+   q:'¿Qué le contestas?',opts:['Yes, I do.','Yes, please! I’d love to.'],a:'Yes, I do.',repaso:'A una pregunta con Do you like…? se contesta «Yes, I do» o «No, I don’t».'}]};
+
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
-const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1}];
-const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['exam','👑'],['arcade','🎮']];
+const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1},{k:'historia',n:'Historia',w:1}];
+const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['exam','👑'],['arcade','🎮']];
 
 /* ================== MISIONES ================== */
 const R={
@@ -61,11 +77,12 @@ const R={
  reparar(){runSteps('🛠️ Detecta y repara',shuf(REPARA).map(x=>({t:'repair',...x})),'reparar',R.reparar,'🛠️')},
  cruci(){runSteps('🧩 Crucigrama',CRUCI.map(w=>({t:'cross',words:w,sub:'Toca una pista o una casilla y escribe'})),'cruci',R.cruci,'🧩')},
  escena(){runSteps('🏞️ Construir una escena',ESCENAS.map(x=>({t:'scene',...x,sub:'Toca a una persona y luego su sitio'})),'escena',R.escena,'🏞️')},
+ historia(){runSteps('📖 Historia',[{t:'story',...HISTORIA,sub:'Cada decisión es un ejercicio'}],'historia',R.historia,'📖')},
  letra(){runSteps('🔡 Primera letra',shuf(PRIMERA).map(x=>({t:'first',...x,sub:'Escribe la palabra; la primera letra ya está'})),'letra',R.letra,'🔡')},
 };
 const ROUTE_ST=[
  {k:'dictado',n:'Dictado',ic:'✍️',min:3},{k:'cruci',n:'Crucigrama',ic:'🧩',min:3},{k:'reparar',n:'Detecta y repara',ic:'🛠️',min:2},
- {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2}];
+ {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2},{k:'historia',n:'Historia',ic:'📖',min:3}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const MC=[
@@ -78,7 +95,7 @@ const JUEGO={
  saludo:'Juego de pruebas: una misión por cada formato nuevo del motor.',
  notaBoletin:'Solo cuenta la primera respuesta.',
  menu:[['#','🧪 Formatos nuevos'],['escuchar','🎧','Escucha y elige','Oye y toca'],['dictado','✍️','Dictado','Oye y escribe'],
-  ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],
+  ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],['historia','📖','Historia','El Theatre Club'],
   ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
  chuleta:'',
  examen:{min:3,dia:'el examen',preguntas(){return shuf(MC)}},
@@ -87,6 +104,6 @@ const JUEGO={
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/motor.js?v=4"></script>
+<script src="../motor-beta/motor.js?v=5"></script>
 </body>
 </html>
