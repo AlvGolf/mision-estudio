@@ -400,6 +400,14 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       }
       break;
     }
+    case 'probe': {
+      const opts = st.locator('.opt'); const txt = await opts.allTextContents(); const bien = txt.indexOf(S.a);
+      if (bien < 0) { fallo(`[${tag}] «${t}»: la miniinvestigación no tiene la respuesta «${S.a}» entre las opciones`); break; }
+      await opts.nth(mal ? (bien === 0 ? 1 : 0) : bien).click();
+      if (!mal && !/✅/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: la respuesta correcta de la miniinvestigación («${S.a}») sale como mala`);
+      if (S.planes && Object.keys(S.planes).some(o => !S.opts.includes(o))) fallo(`[${tag}] «${t}»: un plan de la miniinvestigación no coincide con ninguna opción`);
+      break;
+    }
     case 'story': {
       for (const [i, n] of S.nodos.entries()) {
         const listo = `#stage[data-nodo="${i}"] #hans ${n.opts ? '.opt:not([disabled])' : '#wa:not([disabled])'}`;

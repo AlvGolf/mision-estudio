@@ -285,3 +285,16 @@ line.badl{stroke:var(--no);stroke-width:4;stroke-dasharray:6 6;stroke-linecap:ro
 .esc .pj.fuera{opacity:0;pointer-events:none}
 #hq:empty,#hfb:empty,#hrep:empty{display:none}
 @media(max-width:600px){.mapa{gap:4px}.nodo{width:30px;height:30px;font-size:14px}.tramo{width:8px}}
+/* ===== Miniinvestigación (20-nov) ===== */
+.dossier{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px}
+.dossier section{background:#0a1330;border:2px solid #34509f;border-radius:14px;padding:12px;display:grid;gap:4px;align-content:start}
+.dossier h4{margin:0 0 4px;font-size:18px;color:var(--gold)}
+.dossier table{border-collapse:collapse;font-size:17px}
+.dossier td{padding:3px 8px 3px 0;vertical-align:top}
+.quien{display:flex;align-items:center;gap:10px}
+.retrato{width:64px;height:auto;flex:none;background:#24387a;border-radius:12px;overflow:visible}
+.retrato .aro,.retrato .nom{display:none}
+.retrato .cuerpo{transform-box:fill-box;transform-origin:50% 100%}
+.retrato .salta .cuerpo,.retrato.salta .cuerpo{animation:esc-salta .45s ease 2}
+.retrato .err .cuerpo,.retrato.err .cuerpo{animation:esc-tiembla .35s}
+@media (prefers-reduced-motion:reduce){.retrato .cuerpo{animation:none!important}}

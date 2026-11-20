@@ -61,6 +61,11 @@ Condiciones de juego, no modalidades: **examen** (sin pistas, con tiempo) y **ru
 - Cada decisión es un ejercicio del temario: test (`opts`) o escrita sin opciones (`acc`). Al fallar, repaso corto y otra oportunidad, que ya no puntúa; al segundo fallo enseña la respuesta y la historia sigue. Las ramas se juntan siempre.
 - Cuenta cada decisión a la primera. El verificador prueba en cada historia los tres caminos (a la primera, con repaso y con dos fallos).
 
+**Miniinvestigación, hecha en `motor-beta/` (20-nov)** como paso `probe`: `{quien:{n, aspecto…}, ficha:[[icono, texto]], agenda?:[[día, texto]], agendaT?, q, opts, a, ex?, sitios?, planes?:{opción: sitio}, luz?}`.
+- Ficha de gustos y agenda del personaje, con su retrato; una pregunta de test por paso (varios pasos pueden compartir la misma ficha).
+- Con `sitios` y `planes`, al elegir el personaje camina al sitio del plan elegido: salta si encaja y tiembla si no.
+- Cuenta a la primera, como un test. Riesgo que vigilar: demasiada lectura (ficha corta, de 3 a 5 líneas).
+
 **Hechas en `motor-beta/` (20-nov)**, como tipos de paso de `runSteps`: `listen` (escucha y elige), `dictado`, `repair` (detecta y repara), `cross` (crucigrama) y `first` (primera letra). Ningún juego las usa todavía: se estrenan en el próximo temario. Las juega el verificador en `pruebas-motor/`. Para usarlas en un juego: `JUEGO.voz` (idioma de la voz, por defecto `en-GB`) y `JUEGO.tildesCuentan` (por defecto no). Los datos de cada paso están comentados en `motor-beta/motor.js`.
 
 ## Para hacer ya en el motor (antes del juego de 2º)
@@ -82,7 +87,7 @@ Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/
 |---|---|---|
 | Historia ramificada | Hecha (paso `story`): de 4 a 6 decisiones con la escena animada; si falla, repaso corto y vuelve al camino | decisiones de adorno que no exigen saber |
 | Construir una escena | Hecha (paso `scene`): lee la frase de cada persona y la lleva a su sitio en la escena dibujada | que el dibujo delate el sitio sin leer; que dependa del dedo (por eso se toca) |
-| Miniinvestigación (5º) | Ficha visible de un personaje (gustos, agenda) y una pregunta («¿qué plan le propones?») | demasiada lectura |
+| Miniinvestigación (5º) | Hecha (paso `probe`): ficha y agenda de un personaje y una pregunta («¿qué plan le propones?») | demasiada lectura |
 
 ## Para cuando un temario las pida
 

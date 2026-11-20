@@ -10,4 +10,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| motor-beta, pruebas-motor | Claude Code | 20-nov | Modalidades nuevas: construir una escena, historia y miniinvestigación |
+| — | — | — | Nadie trabajando ahora |

@@ -758,6 +758,33 @@ Object.assign(STEP,{
     show(0);
   },
 });
+Object.assign(STEP,{
+  /* 🔎 Miniinvestigación (5º): {quien:{n, aspecto…}, ficha:[[icono, texto]], agenda?:[[día, texto]], agendaT?, q, opts, a, ex?,
+       sitios?, planes?:{opción: sitio}, luz?}
+     Consulta la ficha y la agenda de un personaje y decide. Con sitios y planes, al elegir el personaje camina
+     al sitio de ese plan: salta si encaja y tiembla si no. Cuenta a la primera, como un test. */
+  probe(st,s,done){
+    const P={...ESC_DEF[0],...s.quien},E=s.sitios?escSVG(s.sitios,s.luz,'',s.q):null;
+    const dibujo=E?E.svg.replace('</svg>',`<g class="pj" data-pj="0" style="transform:translate(${E.W/2}px,276px)">${escPersona(P)}</g></svg>`)
+      :`<svg class="retrato" viewBox="-24 -60 48 78" aria-hidden="true">${escPersona(P)}</svg>`;
+    st.innerHTML=`${E?dibujo:''}<div class="dossier"><section><div class="quien">${E?'':dibujo}<h4>📇 ${esc(P.n)}</h4></div>
+      <table>${s.ficha.map(([i,t])=>`<tr><td>${i}</td><td>${esc(t)}</td></tr>`).join('')}</table></section>
+      ${s.agenda?`<section><h4>📅 ${esc(s.agendaT||'Agenda')}</h4><table>${s.agenda.map(([d,t])=>`<tr><td><b>${esc(d)}</b></td><td>${esc(t)}</td></tr>`).join('')}</table></section>`:''}</div>
+      <div class="q">${esc(s.q)}</div><div class="opts">${shuf(s.opts).map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+    if(E)st.querySelectorAll('.zona').forEach(z=>{z.removeAttribute('tabindex');z.removeAttribute('role');z.style.pointerEvents='none'});
+    st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const ok=b.dataset.o===s.a;
+      st.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.o===s.a)x.classList.add('ok')});
+      if(!ok)b.classList.add('bad','shake');
+      const g=st.querySelector('.pj'),z=s.planes&&s.planes[b.dataset.o];
+      if(g&&z&&E){const sp=E.spot(z);g.classList.add('anda');g.style.transform=`translate(${sp.x}px,${sp.y}px)`;
+        setTimeout(()=>{g.classList.remove('anda');g.classList.add(ok?'salta':'err')},escQuieto()?0:900)}
+      else if(g){g.classList.add(ok?'salta':'err')}
+      else{const r=st.querySelector('.retrato .cuerpo');if(r){r.parentNode.classList.add(ok?'salta':'err')}}
+      ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Buena investigación! ':'❌ Era: <b>'+esc(s.a)+'</b>'+(/[.!?]$/.test(s.a)?' ':'. '))+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''));
+    });
+  },
+});
 function sfxOk(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
 function sfxTap(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
 
