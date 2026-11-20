@@ -216,6 +216,8 @@ line.badl{stroke:var(--no);stroke-width:4;stroke-dasharray:6 6;stroke-linecap:ro
  .rmap{grid-template-columns:repeat(5,1fr);gap:8px 2px}.rdot{width:38px;height:38px;font-size:17px}.rname{font-size:10.5px}
  .sw-l,.sw-r{font-size:12px}
 }
+/* ===== Minutos de cada estación en el mapa de la ruta (20-nov) ===== */
+.rmin{font-size:11px;color:var(--mut);margin-top:2px}
 /* ===== Nota real del colegio junto a la prevista (20-nov) ===== */
 .notas-ex{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
 .nbox{text-align:center;background:var(--card2);padding:10px 16px;border-radius:14px}
