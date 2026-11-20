@@ -40,6 +40,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
    - Artefacto con 3 direcciones completas, cada una en las cuatro pantallas y en sus versiones de 2º y 5º; se elige dirección y luego se afina pantalla a pantalla. La letra la propone cada dirección.
    - Movimiento con propósito (acertar, fallar, avanzar, subir de nota), nada en bucle; se apaga si el dispositivo pide menos movimiento.
    - Al aprobarlo va al motor común: llega a todos los juegos, Inglés Unit 2 incluido (con el estilo de 5º).
+   - Artefacto «Rediseño de Misión Estudio» (https://claude.ai/artifact/3bYCo7KGXvksweYVzc8QAa, 20-nov; elección en su almacén, colección `elecciones`, documento `direccion`): A · Atardecer, B · Cómic y C · Noche estrellada, cada una en menú, ruta, ejercicio y resultados, con versión de 5º y de 2º. **Pendiente del padre: elegir dirección.**
 - (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo.)
 
 ## Pendiente del padre
