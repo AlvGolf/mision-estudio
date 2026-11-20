@@ -41,7 +41,11 @@ function starLine(b){return MIC.map(([k,ic])=>{const s=Math.min((b&&b[k])||0,MAX
 const totalStars=()=>Object.values(BEST).reduce((a,b)=>a+b,0);
 /* Partidas antiguas sin desglose: si sus estrellas coinciden con las actuales, se rellena */
 HIST.forEach(e=>{if(!e.sb&&e.st===totalStars())e.sb={...BEST}});save();
-function hud(){document.getElementById('xp').textContent='⭐ '+XP+' XP';document.getElementById('streak').textContent='🔥 '+STREAK}
+let HUDXP=null,HUDST=null;
+function hud(){const x=document.getElementById('xp'),s=document.getElementById('streak'),de=HUDXP;HUDXP=XP;
+  if(de==null||XP<=de||escQuieto())x.textContent='⭐ '+XP+' XP';
+  else{x.classList.remove('sube');void x.offsetWidth;x.classList.add('sube');const t0=performance.now(),meta=XP;const paso=t=>{if(HUDXP!==meta)return;const k=Math.min(1,(t-t0)/600);x.textContent='⭐ '+Math.round(de+(meta-de)*k)+' XP';if(k<1)requestAnimationFrame(paso)};requestAnimationFrame(paso)}
+  if(HUDST!=null&&STREAK>HUDST&&!escQuieto()){s.classList.remove('llama');void s.offsetWidth;s.classList.add('llama')}HUDST=STREAK;s.textContent='🔥 '+STREAK}
 function win(n=10){STREAK++;if(STREAK>BSTREAK)BSTREAK=STREAK;XP+=n+(STREAK>=3?5:0);hud();save();if(STREAK%5==0)confetti()}
 function lose(){STREAK=0;hud()}
 const $=s=>document.querySelector(s);
@@ -105,14 +109,15 @@ function home(){
   const ht=$('#hoy');if(ht)ht.onclick=()=>R[ht.dataset.k]();
   /* Recargar: si no, la XP y las notas que hay en memoria pasarían al siguiente niño */
   const cn=$('#chn');if(cn)cn.onclick=()=>{apartaPerfil();location.reload()};
+  entrada();
 }
 
 function boletin(){
   const f=finalNota(),h=hoyToca(),ex=nota('exam');
   return `<div class="box" style="margin-top:0"><h2>📊 Boletín de ${esc(lsGet(JUEGO.claves.nombre)||'')}</h2>
   <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:6px 0 10px">
-   <div style="font-size:54px;font-weight:700;color:var(--gold)">${f.miss?'?':fmt(f.n)}</div>
-   <div><b style="font-size:20px">${f.miss?'Nota pendiente':label(f.n)}</b><br><span style="color:var(--mut)">${f.miss?`Juega los ${f.miss} bloque(s) que faltan ⚪ para ver tu nota`:'Media de tus 3 últimas partidas en cada bloque'}</span></div>
+   <div id="bnota" data-cuenta="${f.miss?'':f.n}" style="font-size:54px;font-weight:700;color:var(--gold)">${f.miss?'?':fmt(f.n)}</div>
+   <div><b id="blab" style="font-size:20px">${f.miss?'Nota pendiente':label(f.n)}</b><br><span style="color:var(--mut)">${f.miss?`Juega los ${f.miss} bloque(s) que faltan ⚪ para ver tu nota`:'Media de tus 3 últimas partidas en cada bloque'}</span></div>
    <div class="notas-ex"><div class="nbox"><div style="color:var(--mut);font-size:13px">👑 Nota prevista examen</div><div style="font-size:28px;font-weight:700">${fmt(ex)}</div></div>
     <div class="nbox" id="realbox">${realHTML()}</div></div>
   </div>
@@ -262,12 +267,29 @@ function examRun(qs){
 }
 /* ===== Motores genéricos ===== */
 function endScreen(icon,ok,tot,key,again,extra=''){
-  const p=tot?ok/tot:0;setBest(key,p);const g=MAP[key]?grade(key,p*10):null;if(p>=.7)confetti();
-  app().innerHTML=`<div class="box center"><div class="big">${icon}</div><h2>${ok} de ${tot} a la primera</h2>
-  ${g!=null?`<p style="font-size:22px">Nota: <b>${fmt(g)}</b> · ${label(g)} ${sem(g)}</p>`:''}${guiaFin(p)}${extra}
+  const p=tot?ok/tot:0;setBest(key,p);const g=MAP[key]?grade(key,p*10):null,s=starsFor(p);
+  const sello=p<.5?'':g!=null?'¡'+label(g).toUpperCase()+'!':p>=.9?'¡GENIAL!':'¡MUY BIEN!';
+  app().innerHTML=`<div class="box center celebra"><div class="big">${icon}</div><h2>${ok} de ${tot} a la primera</h2>
+  ${g!=null?`<p style="font-size:22px">Nota: <b data-cuenta="${g}">${fmt(g)}</b> <span class="cf-lab">· ${label(g)} ${sem(g)}</span></p>`:''}
+  <div class="cf-estr" aria-label="${s} de 3 estrellas">${[0,1,2].map(k=>`<span class="${k<s?'si':'no'}">${k<s?'★':'☆'}</span>`).join('')}</div>
+  ${sello?`<div class="cf-sello"><span>${sello}</span></div>`:''}${guiaFin(p)}${extra}
   <button class="btn" id="again">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
-  $('#again').onclick=again;
+  $('#again').onclick=again;celebra(app().querySelector('.box'),p,g);
 }
+/* Celebración en secuencia (el padre, 20-nov): sube la nota y salen las estrellas; luego el guía habla, levanta los brazos y salta;
+   después el sello y por último el confeti. Los botones funcionan desde el principio: no hace esperar. */
+function celebra(box,p,g){const q=escQuieto(),T=(ms,f)=>setTimeout(()=>{if(box.isConnected)f()},q?0:ms);
+  box.classList.add('cf');const n=box.querySelector('[data-cuenta]');if(n)cuentaNum(n,0,g,q?0:900,250);
+  box.querySelectorAll('.cf-estr span').forEach((e,k)=>T(1150+k*250,()=>e.classList.add('ve')));
+  T(1950,()=>{const l=box.querySelector('.cf-lab');if(l)l.classList.add('ve');const gd=box.querySelector('.guia');if(!gd)return;
+    gd.querySelector('.bocadillo').classList.remove('oculto');
+    if(p>=.7){gd.querySelector('svg').innerHTML=escPersona(guiaP({celebra:1}));gd.classList.remove('salta');void gd.offsetWidth;gd.classList.add('salta')}});
+  T(2600,()=>{const s=box.querySelector('.cf-sello');if(s)s.classList.add('ve')});
+  if(p>=.7)T(3150,confetti)}
+/* Cuenta un número de «desde» a «hasta» (nota con coma o puntos enteros) */
+function cuentaNum(el,desde,hasta,dur,espera=0,entero){const f=v=>entero?String(Math.round(v)):fmt(Math.round(v*10)/10);
+  if(!dur||escQuieto()){el.textContent=f(hasta);return}el.textContent=f(desde);
+  setTimeout(()=>{const t0=performance.now();const paso=t=>{if(!el.isConnected)return;const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=f(desde+(hasta-desde)*e);if(k<1)requestAnimationFrame(paso)};requestAnimationFrame(paso)},espera)}
 /* Ordenar palabras */
 function orderGame(title,sub,set,key,again,hint){
   let i=0,ok=0;
@@ -671,9 +693,9 @@ function escPersona(p){
   return `<ellipse class="aro" cx="0" cy="0" rx="17" ry="5"/><ellipse cx="0" cy="0" rx="10" ry="2.8" fill="rgba(0,0,0,.22)"/><g class="cuerpo">
     ${p.extra=='mochila'?`<rect x="-11" y="-33" width="7" height="14" rx="2.5" fill="#7a5530" ${o}/>`:''}
     <path d="M-3 -17 v15 M3 -17 v15" stroke="${L}" stroke-width="5.4" stroke-linecap="round"/><path d="M-3 -17 v15 M3 -17 v15" stroke="#2c3e66" stroke-width="3.4" stroke-linecap="round"/>
-    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 ${p.saluda?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${L}" stroke-width="5" stroke-linecap="round" fill="none"/>
-    <path d="M-7.5 -32 q-3.5 6 -3.2 12.5 ${p.saluda?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${p.ropa}" stroke-width="3" stroke-linecap="round" fill="none"/>
-    <circle cx="-10.7" cy="-19" r="2" fill="${p.piel}" ${o}/><circle cx="${p.saluda?13.6:10.7}" cy="${p.saluda?-46:-19}" r="2" fill="${p.piel}" ${o}/>
+    <path d="${p.celebra?'M-7.5 -32 q-5 -5 -6 -13':'M-7.5 -32 q-3.5 6 -3.2 12.5'} ${p.saluda||p.celebra?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${L}" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="${p.celebra?'M-7.5 -32 q-5 -5 -6 -13':'M-7.5 -32 q-3.5 6 -3.2 12.5'} ${p.saluda||p.celebra?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${p.ropa}" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="${p.celebra?-13.6:-10.7}" cy="${p.celebra?-46:-19}" r="2" fill="${p.piel}" ${o}/><circle cx="${p.saluda||p.celebra?13.6:10.7}" cy="${p.saluda||p.celebra?-46:-19}" r="2" fill="${p.piel}" ${o}/>
     <path d="M-7.8 -32.5 q0 -3 3 -3 h9.6 q3 0 3 3 l-1.4 16 h-12.8z" fill="${p.ropa}" ${o}/>
     ${atras?`<g ${t} ${pst}>${atras}</g>`:''}<circle cx="0" cy="${hy}" r="${hr}" fill="${p.piel}" ${o}/>
     <ellipse cx="-2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/><ellipse cx="2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/>
@@ -699,9 +721,10 @@ function escSVG(sitios,luz,encima,etiqueta){
 }
 /* Personaje guía (rediseño, 20-nov): uno por juego (JUEGO.guia o el del grupo de estilos), con bocadillo.
    Sale en el menú, al empezar la ruta y en los resultados; el ejercicio queda limpio. */
-function guia(txt,o={}){const p={...ESC_DEF[(((JUEGO.estilo|0)%6)+6)%6],...(JUEGO.guia||{}),...(o.saluda?{saluda:1}:{}),n:''};
-  return `<div class="guia${o.salta?' salta':''}"><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(p)}</svg><div class="bocadillo">${txt}</div></div>`}
-function guiaFin(p){return p>=.9?guia('¡Lo bordaste! 🎉',{saluda:1,salta:1}):p>=.7?guia('¡Muy bien! Repite y a por las tres estrellas.',{salta:1}):p>=.5?guia('Vas bien. A la segunda sale mejor.'):guia('No pasa nada: repítela y verás cómo mejora. ¡Tú puedes!')}
+function guiaP(o={}){return{...ESC_DEF[(((JUEGO.estilo|0)%6)+6)%6],...(JUEGO.guia||{}),...(o.saluda?{saluda:1}:{}),...(o.celebra?{celebra:1}:{}),n:''}}
+function guia(txt,o={}){
+  return `<div class="guia${o.salta?' salta':''}"><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(guiaP(o))}</svg><div class="bocadillo${o.sinTexto?' oculto':''}">${txt}</div></div>`}
+function guiaFin(p){return guia(p>=.9?'¡Lo bordaste! 🎉':p>=.7?'¡Muy bien! Repite y a por las tres estrellas.':p>=.5?'Vas bien. A la segunda sale mejor.':'No pasa nada: repítela y verás cómo mejora. ¡Tú puedes!',{sinTexto:1})}
 const escQuieto=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 Object.assign(STEP,{
@@ -777,7 +800,7 @@ Object.assign(STEP,{
       $('#hrel').textContent=s.fin||'¡Fin de la historia!';confetti();
       done(primera,N.length,primera==N.length?'✅ ¡Todas las decisiones a la primera!':`👍 ${primera} de ${N.length} decisiones a la primera.`)};
     function show(intento){
-      const n=N[i];st.dataset.nodo=i;mapa();pinta(n);
+      const n=N[i];st.dataset.nodo=i;mapa();pinta(n);if(!intento)transEscena($('#hesc svg'),i?'Capítulo '+(i+1):(s.titulo||''));
       $('#hrel').textContent=n.relato;$('#hfb').innerHTML='';$('#hnx').innerHTML='';
       $('#hrep').innerHTML=intento?`<div class="repaso">↺ <b>Repaso rápido:</b> ${esc(n.repaso)} Prueba otra vez.</div>`:'';
       $('#hq').textContent=n.q;
@@ -870,6 +893,7 @@ function apuntaTiempo(s){if(!ROUTE.t0)return;const seg=Math.round((Date.now()-RO
   const tm=ROUTE.tm=ROUTE.tm||{};(tm[s.k]=tm[s.k]||[]).push(seg);if(tm[s.k].length>5)tm[s.k].shift()}
 function startStation(){
   const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();saveRoute();
+  if(ROUTE_ST.length>=4){if(ROUTE.i===Math.floor(ROUTE_ST.length/2))asoma('¡Ya vas por la mitad! 💪');else if(ROUTE.i===ROUTE_ST.length-1)asoma('¡Última estación! Ya casi está.')}
   const part=routePart();
   if(JUEGO.ruta.estacion&&JUEGO.ruta.estacion(s.k,part))return;
   R[s.k]();
@@ -877,7 +901,7 @@ function startStation(){
 function routeMap(){
   const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+(tiempoReal(s.k)||s.min),0);
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=!ROUTE?'':n<ROUTE.i?'done':n==ROUTE.i?'now':'';
-    return `<div class="rst ${st}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>`}).join('')}</div>
+    return `<div class="rst ${st}" style="--i:${n}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
@@ -1079,3 +1103,35 @@ const G={
 return{home:ahome,clear:clearAll};
 })();
 hud();home();loadClass();
+
+/* ================== MOVIMIENTO (rediseño, ronda 4, 20-nov) ==================
+   Elegido por el padre: celebración en secuencia (C1), menú escalonado (M1), camino de la ruta (R1), ejercicio suave
+   con +10 y barra viva (E1), las tres transiciones de escena que se van turnando (H1, H2 y H3), XP y racha que suben (X2),
+   cuenta atrás del examen (X3) y el guía que asoma (X4). Todo se apaga si el dispositivo pide menos movimiento. */
+function entrada(){if(escQuieto())return;const a=app();let i=0;const marca=el=>{el.style.setProperty('--i',Math.min(i++,14));el.classList.add('ent')};
+  [...a.children].forEach(el=>el.classList.contains('grid')?[...el.children].forEach(marca):marca(el));
+  const n=a.querySelector('#bnota');if(n&&n.dataset.cuenta!==''){cuentaNum(n,0,+n.dataset.cuenta,800,250);const l=a.querySelector('#blab');if(l)l.classList.add('tarde')}}
+/* +10 que sube desde lo último que se tocó */
+let TOQUE=null;document.addEventListener('pointerdown',e=>{TOQUE=e.target},true);document.addEventListener('keydown',e=>{TOQUE=document.activeElement},true);
+function flotaXP(n){if(escQuieto())return;const el=TOQUE&&TOQUE.isConnected?TOQUE.closest('.opt,.btn,.li,.chip,.tok,.pj,.zona,.per,button,input')||TOQUE:document.getElementById('fb');if(!el||!el.getBoundingClientRect)return;
+  const r=el.getBoundingClientRect(),f=document.createElement('div');f.className='flotaxp';f.textContent='+'+n;f.style.left=Math.min(innerWidth-50,r.right-30)+'px';f.style.top=(r.top-6)+'px';
+  document.body.appendChild(f);setTimeout(()=>f.remove(),1100)}
+const _win=win;win=function(n=10){_win(n);flotaXP(n+(STREAK>=3?5:0))};
+/* La barra de progreso crece desde donde iba, con un brillo */
+let BARRA=0;new MutationObserver(()=>{const d=app().querySelector('.box .bar>div');if(!d||d.dataset.v)return;d.dataset.v=1;const w=parseFloat(d.style.width)||0;
+  if(w>BARRA&&!escQuieto()){const meta=d.style.width;d.style.transition='none';d.style.width=BARRA+'%';void d.offsetWidth;d.style.transition='';requestAnimationFrame(()=>{d.style.width=meta;d.parentNode.classList.add('reluce')})}
+  BARRA=w}).observe(app(),{childList:true,subtree:true});
+/* Cuenta atrás antes del examen final */
+function cuentaAtras(fn){if(escQuieto())return fn();const o=document.createElement('div');o.className='cuentaatras';o.setAttribute('aria-live','assertive');
+  o.innerHTML=['3','2','1','¡Ya!'].map((n,i)=>`<span style="--i:${i}">${n}</span>`).join('');document.body.appendChild(o);setTimeout(()=>{o.remove();fn()},3000)}
+const _examRun=examRun;examRun=function(qs){_examRun(qs);const b=$('#go');if(!b)return;const f=b.onclick;b.onclick=()=>{b.disabled=true;cuentaAtras(f)}};
+/* El guía asoma por el borde para dar un aviso */
+function asoma(txt){if(escQuieto())return;const a=document.createElement('div');a.className='asoma';a.setAttribute('aria-live','polite');
+  a.innerHTML=`<div class="bocadillo">${txt}</div><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(guiaP({saluda:1}))}</svg>`;document.body.appendChild(a);setTimeout(()=>a.remove(),4200)}
+/* Transiciones de escena: se turnan la cortinilla de cine, pasar página y el viaje de cámara */
+let TRANS_N=0;
+function transEscena(svg,titulo){if(!svg||escQuieto())return;let w=svg.parentNode;if(!w.classList.contains('escw')){w=document.createElement('div');w.className='escw';svg.parentNode.insertBefore(w,svg);w.appendChild(svg)}
+  w.querySelectorAll('.franja,.tit').forEach(x=>x.remove());w.classList.remove('h1','h2','h3');void w.offsetWidth;const k=TRANS_N++%3;w.classList.add('h'+(k+1));
+  if(k===0)w.insertAdjacentHTML('beforeend',`<div class="franja ar"></div><div class="franja ab"></div>${titulo?`<div class="tit">${esc(titulo)}</div>`:''}`);
+  setTimeout(()=>{w.classList.remove('h'+(k+1));w.querySelectorAll('.franja,.tit').forEach(x=>x.remove())},3400)}
+for(const t of ['scene','probe']){const f=STEP[t];if(f)STEP[t]=function(st,s,done){const r=f.call(this,st,s,done);transEscena(st.querySelector('svg.esc'),s.titulo||'');return r}}

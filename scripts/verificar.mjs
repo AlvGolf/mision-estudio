@@ -207,7 +207,7 @@ for (const juego of juegos) {
     const btnExamen = page.locator('.routeend .btn');
     if (acabada && await btnExamen.count()) {
       await btnExamen.first().click();
-      if (await visible('#go')) await page.click('#go');
+      if (await visible('#go')) { await page.click('#go'); await page.waitForSelector('#app .opt', { timeout: 8000 }).catch(() => {}); }
       let preguntas = 0;
       for (let k = 0; k < 60 && await visible('#app .opt'); k++) { await page.locator('#app .opt').first().click(); preguntas++; }
       const txt = await page.locator('#app').innerText();
