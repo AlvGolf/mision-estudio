@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pruebas del motor</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=3">
+</head>
+<body>
+<header>
+  <h1 onclick="home()">🧪 <span class="t-long">Pruebas del motor</span><span class="t-short">Pruebas</span></h1>
+  <div class="hud"><span class="pill" id="xp">⭐ 0 XP</span><span class="pill" id="streak">🔥 0</span></div>
+</header>
+<main id="app"></main>
+
+<script>
+/* Juego de pruebas del motor común: una misión por cada formato nuevo, para que
+   `npm run verificar` los juegue de verdad aunque ningún juego los use todavía.
+   No está en el menú ni tiene ranking. Contenido de ejemplo de Inglés Unit 2. */
+
+/* ================== DATOS ================== */
+const ESCUCHA=[
+ {say:'take photos',opts:['📷 take photos','📚 read books','🎬 watch films','⚽ play sports'],a:'📷 take photos'},
+ {say:'Would you like to come to my party?',q:'¿Qué es lo que oyes?',opts:['💌 Una invitación','❤️ Una pregunta sobre gustos'],a:'💌 Una invitación'},
+ {say:'I never sleep in a tent.',q:'¿Cuántas veces duerme en una tienda?',opts:['100 %','50 %','25 %','0 %'],a:'0 %'},
+ {say:'She is brilliant at dancing.',q:'¿Qué se le da bien?',opts:['💃 Bailar','🍳 Cocinar','🎸 Tocar un instrumento'],a:'💃 Bailar'}];
+const DICTADO=['I usually read books.','My sister hates taking photos.','Would you like to join the club?'];
+const REPARA=[
+ {w:['She','enjoy','reading','comics.'],bad:1,fix:['enjoys'],ex:'Con she/he/it el verbo lleva -s: she enjoys.'},
+ {w:['Do','you','like','swiming?'],bad:3,fix:['swimming'],ex:'swim → swimming: se dobla la m.'},
+ {w:['He','buyed','a','new','bike.'],bad:1,fix:['bought'],ex:'buy · bought · bought.'}];
+const CRUCI=[
+ [{n:1,d:'v',r:0,c:2,w:'caught',pista:'Past of catch'},{n:2,d:'v',r:1,c:5,w:'ate',pista:'Past of eat'},
+  {n:3,d:'h',r:2,c:0,w:'bought',pista:'Past of buy'},{n:4,d:'h',r:5,c:0,w:'cut',pista:'Past of cut'}],
+ [{n:1,d:'h',r:0,c:0,w:'drew',pista:'Past of draw'},{n:2,d:'v',r:0,c:3,w:'went',pista:'Past of go'},{n:3,d:'h',r:3,c:2,w:'ate',pista:'Past of eat'}]];
+const PRIMERA=[
+ {pre:'My sister hates ',w:'taking',post:' photos.',es:'tomar (fotos)'},
+ {pre:'My little brother is ',w:'afraid',post:' of spiders.',es:'asustado'},
+ {pre:'I love going camping in the ',w:'countryside',post:'.',es:'el campo'}];
+
+/* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
+const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1}];
+const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['exam','👑'],['arcade','🎮']];
+
+/* ================== MISIONES ================== */
+const R={
+ escuchar(){runSteps('🎧 Escucha y elige',shuf(ESCUCHA).map(x=>({t:'listen',...x,sub:'Toca 🔊 para oírlo otra vez'})),'escuchar',R.escuchar,'🎧')},
+ dictado(){runSteps('✍️ Dictado',DICTADO.map(f=>({t:'dictado',say:f,sub:'No cuentan las mayúsculas ni los puntos'})),'dictado',R.dictado,'✍️')},
+ reparar(){runSteps('🛠️ Detecta y repara',shuf(REPARA).map(x=>({t:'repair',...x})),'reparar',R.reparar,'🛠️')},
+ cruci(){runSteps('🧩 Crucigrama',CRUCI.map(w=>({t:'cross',words:w,sub:'Toca una pista o una casilla y escribe'})),'cruci',R.cruci,'🧩')},
+ letra(){runSteps('🔡 Primera letra',shuf(PRIMERA).map(x=>({t:'first',...x,sub:'Escribe la palabra; la primera letra ya está'})),'letra',R.letra,'🔡')},
+};
+const ROUTE_ST=[
+ {k:'dictado',n:'Dictado',ic:'✍️',min:3},{k:'cruci',n:'Crucigrama',ic:'🧩',min:3},{k:'reparar',n:'Detecta y repara',ic:'🛠️',min:2},
+ {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2}];
+
+/* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
+const MC=[
+ {q:'Past of buy',opts:['bought','buyed','brought'],a:'bought'},{q:'Past of eat',opts:['ate','eated','eat'],a:'ate'},
+ {q:'She ____ reading.',opts:['enjoys','enjoy','enjoying'],a:'enjoys'},{q:'swim + -ing',opts:['swimming','swiming','swimeing'],a:'swimming'},
+ {q:'"countryside" es…',opts:['el campo','la ciudad','la costa'],a:'el campo'}];
+const JUEGO={
+ id:'pruebas-motor',codigo:'PRUEBAS DEL MOTOR',ranking:false,voz:'en-GB',tildesCuentan:false,
+ claves:{estado:'pruebas_motor',ruta:'pruebas_motor_ruta',arcade:'pruebas_motor_arcade',nombre:'mision_name'},
+ saludo:'Juego de pruebas: una misión por cada formato nuevo del motor.',
+ notaBoletin:'Solo cuenta la primera respuesta.',
+ menu:[['#','🧪 Formatos nuevos'],['escuchar','🎧','Escucha y elige','Oye y toca'],['dictado','✍️','Dictado','Oye y escribe'],
+  ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],
+  ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
+ chuleta:'',
+ examen:{min:3,dia:'el examen',preguntas(){return shuf(MC)}},
+ ruta:{partes:[],estacion(){}},
+ arcade:{bloques:[{k:'mix',n:'Todo mezclado',ic:'🎲'}],jefes:{mix:['🦖','Rex de pruebas']},
+  test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
+};
+</script>
+<script src="../motor-beta/motor.js?v=3"></script>
+</body>
+</html>

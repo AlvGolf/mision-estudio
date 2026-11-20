@@ -29,7 +29,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
    - ✅ (en beta) «Ordena la frase» y «escribe la frase» aceptan *sometimes* al principio.
    - Pasar el motor común y estos arreglos a la normal: **falta que el padre pruebe la beta y lo apruebe**.
 2. **Artefacto «Modalidades nuevas»** (https://claude.ai/artifact/FfjxVWGYQJwPv4fBk5y4F8, publicado el 20-nov; lo elegido se guarda en su almacén, colección `elecciones`) con maquetas jugables: las seis para hacer ya (escuchar, dictado, detectar y reparar, crucigrama, número, primera letra) y las tres a evaluar (historia ramificada, construir una escena, miniinvestigación).
-3. **Construir en `motor-beta/`** las modalidades elegidas.
+3. **Construir en `motor-beta/`** las modalidades elegidas. ✅ (20-nov) Escuchar, dictado, reparar, crucigrama y primera letra, probadas en `pruebas-motor/` (el verificador las juega). Número: espera al primer temario de Mates. **Siguiente:** comparación visual de las escenas (emojis mejorados frente a dibujos SVG animados) en el artefacto, y después historia, escena y miniinvestigación.
 4. **Extras de los puntos 6.1 y 6.4 del informe:** apuntar la nota real del colegio y compararla con la «nota prevista»; guardar en el dispositivo cuánto tarda de verdad cada estación de la ruta.
 5. **Aspecto visual** del motor, con un artefacto de opciones.
 - (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo.)

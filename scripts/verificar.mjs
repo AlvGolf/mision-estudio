@@ -346,6 +346,47 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       if (!mal && !await campo.evaluate(e => e.classList.contains('ok'))) fallo(`[${tag}] «${t}»: escribir la respuesta correcta («${S.acc[0]}») la da por mala`);
       break;
     }
+    case 'listen': {
+      await st.locator('#hb').click(); // oír no puede romper nada
+      const opts = st.locator('.opt'); const txt = await opts.allTextContents(); const bien = txt.indexOf(S.a);
+      if (bien < 0) { fallo(`[${tag}] «${t}»: escuchar y elegir no tiene la respuesta «${S.a}» entre las opciones`); break; }
+      await opts.nth(mal ? (bien === 0 ? 1 : 0) : bien).click();
+      break;
+    }
+    case 'dictado': {
+      const campo = st.locator('#wa');
+      await campo.fill(mal ? 'x' : S.say.toUpperCase().replace(/[.?!]/g, '')); // mayúsculas y sin puntos: debe valer
+      await campo.press('Enter');
+      if (!mal && !await campo.evaluate(e => e.classList.contains('ok'))) fallo(`[${tag}] «${t}»: el dictado da por mala la frase correcta en mayúsculas y sin puntos («${S.say}»)`);
+      break;
+    }
+    case 'repair': {
+      if (mal) await st.locator(`.tok[data-k="${S.bad === 0 ? 1 : 0}"]`).click();
+      await st.locator(`.tok[data-k="${S.bad}"]`).click();
+      const campo = st.locator('#wa');
+      if (!await campo.count()) { fallo(`[${tag}] «${t}»: tocar la palabra mala no deja escribir el arreglo`); break; }
+      await campo.fill(S.fix[0]); await campo.press('Enter');
+      if (!await campo.evaluate(e => e.classList.contains('ok'))) fallo(`[${tag}] «${t}»: el arreglo correcto («${S.fix[0]}») sale como malo`);
+      break;
+    }
+    case 'cross': {
+      for (const [i, w] of S.words.entries())
+        for (let k = 0; k < w.w.length; k++) {
+          const r = w.r + (w.d === 'v' ? k : 0), c = w.c + (w.d === 'h' ? k : 0);
+          await st.locator(`[data-rc="${r},${c}"]`).fill(mal && i === 0 && k === w.w.length - 1 ? 'z' : w.w[k]);
+        }
+      await st.locator('#wchk').click();
+      if (!mal && await st.locator('.cell input.bad').count()) fallo(`[${tag}] «${t}»: el crucigrama bien rellenado tiene casillas en rojo`);
+      if (mal && !await st.locator('.cell input.bad').count()) fallo(`[${tag}] «${t}»: el crucigrama no marca la letra mal puesta`);
+      break;
+    }
+    case 'first': {
+      const casillas = st.locator('.letras input'); const n = await casillas.count();
+      for (let k = 0; k < n; k++) { const c = casillas.nth(k); const pos = +(await c.getAttribute('data-k')); await c.fill(mal && k === 0 ? 'z' : S.w[pos].toLowerCase()); }
+      await st.locator('#wchk').click();
+      if (!mal && await st.locator('.letras input.bad').count()) fallo(`[${tag}] «${t}»: la palabra con la primera letra bien escrita («${S.w}») sale como mala`);
+      break;
+    }
     default:
       fallo(`[${tag}] «${t}»: formato de ejercicio desconocido para el verificador (${S.t})`);
   }

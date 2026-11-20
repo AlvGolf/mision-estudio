@@ -32,6 +32,24 @@ Decidido con el padre el 20-nov-2026, a partir del informe `Material de apoyo/In
 
 Condiciones de juego, no modalidades: **examen** (sin pistas, con tiempo) y **ruta** (orden de las misiones).
 
+## Decisiones del padre (20-nov, artefacto [Modalidades nuevas](https://claude.ai/artifact/FfjxVWGYQJwPv4fBk5y4F8))
+
+| Modalidad | Decisión | Detalles |
+|---|---|---|
+| Escuchar y elegir | Adelante | |
+| Dictado | Adelante con cambios | Se perdonan siempre mayúsculas y puntos. Las tildes las decide cada juego: en Inglés no existen, en Lengua de 5º cuentan |
+| Detectar y reparar | Adelante | Encontrar y arreglar cuentan por separado |
+| Crucigrama | Adelante | |
+| Hueco con la primera letra | Adelante | |
+| Responder con un número | Espera | Se construye con el primer temario de Matemáticas |
+| Historia ramificada | Al motor | Mejor con imágenes o animación: comparar antes emojis mejorados y dibujos SVG animados |
+| Construir una escena | Al motor | «Tiene que representar mucho mejor la escena»: misma comparación visual |
+| Miniinvestigación (5º) | Al motor | |
+
+**Orden:** primero las cinco sencillas en `motor-beta/`; mientras, la comparación visual de las escenas en el artefacto.
+
+**Hechas en `motor-beta/` (20-nov)**, como tipos de paso de `runSteps`: `listen` (escucha y elige), `dictado`, `repair` (detecta y repara), `cross` (crucigrama) y `first` (primera letra). Ningún juego las usa todavía: se estrenan en el próximo temario. Las juega el verificador en `pruebas-motor/`. Para usarlas en un juego: `JUEGO.voz` (idioma de la voz, por defecto `en-GB`) y `JUEGO.tildesCuentan` (por defecto no). Los datos de cada paso están comentados en `motor-beta/motor.js`.
+
 ## Para hacer ya en el motor (antes del juego de 2º)
 
 Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/`.

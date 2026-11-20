@@ -107,7 +107,8 @@ const API_URL='https://script.google.com/macros/s/AKfycbw7rxTYPt-c99ucT8Rxjcwj1_
 const GAME_ID=JUEGO.id;
 let CLASS=[],CLASS_STATE='cargando';
 function loadClass(){
-  if(!API_URL){CLASS_STATE='sin';return}
+  /* JUEGO.ranking=false: juego sin ranking (p. ej. el de pruebas del motor) */
+  if(!API_URL||JUEGO.ranking===false){CLASS_STATE='sin';return}
   fetch(API_URL+'?juego='+GAME_ID).then(r=>r.json()).then(d=>{
     const last={};(d.rows||[]).forEach(x=>{const k=String(x.nombre).trim().toLowerCase();if(!last[k]||x.fecha>last[k].fecha)last[k]=x});
     CLASS=Object.values(last).map(x=>({n:x.nombre,nota:x.nota===''?null:+x.nota,ex:x.examen===''?null:+x.examen,xp:+x.xp,st:+x.estrellas,bs:+x.racha,sb:x.desglose?Object.fromEntries(MIC.map(([k],i)=>[k,+String(x.desglose).replace(/\D/g,'')[i]||0])):null,f:x.fecha}));
@@ -142,7 +143,7 @@ function wireClass(){
 let SENDING=false;
 async function sendScore(){
   if(SENDING)return;const fb=$('#sfb');
-  if(!API_URL){fb.textContent='El ranking aún no está conectado.';return}
+  if(!API_URL||JUEGO.ranking===false){fb.textContent='Este juego no tiene ranking.';return}
   const n=(lsGet(JUEGO.claves.nombre)||'').trim();if(!n){fb.textContent='Primero pon tu nombre.';return}
   const f=finalNota(),ex=nota('exam');
   const d={juego:GAME_ID,nombre:n,nota:f.miss?'':f.n,examen:ex==null?'':ex,xp:XP,estrellas:totalStars(),racha:BSTREAK,desglose:MIC.map(([k])=>BEST[k]||0).join('')};
@@ -435,6 +436,115 @@ const STEP={
     st.querySelectorAll('.bin').forEach(b=>b.onclick=()=>{if(sel)drop(sel.it,sel.el,b)});
   },
 };
+/* =====================================================================
+   FORMATOS NUEVOS (20-nov, MODALIDADES.md): escuchar y elegir, dictado,
+   detectar y reparar, crucigrama y hueco con la primera letra.
+   ===================================================================== */
+/* Voz del dispositivo (gratis). Idioma: el del paso, el del juego (JUEGO.voz) o inglés británico */
+function hablar(texto,lento,lang){
+  try{if(!('speechSynthesis' in window))return false;speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(texto);u.lang=lang||JUEGO.voz||'en-GB';u.rate=lento?.7:.95;
+    const L=u.lang.toLowerCase(),vs=speechSynthesis.getVoices();
+    const v=vs.find(x=>x.lang.toLowerCase().replace('_','-')==L)||vs.find(x=>x.lang.toLowerCase().startsWith(L.slice(0,2)));if(v)u.voice=v;
+    speechSynthesis.speak(u);return true}catch(e){return false}}
+/* Botones de escuchar; cuenta cuántas veces se oye (se enseña, no se castiga) */
+function vozHTML(){return `<div class="voz"><button class="speak" id="hb">🔊 Escuchar</button><button class="btn sec" id="hl" style="margin-top:0">🐢 Más despacio</button><span class="hint" id="hv" style="margin:0"></span></div>`}
+function vozWire(s){let veces=0;
+  const oir=l=>{veces++;$('#hv').textContent=`Escuchado ${veces} ${veces==1?'vez':'veces'}`;if(!hablar(s.say,l,s.lang))$('#hv').textContent='Este dispositivo no puede leer en voz alta'};
+  $('#hb').onclick=()=>oir(false);$('#hl').onclick=()=>oir(true);
+  setTimeout(()=>hablar(s.say,false,s.lang),250);return()=>veces}
+/* Respuesta escrita: sin mayúsculas ni signos. Las tildes cuentan solo si el juego o el paso lo pide (Lengua de 5º) */
+function limpiaR(x,tildes){x=norm(x).replace(/[.,;:!?¡¿"()]/g,' ').replace(/\s+/g,' ').trim();
+  return tildes?x:x.normalize('NFD').replace(/[̀́]/g,'').normalize('NFC')}
+const NOAUTO='autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"';
+
+Object.assign(STEP,{
+  /* 🎧 Escucha y elige: {say, opts, a, q?, lang?, ex?} */
+  listen(st,s,done){
+    st.innerHTML=`<div class="q">${esc(s.q||'Escucha y toca lo que oyes')}</div>${vozHTML()}
+    <div class="opts ${s.opts.some(o=>o.length>22)?'':'two'}">${shuf(s.opts).map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`;
+    vozWire(s);
+    st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      st.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent==s.a)x.classList.add('ok')});
+      const ok=b.textContent==s.a;if(!ok){b.classList.add('bad');b.classList.add('shake')}
+      ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Bien oído! ':'❌ ')+`Decía: <b>“${esc(s.say)}”</b>`+(s.ex?` <span style="color:var(--mut)">${esc(s.ex)}</span>`:''));
+    });
+  },
+  /* ✍️ Dictado: {say, q?, lang?, tildes?}. Corrige palabra a palabra */
+  dictado(st,s,done){
+    st.innerHTML=`<div class="q">${esc(s.q||'Escucha y escribe la frase')}</div>${vozHTML()}
+    <input class="typ" id="wa" ${NOAUTO} placeholder="Escribe lo que oyes">
+    <button class="btn" id="wchk" style="margin-top:0">Comprobar ✔</button>`;
+    const veces=vozWire(s),tildes=s.tildes??JUEGO.tildesCuentan??false,inp=$('#wa');
+    const go=()=>{const v=limpiaR(inp.value,tildes);if(!v){$('#fb').textContent='Escribe lo que oyes 😉';return}
+      const bien=limpiaR(s.say,tildes).split(' '),yo=v.split(' '),ok=yo.length==bien.length&&bien.every((w,k)=>yo[k]===w);
+      const marcado=bien.map((w,k)=>yo[k]===w?`<span class="w-ok">${esc(w)}</span>`:yo[k]?`<span class="w-bad">${esc(yo[k])}</span> <span class="w-miss">${esc(w)}</span>`:`<span class="w-miss">${esc(w)}</span>`).join(' ')
+        +(yo.length>bien.length?' '+yo.slice(bien.length).map(w=>`<span class="w-bad">${esc(w)}</span>`).join(' '):'');
+      inp.classList.add(ok?'ok':'bad');inp.disabled=true;$('#wchk').remove();ok?win(15):lose();
+      const n=veces();done(ok?1:0,1,(ok?'✅ ¡Perfecto! ':`📝 ${bien.filter((w,k)=>yo[k]===w).length} de ${bien.length} palabras. `)+`${n?`<span style="color:var(--mut)">(lo escuchaste ${n} ${n==1?'vez':'veces'})</span>`:''}<div class="dicta">${marcado}</div>`)};
+    $('#wchk').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};
+  },
+  /* 🛠️ Detecta y repara: {w:[palabras], bad: índice, fix:[aceptadas], q?, ex?}. Encontrar y arreglar cuentan por separado */
+  repair(st,s,done){let primera=true;
+    st.innerHTML=`<div class="q">${esc(s.q||'Toca la palabra que está mal')}</div>
+    <div class="frase">${s.w.map((w,k)=>`<button class="tok" data-k="${k}">${esc(w)}</button>`).join('')}</div><div id="rfx"></div>`;
+    st.querySelectorAll('.tok').forEach(b=>b.onclick=()=>{
+      if(+b.dataset.k!==s.bad){if(primera){primera=false;lose()}b.classList.add('nope');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');$('#fb').textContent='Esa está bien. Busca otra.';return}
+      st.querySelectorAll('.tok').forEach(x=>x.disabled=true);b.classList.add('sel');$('#fb').textContent='¡Encontrada! Ahora escríbela bien.';
+      $('#rfx').innerHTML=`<input class="typ" id="wa" ${NOAUTO} placeholder="La palabra correcta"><button class="btn" id="wchk" style="margin-top:0">Arreglar ✔</button>`;
+      const inp=$('#wa');inp.focus({preventScroll:true});
+      const go=()=>{const v=limpiaR(inp.value,true);if(!v){$('#fb').textContent='Escribe la palabra bien escrita 😉';return}
+        const ok=s.fix.some(f=>limpiaR(f,true)==v);inp.classList.add(ok?'ok':'bad');inp.disabled=true;$('#wchk').remove();
+        if(ok){b.textContent=s.fix[0]+((s.w[s.bad].match(/[.,?!]$/)||[''])[0]);b.classList.add('fixed');sparkle(b)}
+        ok?win(primera?15:5):lose();
+        done((primera?1:0)+(ok?1:0),2,(primera?'🔎 Encontrada a la primera · ':'🔎 Encontrada · ')+(ok?'✅ ¡Arreglada! ':`❌ Era <b>${esc(s.fix[0])}</b>. `)+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''))};
+      $('#wchk').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};
+    });
+  },
+  /* 🧩 Crucigrama: {words:[{n, d:'h'|'v', r, c, w, pista}], q?}. Cuenta cada palabra; se comprueba una vez */
+  cross(st,s,done){
+    const W=s.words,G={};
+    W.forEach(x=>[...x.w.toLowerCase()].forEach((ch,k)=>{const r=x.r+(x.d=='v'?k:0),c=x.c+(x.d=='h'?k:0);const g=(G[r+','+c]=G[r+','+c]||{ch,ws:[]});if(g.ch!==ch)console.error(`Crucigrama: «${g.ws[0].w}» y «${x.w}» no cruzan bien en la fila ${r+1}, columna ${c+1}`);g.ws.push(x)}));
+    const K=Object.keys(G).map(k=>k.split(',').map(Number)),F=Math.max(...K.map(x=>x[0]))+1,C=Math.max(...K.map(x=>x[1]))+1;
+    let dir='h';
+    st.innerHTML=`<div class="q" style="font-size:19px">${esc(s.q||'Completa el crucigrama')}</div>
+    <div class="cw-wrap"><div class="cw" style="--cols:${C}">${Array.from({length:F*C},(_,k)=>{const r=Math.floor(k/C),c=k%C,g=G[r+','+c];if(!g)return '<div></div>';
+      const n=W.find(x=>x.r==r&&x.c==c);return `<div class="cell">${n?`<span class="n">${n.n}</span>`:''}<input maxlength="1" data-rc="${r},${c}" ${NOAUTO} aria-label="Fila ${r+1}, columna ${c+1}"></div>`}).join('')}</div>
+    <div class="clues">${['h','v'].map(d=>W.some(x=>x.d==d)?`<div class="cl-t">${d=='h'?'Horizontales →':'Verticales ↓'}</div>${W.filter(x=>x.d==d).map(x=>`<button class="cl" data-w="${x.n}${x.d}">${x.n}. ${esc(x.pista)}</button>`).join('')}`:'').join('')}</div></div>
+    <button class="btn" id="wchk" style="margin-top:6px">Comprobar ✔</button>`;
+    const cell=(r,c)=>st.querySelector(`[data-rc="${r},${c}"]`),celdas=x=>[...x.w].map((_,k)=>cell(x.r+(x.d=='v'?k:0),x.c+(x.d=='h'?k:0)));
+    const marca=x=>{st.querySelectorAll('.cell input').forEach(i=>i.classList.remove('hl'));celdas(x).forEach(i=>i.classList.add('hl'))};
+    st.querySelectorAll('.cell input').forEach(inp=>{const [r,c]=inp.dataset.rc.split(',').map(Number),g=G[r+','+c];
+      inp.onfocus=()=>{const x=g.ws.find(w=>w.d==dir)||g.ws[0];dir=x.d;marca(x)};
+      inp.oninput=()=>{inp.value=inp.value.slice(-1).toLowerCase();if(!inp.value)return;sfxTap();const nx=dir=='h'?cell(r,c+1):cell(r+1,c);if(nx)nx.focus({preventScroll:true})};
+      inp.onkeydown=e=>{if(e.key=='Backspace'&&!inp.value){const pv=dir=='h'?cell(r,c-1):cell(r-1,c);if(pv){pv.focus();pv.value='';e.preventDefault()}}if(e.key=='Enter'){e.preventDefault();$('#wchk')&&$('#wchk').click()}}});
+    st.querySelectorAll('.cl').forEach(b=>b.onclick=()=>{const x=W.find(w=>w.n+w.d==b.dataset.w);dir=x.d;celdas(x)[0].focus();marca(x)});
+    $('#wchk').onclick=()=>{
+      const vacias=[...st.querySelectorAll('.cell input')].filter(i=>!i.value).length;
+      if(vacias&&!$('#wchk').dataset.av){$('#wchk').dataset.av=1;$('#fb').textContent=`Faltan ${vacias} casillas. Pulsa otra vez para comprobar así.`;return}
+      let ok=0;W.forEach(x=>{const bien=celdas(x).every((i,k)=>i.value==x.w[k].toLowerCase());if(bien){ok++;win(10)}});
+      st.querySelectorAll('.cell input').forEach(i=>{const g=G[i.dataset.rc];i.disabled=true;i.classList.remove('hl');
+        if(i.value!==g.ch){i.classList.add('bad');i.value=g.ch}else i.classList.add('ok')});
+      if(ok<W.length)lose();$('#wchk').remove();
+      done(ok,W.length,ok==W.length?'✅ ¡Crucigrama completo!':`👍 ${ok} de ${W.length} palabras bien. En rojo, las letras que faltaban o estaban mal.`)};
+  },
+  /* 🔡 Hueco con la primera letra: {pre, w, post, es?, ex?}. Producir con apoyo */
+  first(st,s,done){
+    const w=s.w.toLowerCase();
+    st.innerHTML=`<div class="q">${esc(s.pre||'')}<span style="color:var(--gold)">${esc(w[0])}${' _'.repeat(w.length-1)}</span>${esc(s.post||'')}</div>
+    ${s.es?`<div class="hint">🇪🇸 ${esc(s.es)}</div>`:''}
+    <div class="letras"><span>${esc(w[0])}</span>${[...w.slice(1)].map((ch,k)=>ch==' '?'<i></i>':`<input maxlength="1" data-k="${k+1}" ${NOAUTO} aria-label="Letra ${k+2}">`).join('')}</div>
+    <button class="btn" id="wchk" style="margin-top:6px">Comprobar ✔</button>`;
+    const ins=[...st.querySelectorAll('.letras input')];ins[0]&&ins[0].focus({preventScroll:true});
+    const go=()=>{if(ins.some(x=>!x.value)){$('#fb').textContent='Faltan letras 😉';return}
+      const ok=ins.every(x=>x.value==w[+x.dataset.k]);
+      ins.forEach(x=>{x.disabled=true;x.classList.add(x.value==w[+x.dataset.k]?'ok':'bad')});$('#wchk').remove();
+      ok?win(10):lose();done(ok?1:0,1,(ok?'✅ ¡Genial! ':`❌ Es <b>${esc(s.w)}</b>. `)+(s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:''))};
+    ins.forEach((inp,k)=>{inp.oninput=()=>{inp.value=inp.value.slice(-1).toLowerCase();if(inp.value&&ins[k+1])ins[k+1].focus({preventScroll:true})};
+      inp.onkeydown=e=>{if(e.key=='Backspace'&&!inp.value&&ins[k-1]){ins[k-1].focus();ins[k-1].value='';e.preventDefault()}if(e.key=='Enter'){e.preventDefault();go()}}});
+    $('#wchk').onclick=go;
+  },
+});
 function sfxOk(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
 function sfxTap(){try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
 

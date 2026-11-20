@@ -27,6 +27,7 @@ Reglas:
 ## Herramientas
 
 - **`npm run verificar [-- <juego>]`** (`scripts/verificar.mjs`): cobertura, desbordes, campos de texto, ruta entera, examen y nota final. Claude Code lo pasa **antes de cada subida que toque un juego**; con un FALLO no se sube. Los avisos no bloquean, pero se apuntan en `ESTADO.md`. Capturas en `verificacion/` (fuera de git).
+  - `pruebas-motor/` es un juego de pruebas (sin ranking ni tarjeta en el menú) con una misión por cada formato nuevo del motor: así el verificador los juega aunque ningún juego los use. Cada formato nuevo se añade ahí y a los jugadores de `scripts/verificar.mjs`.
   - Para que el verificador pueda jugar, cada juego mantiene los nombres de `ingles-u2`: listas `VOCAB`, `VERBS`, `VSENT`, `VPARTS`, `vocabSentQ`, y `window._S` / `window._O` con el ejercicio actual.
 - **Guarda de nombres** (`scripts/guarda-nombres.mjs`, gancho `.githooks/pre-push`): no deja subir nada que contenga un nombre de la lista privada, que está fuera del repo, en el PC del padre. El Claude de la app no tiene el gancho: antes de subir, revisa a mano que no haya nombres de niños, del colegio ni del profesor.
 - **`ESTADO.md`**: lo esencial de cada juego, lo abierto y lo pendiente del padre. Se lee al empezar y se pone al día al cerrar.
