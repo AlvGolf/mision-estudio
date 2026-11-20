@@ -418,3 +418,75 @@ html[data-fam=D]{--bub:#fff;--bubtxt:#14213d}
 html.c2 .bocadillo{font-size:19px}html.c2 .guia svg{width:70px}
 @media(max-width:600px){.guia svg{width:50px}.bocadillo{font-size:15px}html.c2 .guia svg{width:58px}html.c2 .bocadillo{font-size:17px}}
 @media (prefers-reduced-motion:reduce){.guia .cuerpo{animation:none!important}}
+
+/* ===== Movimiento (rediseño, ronda 4, 20-nov): celebración, menú, ruta, ejercicio, escenas, XP, examen y guía ===== */
+.bocadillo.oculto{visibility:hidden}
+.guia .aro,.asoma .aro{display:none}
+@keyframes ent-sube{from{opacity:0;translate:0 16px}}
+.ent{animation:ent-sube .45s cubic-bezier(.2,.8,.3,1) backwards;animation-delay:calc(var(--i,0)*55ms)}
+html.c2 .ent{animation:ent-bote .55s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes ent-bote{from{opacity:0;translate:0 22px;scale:.92}}
+#blab.tarde{animation:aparece .35s ease 1.15s backwards}
+@keyframes aparece{from{opacity:0;translate:0 6px}}
+/* C1: celebración */
+.cf-estr{font-size:40px;letter-spacing:6px;color:var(--gold);margin:2px 0 4px;line-height:1.1}
+.cf-estr span{display:inline-block}.cf-estr span.no{opacity:.35}
+.cf .cf-estr span{opacity:0;scale:.3}
+.cf .cf-estr span.ve{opacity:1;scale:1;transition:scale .4s cubic-bezier(.3,1.6,.5,1),opacity .2s}
+.cf .cf-estr span.no.ve{opacity:.35}
+.cf .cf-lab{opacity:0}.cf .cf-lab.ve{opacity:1;transition:opacity .35s}
+.cf-sello{height:0;position:relative}
+.cf-sello span{position:absolute;right:3%;top:-58px;font:900 18px var(--ft);color:#ff5c6c;border:4px solid #ff5c6c;border-radius:10px;padding:2px 12px;rotate:-12deg;opacity:0;background:rgba(20,10,30,.55);pointer-events:none;z-index:2}
+.cf-sello.ve span{animation:estampa .45s cubic-bezier(.2,.9,.3,1.2) forwards}
+@keyframes estampa{from{opacity:0;scale:2.4}to{opacity:1;scale:1}}
+.cf .guia.salta .cuerpo{animation:esc-salta .45s ease 0s 3}
+html.c2 .cf .guia.salta .cuerpo{animation-iteration-count:4}
+@media(max-width:600px){.cf-sello span{top:-54px;font-size:14px;padding:2px 7px;right:1%}.cf-estr{font-size:34px}}
+/* R1: el camino de la ruta se dibuja y la estación de ahora late dos veces */
+.rst{position:relative}
+.rst:not(:last-child):not(:nth-child(5n))::after{content:"";position:absolute;top:21px;left:calc(50% + 22px);width:calc(100% + 6px - 44px);height:3px;border-radius:2px;background:var(--line);opacity:.6}
+.rst.done:not(:last-child):not(:nth-child(5n))::after{background:var(--yes);opacity:1;transform-origin:left;animation:traza .3s ease backwards;animation-delay:calc(var(--i,0)*.16s + .1s)}
+@keyframes traza{from{transform:scaleX(0)}}
+.rst.done .rdot{animation:popin2 .35s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i,0)*.16s)}
+@keyframes popin2{from{scale:.4;opacity:0}}
+.rst.now .rdot{animation:pulse .8s ease 2;animation-delay:calc(var(--i,0)*.16s + .2s)}
+@media(max-width:600px){.rst:not(:last-child):not(:nth-child(5n))::after{top:18px;left:calc(50% + 19px);width:calc(100% + 2px - 38px)}}
+/* E1: la buena se llena de verde con ✓, la buena brilla si fallas, +10 que sube y barra con brillo */
+.opts .opt.ok{background:linear-gradient(var(--yes),var(--yes)) left/0% 100% no-repeat,var(--card2);animation:llena .35s ease-out forwards;border-color:var(--yes)}
+@keyframes llena{to{background-size:100% 100%}}
+.opts .opt.ok::after{content:"✓";float:right;font-weight:900;margin-left:8px;animation:popin2 .3s cubic-bezier(.3,1.5,.5,1) .25s backwards}
+.opts:has(.opt.bad) .opt.ok{box-shadow:0 0 0 3px var(--yes),0 0 16px var(--yes)}
+.flotaxp{position:fixed;z-index:70;font:800 20px var(--ft);color:var(--gold);text-shadow:0 2px 6px rgba(0,0,0,.45);pointer-events:none;animation:xpsube 1s ease-out forwards}
+@keyframes xpsube{0%{opacity:0;translate:0 8px}25%{opacity:1}100%{opacity:0;translate:0 -50px}}
+.bar>div{position:relative;overflow:hidden;transition:width .5s cubic-bezier(.3,1.3,.5,1)}
+.bar>div::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-100%)}
+.bar.reluce>div::after{animation:reluce .8s ease .15s}
+@keyframes reluce{to{transform:translateX(100%)}}
+/* X2: XP y racha */
+#xp.sube{animation:pildora .5s ease}#streak.llama{animation:llama .5s ease 2}
+@keyframes pildora{40%{scale:1.15}}@keyframes llama{50%{scale:1.35;rotate:-6deg}}
+/* X3: cuenta atrás del examen */
+.cuentaatras{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(3px)}
+.cuentaatras span{grid-area:1/1;font:900 120px var(--ft);color:var(--gold);opacity:0;text-shadow:0 6px 24px rgba(0,0,0,.4);animation:cuenta .75s ease both;animation-delay:calc(var(--i)*.75s)}
+.cuentaatras span:last-child{font-size:84px}
+@keyframes cuenta{0%{opacity:0;scale:2.2}25%{opacity:1;scale:1}80%{opacity:1}100%{opacity:0;scale:.6}}
+/* X4: el guía asoma */
+.asoma{position:fixed;right:10px;bottom:16px;z-index:75;display:flex;align-items:flex-end;gap:6px;pointer-events:none;animation:asoma 4.2s cubic-bezier(.3,1.3,.5,1) both}
+.asoma svg{width:64px;overflow:visible}.asoma .bocadillo{margin-bottom:22px;max-width:220px}
+.asoma .bocadillo::before{left:auto;right:-7px;border-left:0;border-bottom:var(--bw) solid var(--cline);border-right:var(--bw) solid var(--cline)}
+@keyframes asoma{0%{translate:130% 0}14%,82%{translate:0 0}100%{translate:130% 0}}
+/* H1, H2 y H3: transiciones de escena que se turnan */
+.escw{position:relative;overflow:hidden;border-radius:14px;margin:0 auto 12px}
+.escw>svg.esc{margin-bottom:0}
+.escw .franja{position:absolute;left:0;right:0;height:0;background:#000;z-index:2;pointer-events:none;animation:franja 3.2s ease both}
+.escw .franja.ar{top:0}.escw .franja.ab{bottom:0}
+@keyframes franja{0%{height:0}15%,75%{height:16%}100%{height:0}}
+.escw .tit{position:absolute;left:0;right:0;bottom:3%;text-align:center;font:700 16px var(--ft);color:#fff;z-index:3;pointer-events:none;animation:titulo 3.2s ease both}
+@keyframes titulo{0%,15%{opacity:0;translate:0 8px}28%,70%{opacity:1;translate:0 0}85%,100%{opacity:0}}
+.escw.h1>svg{animation:zoomesc 3.2s ease-out both;transform-origin:50% 60%}
+@keyframes zoomesc{from{scale:1.3}}
+.escw.h2{perspective:900px}.escw.h2>svg{animation:pagina .9s ease both}
+@keyframes pagina{0%{rotate:y 0deg}45%{rotate:y 88deg}55%{rotate:y -88deg}100%{rotate:y 0deg}}
+.escw.h3>svg{animation:camara 2.2s cubic-bezier(.5,0,.3,1) both}
+@keyframes camara{from{scale:1.3;translate:12% 0}}
+@media (prefers-reduced-motion:reduce){.ent,#blab.tarde,.rst .rdot,.rst::after,.opts .opt.ok,.opts .opt.ok::after,.bar>div,#xp,#streak,.escw *,.cf *{animation:none!important;transition:none!important}}
