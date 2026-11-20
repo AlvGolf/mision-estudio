@@ -39,7 +39,7 @@ Reglas:
 
 - `index.html` — menú con una tarjeta por juego.
 - `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura.
-- `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que el motor. (`ingles-u2/` sigue con todo dentro hasta que se apruebe su beta.)
+- `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que el motor.
 - `apps-script/Code.gs` — copia de referencia del script del ranking. El que funciona está en Google Apps Script; si cambias este, avisa al padre para que lo pegue y redespliegue.
 - Web: https://alvgolf.github.io/mision-estudio/ (GitHub Pages, rama `main`, raíz).
 

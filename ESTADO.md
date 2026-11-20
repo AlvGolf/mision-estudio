@@ -14,11 +14,12 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 | Pruebas automáticas (`npm run verificar`) | ✅ hecho | Ruta entera a 390/820/1440 px, cobertura y examen |
 | Guarda de nombres antes de subir | ✅ hecho | Lista con 7 nombres (19-nov). Repaso de todo el repo: limpio |
 | Turnos entre los dos Claudes (`TRABAJO.md`) | ✅ hecho | |
+| Cada niño con su progreso en el mismo dispositivo | ✅ en producción | 20-nov, «no soy yo» aparta el progreso y lo recupera con el nombre |
 | Juego de 2º | ⚪ sin empezar | Sin examen a la vista: el padre mandará temario la semana del 23-nov. Hasta entonces, tampoco hay examen nuevo de 5º: tiempo para mejorar la app |
 
 ## Abierto
 
-- **Motor común en beta (19-nov).** `motor-beta/` y `ingles-u2-beta/` (solo datos y misiones). Verificador sin fallos y 32 pantallas idénticas a la normal. Se pasa a la normal **después del examen del 20-nov**, cuando el padre lo apruebe: copiar `motor-beta/` a `motor/` y la beta a `ingles-u2/` cambiando los enlaces.
+- **Motor común en producción (20-nov).** `motor/` lo cargan los juegos normales y `motor-beta/` las betas y `pruebas-motor/`. Verificador sin fallos y 32 pantallas idénticas a la normal anterior.
 
 ### Plan de desarrollo (20-nov, tras el informe de investigación; catálogo en `MODALIDADES.md`)
 
@@ -27,7 +28,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
    - ✅ (en beta) Las 4 preguntas de *Do you like ____?* que tienen *to play*, *to do*… como opción falsa piden «con -ing, como en el libro».
    - ✅ (en beta) Reanudar la ruta: al volver del menú dice «Seguir por la estación N» y deja empezar de cero.
    - ✅ (en beta) «Ordena la frase» y «escribe la frase» aceptan *sometimes* al principio.
-   - Pasar el motor común y estos arreglos a la normal: **falta que el padre pruebe la beta y lo apruebe**.
+   - ✅ (20-nov) Motor común y arreglos en la normal: el padre probó la beta y la aprobó. `motor/` = copia de `motor-beta/`; la beta redirige.
 2. **Artefacto «Modalidades nuevas»** (https://claude.ai/artifact/FfjxVWGYQJwPv4fBk5y4F8, publicado el 20-nov; lo elegido se guarda en su almacén, colección `elecciones`) con maquetas jugables: las seis para hacer ya (escuchar, dictado, detectar y reparar, crucigrama, número, primera letra) y las tres a evaluar (historia ramificada, construir una escena, miniinvestigación).
 3. **Construir en `motor-beta/`** las modalidades elegidas. ✅ (20-nov) Escuchar, dictado, reparar, crucigrama y primera letra, probadas en `pruebas-motor/` (el verificador las juega). Número: espera al primer temario de Mates. **Siguiente:** comparación visual de las escenas (emojis mejorados frente a dibujos SVG animados) en el artefacto, y después historia, escena y miniinvestigación.
 4. **Extras de los puntos 6.1 y 6.4 del informe:** apuntar la nota real del colegio y compararla con la «nota prevista»; guardar en el dispositivo cuánto tarda de verdad cada estación de la ruta.
