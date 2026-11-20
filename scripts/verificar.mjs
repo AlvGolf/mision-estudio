@@ -146,6 +146,8 @@ for (const juego of juegos) {
     if (!tieneRuta) { aviso(`[${tag}] No hay botón de ruta de estudio: no se juega la ruta`); await ctx.close(); continue; }
     await page.click('.routebtn');
     await page.click('#rgo');
+    // La primera estación se hace pasar por 4 minutos: al acabarla, el mapa tiene que decir «tú: 4 min»
+    await page.evaluate(() => { if (typeof ROUTE !== 'undefined' && ROUTE && ROUTE.t0) { ROUTE.t0 -= 240000; saveRoute(); } });
     let pasos = 0, estaciones = 1, atasco = 0, ultimo = '', n = 0;
     const t0 = Date.now();
     const mal = () => (++n % 3 === 0); // una de cada tres, mal a propósito
@@ -154,7 +156,12 @@ for (const juego of juegos) {
       if (await visible('.routeend')) break;
       if (await visible('#rnext')) {
         await revisarPantalla('fin de estación');
-        if (estaciones === 1) await page.screenshot({ path: path.join(dirCapturas, `${A.n}-fin-estacion.png`) });
+        if (estaciones === 1) {
+          await page.screenshot({ path: path.join(dirCapturas, `${A.n}-fin-estacion.png`) });
+          const mapa = await page.locator('.rmap').innerText().catch(() => '');
+          if (/~\d+ min|tú: \d+ min/.test(mapa)) { if (!/tú: 4 min/.test(mapa)) fallo(`[${tag}] El mapa de la ruta no apunta lo que tardó la primera estación (debía decir «tú: 4 min»)`); }
+          else aviso(`[${tag}] El mapa de la ruta no enseña los minutos de cada estación (motor antiguo)`);
+        }
         await page.click('#rnext'); estaciones++; continue;
       }
       const t = await titulo();

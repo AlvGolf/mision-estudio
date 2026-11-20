@@ -838,23 +838,30 @@ try{ROUTE=JSON.parse(localStorage.getItem(JUEGO.claves.ruta)||'null')}catch(e){}
 function saveRoute(){try{ROUTE?localStorage.setItem(JUEGO.claves.ruta,JSON.stringify(ROUTE)):localStorage.removeItem(JUEGO.claves.ruta)}catch(e){}}
 function routePart(){const P=JUEGO.ruta.partes;if(!P||!P.length)return null;const n=(ROUTE&&ROUTE.part)||0;return P[n%P.length]}
 function routeTag(){return ROUTE&&ROUTE.on?`<span class="pill" style="font-size:13px">🧭 ${ROUTE.i+1}/${ROUTE_ST.length}</span>`:''}
+/* Tiempo real de cada estación (20-nov): se guardan las 5 últimas veces de cada una (en segundos), con el progreso del niño.
+   Se descartan las de menos de 20 s (pruebas) y las larguísimas (se dejó la pestaña abierta). */
+function tiempoReal(k){const a=ROUTE&&ROUTE.tm&&ROUTE.tm[k];if(!a||!a.length)return null;
+  const o=[...a].sort((x,y)=>x-y);return Math.max(1,Math.round(o[Math.floor(o.length/2)]/60))}
+function apuntaTiempo(s){if(!ROUTE.t0)return;const seg=Math.round((Date.now()-ROUTE.t0)/1000);ROUTE.t0=null;
+  if(seg<20||seg>Math.max(1800,s.min*60*5))return;
+  const tm=ROUTE.tm=ROUTE.tm||{};(tm[s.k]=tm[s.k]||[]).push(seg);if(tm[s.k].length>5)tm[s.k].shift()}
 function startStation(){
-  const s=ROUTE_ST[ROUTE.i];saveRoute();
+  const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();saveRoute();
   const part=routePart();
   if(JUEGO.ruta.estacion&&JUEGO.ruta.estacion(s.k,part))return;
   R[s.k]();
 }
 function routeMap(){
-  const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+s.min,0);
+  const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+(tiempoReal(s.k)||s.min),0);
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=!ROUTE?'':n<ROUTE.i?'done':n==ROUTE.i?'now':'';
-    return `<div class="rst ${st}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div></div>`}).join('')}</div>
+    return `<div class="rst ${st}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
 endScreen=function(icon,ok,tot,key,again,extra=''){
   _end(icon,ok,tot,key,again,extra);
   if(!(ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==key))return;
-  ROUTE.i++;XP+=20;hud();save();
+  apuntaTiempo(ROUTE_ST[ROUTE.i]);ROUTE.i++;XP+=20;hud();save();
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){
     ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;saveRoute();confetti();setTimeout(confetti,600);
