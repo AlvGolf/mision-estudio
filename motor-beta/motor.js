@@ -6,9 +6,9 @@
    y R (una función por misión). El motor pone R.route, R.arcade y R.exam.
    ===================================================================== */
 /* ================== ESTADO ================== */
-let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={};
-try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};}catch(e){}
-function save(){try{localStorage.setItem(JUEGO.claves.estado,JSON.stringify({xp:XP,best:BEST,bs:BSTREAK,exam:EXAMB,hist:HIST,seeded:SEEDED,gr:GR}))}catch(e){}}
+let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}, REAL=null;
+try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;}catch(e){}
+function save(){try{localStorage.setItem(JUEGO.claves.estado,JSON.stringify({xp:XP,best:BEST,bs:BSTREAK,exam:EXAMB,hist:HIST,seeded:SEEDED,gr:GR,real:REAL}))}catch(e){}}
 const MAP=Object.fromEntries(BLOCKS.map(b=>[b.k,1]));
 function grade(k,n){n=Math.round(n*10)/10;(GR[k]=GR[k]||[]).push(n);if(GR[k].length>3)GR[k].shift();save();return n}
 function nota(k){const a=GR[k];return a&&a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null}
@@ -82,7 +82,7 @@ function home(){
   ${JUEGO.chuleta||''}
   ${classBox()}
   ${fame()}`;
-  wireFame();
+  wireFame();wireReal();
   document.querySelectorAll('.mission').forEach(b=>b.onclick=()=>R[b.dataset.k]());
   const ht=$('#hoy');if(ht)ht.onclick=()=>R[ht.dataset.k]();
   /* Recargar: si no, la XP y las notas que hay en memoria pasarían al siguiente niño */
@@ -95,12 +95,34 @@ function boletin(){
   <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:6px 0 10px">
    <div style="font-size:54px;font-weight:700;color:var(--gold)">${f.miss?'?':fmt(f.n)}</div>
    <div><b style="font-size:20px">${f.miss?'Nota pendiente':label(f.n)}</b><br><span style="color:var(--mut)">${f.miss?`Juega los ${f.miss} bloque(s) que faltan ⚪ para ver tu nota`:'Media de tus 3 últimas partidas en cada bloque'}</span></div>
-   <div style="margin-left:auto;text-align:center;background:var(--card2);padding:10px 16px;border-radius:14px"><div style="color:var(--mut);font-size:13px">👑 Nota prevista examen</div><div style="font-size:28px;font-weight:700">${fmt(ex)}</div></div>
+   <div class="notas-ex"><div class="nbox"><div style="color:var(--mut);font-size:13px">👑 Nota prevista examen</div><div style="font-size:28px;font-weight:700">${fmt(ex)}</div></div>
+    <div class="nbox" id="realbox">${realHTML()}</div></div>
   </div>
   <table class="rules">${BLOCKS.map(b=>`<tr><td style="width:30px">${sem(nota(b.k))}</td><td>${b.n}${b.w==2?' <span style="color:var(--gold);font-size:13px">×2</span>':''}</td><td style="text-align:right"><b>${fmt(nota(b.k))}</b></td><td style="color:var(--mut);font-size:13px;text-align:right">${(GR[b.k]||[]).map(fmt).join(' · ')||'sin jugar'}</td></tr>`).join('')}</table>
   ${h?`<button class="btn" id="hoy" data-k="${h.b.k}">🎯 Hoy toca: ${h.b.n} <span style="font-weight:400">(${h.why})</span></button>`:'<p style="font-size:18px">🟢 ¡Todo dominado! Haz el examen final para confirmar.</p>'}
   <p class="sub" style="font-size:13px;margin-top:10px">${JUEGO.notaBoletin}</p></div>`;
 }
+/* Nota real del colegio (20-nov): se apunta a mano y se compara con la nota prevista del juego.
+   Va con el progreso de cada niño (también en su perfil de «no soy yo») y congela la nota prevista de ese momento,
+   para que la comparación no cambie si después sigue jugando exámenes. */
+function comparaReal(p,n){const d=Math.round((n-p)*10)/10;
+  return Math.abs(d)<=.5?`🎯 El juego acertó (preveía ${fmt(p)})`:d>0?`⬆️ ${fmt(d)} más de lo previsto (${fmt(p)})`:`⬇️ ${fmt(-d)} menos de lo previsto (${fmt(p)})`}
+function realHTML(){
+  if(!REAL)return `<div style="color:var(--mut);font-size:13px">📝 Nota del colegio</div><button class="tab" id="realx" style="font-size:14px;padding:6px 12px;margin-top:6px">Apuntarla</button>`;
+  return `<div style="color:var(--mut);font-size:13px">📝 Nota del colegio</div><div style="font-size:28px;font-weight:700" id="realn0">${fmt(REAL.n)}</div>
+    <div style="font-size:13px;max-width:190px">${REAL.prev==null?'Sin nota prevista para comparar':comparaReal(REAL.prev,REAL.n)}</div>
+    <button class="tab" id="realx" style="font-size:12px;padding:3px 10px;margin-top:4px">cambiar</button>`}
+function wireReal(){const b=$('#realx');if(!b)return;
+  b.onclick=()=>{
+    $('#realbox').innerHTML=`<div style="color:var(--mut);font-size:13px">📝 Nota del colegio (de 0 a 10)</div>
+      <input class="typ" id="realn" inputmode="decimal" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="7,5" style="max-width:120px;text-align:center;margin:6px 0" value="${REAL?fmt(REAL.n):''}">
+      <div><button class="btn" id="realok" style="margin:0">Guardar</button>${REAL?' <button class="btn sec" id="realdel" style="margin:0">Borrar</button>':''}</div><div class="fb" id="realfb" style="font-size:14px;min-height:0"></div>`;
+    const inp=$('#realn');inp.focus();
+    const ok=()=>{const v=parseFloat(inp.value.trim().replace(',','.'));
+      if(!/^\d{1,2}([.,]\d{1,2})?$/.test(inp.value.trim())||isNaN(v)||v<0||v>10){$('#realfb').textContent='Escribe una nota de 0 a 10, por ejemplo 7,5';return}
+      REAL={n:Math.round(v*10)/10,prev:REAL&&'prev' in REAL?REAL.prev:nota('exam'),fecha:new Date().toISOString().slice(0,10)};save();home()};
+    $('#realok').onclick=ok;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();ok()}};
+    const del=$('#realdel');if(del)del.onclick=()=>{REAL=null;save();home()}}}
 /* ===== RANKING DE LA CLASE =====
    Se actualiza cuando el organizador envía las marcas a Claude. */
 const API_URL='https://script.google.com/macros/s/AKfycbw7rxTYPt-c99ucT8Rxjcwj1_gMRJkSq0mmjagZlZjuOnpyWtTjAFE299CbkA2MViuwaQ/exec';   /* URL del script de Google (se rellena al montar) */

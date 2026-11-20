@@ -204,6 +204,20 @@ for (const juego of juegos) {
     await page.waitForTimeout(200);
     if (fin && fin.miss) fallo(`[${tag}] Tras la ruta faltan ${fin.miss} bloques sin nota: el boletín no da la nota final`);
     await revisarPantalla('menú tras la ruta');
+
+    /* ---------- 5. Nota real del colegio: se apunta, se ve y sigue al recargar ---------- */
+    if (await visible('#realx')) {
+      await page.click('#realx');
+      await page.fill('#realn', '7,5'); await page.click('#realok'); await page.waitForTimeout(150);
+      const ve = async () => (await page.locator('#realbox').innerText().catch(() => '')).includes('7,5');
+      if (!await ve()) fallo(`[${tag}] Apuntar la nota del colegio (7,5) no la enseña en el boletín`);
+      else {
+        await page.reload(); await page.waitForTimeout(400);
+        if (!await ve()) fallo(`[${tag}] La nota del colegio no se guarda: al recargar desaparece`);
+        else R.notas.push(`[${tag}] Nota del colegio: se apunta y se guarda`);
+      }
+      await revisarPantalla('nota del colegio');
+    } else aviso(`[${tag}] El boletín no tiene la casilla de la nota del colegio (motor antiguo)`);
     await page.screenshot({ path: path.join(dirCapturas, `${A.n}-menu-final.png`), fullPage: true });
     await ctx.close();
   }
