@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=3">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=4">
 </head>
 <body>
 <header>
@@ -40,9 +40,19 @@ const PRIMERA=[
  {pre:'My little brother is ',w:'afraid',post:' of spiders.',es:'asustado'},
  {pre:'I love going camping in the ',w:'countryside',post:'.',es:'el campo'}];
 
+const ESCENAS=[
+ {q:'Lee y lleva a cada uno a su sitio',sitios:[{k:'cocina',l:'Kitchen'},{k:'teatro',l:'Theatre'},{k:'campamento',l:'Campsite'},{k:'campo',l:'Countryside'}],
+  gente:[{n:'Tom',t:'Tom enjoys cooking.',z:'cocina',extra:'gorro'},{n:'Ana',t:'Ana would like to sleep in a tent.',z:'campamento',extra:'mochila'},
+   {n:'Leo',t:'Leo is brilliant at acting.',z:'teatro',extra:'mascara'},{n:'Mia',t:'Mia loves taking photos of nature.',z:'campo',extra:'camara'},
+   {n:'Sam',t:'Sam hates sports. He loves making cakes.',z:'cocina',extra:'libro'}]},
+ {q:'Por la mañana: ¿dónde está cada uno?',luz:'dia',sitios:[{k:'campo',l:'Countryside'},{k:'teatro',l:'Theatre'},{k:'cocina',l:'Kitchen'}],
+  gente:[{n:'Kim',t:'Kim is good at football. She plays every day in the fields.',z:'campo',extra:'balon',pein:'coleta',ropa:'#ff5c8a'},{n:'Ben',t:'Ben would like to be an actor.',z:'teatro',pein:'corto',ropa:'#3dd6ff'}]},
+ {q:'Por la noche: ¿dónde está cada uno?',luz:'noche',sitios:[{k:'campamento',l:'Campsite'},{k:'cocina',l:'Kitchen'},{k:'teatro',l:'Theatre'}],
+  gente:[{n:'Zoe',t:'Zoe is camping with her family.',z:'campamento',pein:'melena',ropa:'#ffc83d',pelo:'#2b1a0f'},{n:'Max',t:'Max is making dinner.',z:'cocina',extra:'gorro',pein:'corto',ropa:'#2ecc71'}]}];
+
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
-const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1}];
-const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['exam','👑'],['arcade','🎮']];
+const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1}];
+const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['exam','👑'],['arcade','🎮']];
 
 /* ================== MISIONES ================== */
 const R={
@@ -50,11 +60,12 @@ const R={
  dictado(){runSteps('✍️ Dictado',DICTADO.map(f=>({t:'dictado',say:f,sub:'No cuentan las mayúsculas ni los puntos'})),'dictado',R.dictado,'✍️')},
  reparar(){runSteps('🛠️ Detecta y repara',shuf(REPARA).map(x=>({t:'repair',...x})),'reparar',R.reparar,'🛠️')},
  cruci(){runSteps('🧩 Crucigrama',CRUCI.map(w=>({t:'cross',words:w,sub:'Toca una pista o una casilla y escribe'})),'cruci',R.cruci,'🧩')},
+ escena(){runSteps('🏞️ Construir una escena',ESCENAS.map(x=>({t:'scene',...x,sub:'Toca a una persona y luego su sitio'})),'escena',R.escena,'🏞️')},
  letra(){runSteps('🔡 Primera letra',shuf(PRIMERA).map(x=>({t:'first',...x,sub:'Escribe la palabra; la primera letra ya está'})),'letra',R.letra,'🔡')},
 };
 const ROUTE_ST=[
  {k:'dictado',n:'Dictado',ic:'✍️',min:3},{k:'cruci',n:'Crucigrama',ic:'🧩',min:3},{k:'reparar',n:'Detecta y repara',ic:'🛠️',min:2},
- {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2}];
+ {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const MC=[
@@ -67,7 +78,7 @@ const JUEGO={
  saludo:'Juego de pruebas: una misión por cada formato nuevo del motor.',
  notaBoletin:'Solo cuenta la primera respuesta.',
  menu:[['#','🧪 Formatos nuevos'],['escuchar','🎧','Escucha y elige','Oye y toca'],['dictado','✍️','Dictado','Oye y escribe'],
-  ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],
+  ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],
   ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
  chuleta:'',
  examen:{min:3,dia:'el examen',preguntas(){return shuf(MC)}},
@@ -76,6 +87,6 @@ const JUEGO={
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/motor.js?v=3"></script>
+<script src="../motor-beta/motor.js?v=4"></script>
 </body>
 </html>

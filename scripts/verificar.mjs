@@ -387,6 +387,19 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       if (!mal && await st.locator('.letras input.bad').count()) fallo(`[${tag}] «${t}»: la palabra con la primera letra bien escrita («${S.w}») sale como mala`);
       break;
     }
+    case 'scene': {
+      for (const [k, p] of S.gente.entries()) {
+        await st.locator(`.per[data-p="${k}"]`).click();
+        if (mal && k === 0) {
+          const otro = S.sitios.find(z => z.k !== p.z).k;
+          await st.locator(`.zona[data-z="${otro}"]`).click();
+          if (await st.locator(`.per[data-p="${k}"].puesto`).count()) { fallo(`[${tag}] «${t}»: la escena acepta a ${p.n} en un sitio que no es el suyo`); break; }
+        }
+        await st.locator(`.zona[data-z="${p.z}"]`).click();
+        if (!await st.locator(`.per[data-p="${k}"].puesto`).count()) { fallo(`[${tag}] «${t}»: llevar a ${p.n} a su sitio («${p.z}») no lo coloca`); break; }
+      }
+      break;
+    }
     default:
       fallo(`[${tag}] «${t}»: formato de ejercicio desconocido para el verificador (${S.t})`);
   }

@@ -42,11 +42,19 @@ Condiciones de juego, no modalidades: **examen** (sin pistas, con tiempo) y **ru
 | Crucigrama | Adelante | |
 | Hueco con la primera letra | Adelante | |
 | Responder con un número | Espera | Se construye con el primer temario de Matemáticas |
-| Historia ramificada | Al motor | Mejor con imágenes o animación: comparar antes emojis mejorados y dibujos SVG animados |
-| Construir una escena | Al motor | «Tiene que representar mucho mejor la escena»: misma comparación visual |
+| Historia ramificada | Al motor | Con el aspecto de las escenas (abajo) |
+| Construir una escena | Al motor | «Tiene que representar mucho mejor la escena»: de ahí salió el aspecto (abajo) |
 | Miniinvestigación (5º) | Al motor | |
 
-**Orden:** primero las cinco sencillas en `motor-beta/`; mientras, la comparación visual de las escenas en el artefacto.
+**Aspecto de las escenas (20-nov, tres rondas en el mismo artefacto):** dibujo SVG animado (no emojis); personajes de cómic con contorno, con proporciones de niño (no cabeza enorme: la primera versión recordaba a South Park); fondo con montañas en capas, colinas con contorno y un camino, **al atardecer por defecto**, con luz `dia` o `noche` cuando una historia lo pida. Los sitios dibujados viven en una **biblioteca del motor** y cada juego los elige por nombre.
+
+**Orden:** primero las cinco sencillas en `motor-beta/` (hecho); después escena, historia y miniinvestigación, en ese orden. Las tres cuentan para la nota, solo la primera respuesta.
+
+**Construir una escena, hecha en `motor-beta/` (20-nov)** como paso `scene`: `{sitios:[{k, l}], gente:[{n, t, z, ropa?, pelo?, piel?, pein?, extra?}], luz?, q?}`.
+- Sitios de la biblioteca (`ESC_SITIOS`): `cocina`, `teatro`, `campamento` y `campo`; de 2 a 4 por escena. Un sitio nuevo se dibuja una vez en el motor y sirve para todos los juegos.
+- Personajes (`escPersona`): peinado `corto`, `coleta`, `rizos` o `melena`; objeto `gorro`, `mochila`, `mascara`, `camara`, `libro` o `balon`. Sin colores, toma unos por defecto: conviene darlos, para que pelo y nombre encajen.
+- Para que el último no salga por descarte: más sitios que personas, o dos personas en el mismo sitio.
+- Se toca, no se arrastra. Cuenta cada persona a la primera.
 
 **Hechas en `motor-beta/` (20-nov)**, como tipos de paso de `runSteps`: `listen` (escucha y elige), `dictado`, `repair` (detecta y repara), `cross` (crucigrama) y `first` (primera letra). Ningún juego las usa todavía: se estrenan en el próximo temario. Las juega el verificador en `pruebas-motor/`. Para usarlas en un juego: `JUEGO.voz` (idioma de la voz, por defecto `en-GB`) y `JUEGO.tildesCuentan` (por defecto no). Los datos de cada paso están comentados en `motor-beta/motor.js`.
 
@@ -68,7 +76,7 @@ Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/
 | Modalidad | Versión viable | Riesgo |
 |---|---|---|
 | Historia ramificada | Misión con historia de 4 a 6 decisiones; cada decisión es un ejercicio del temario; si falla, un desvío corto de repaso y vuelve al camino (las ramas se juntan) | decisiones de adorno que no exigen saber |
-| Construir una escena | Cuadrícula con emojis: toca el objeto y luego la casilla (*the cat under the table*); casillas fijas, corrección fiable | que dependa de la habilidad con el dedo (por eso, casillas) |
+| Construir una escena | Hecha (paso `scene`): lee la frase de cada persona y la lleva a su sitio en la escena dibujada | que el dibujo delate el sitio sin leer; que dependa del dedo (por eso se toca) |
 | Miniinvestigación (5º) | Ficha visible de un personaje (gustos, agenda) y una pregunta («¿qué plan le propones?») | demasiada lectura |
 
 ## Para cuando un temario las pida
