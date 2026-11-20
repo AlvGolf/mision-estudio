@@ -10,7 +10,8 @@ Solo lectura: no cambies código ni hagas commits hasta que el padre elija qué 
 1. **Fecha y cambios.** Lee la fecha del sistema (nunca la deduzcas de la última sesión). `git pull`. Mira `git log --oneline -8` para ver lo que subió el Claude de la app desde la última vez.
 2. **Turnos.** Lee `TRABAJO.md`. Si el otro Claude tiene un juego cogido, dilo: ese juego no se toca.
 3. **Lo esencial primero.** Lee `ESTADO.md` y cuenta el estado de «Lo esencial» antes que nada; luego «Abierto» y «Pendiente del padre».
+3b. **Su TO DO** (`M.ESTUDIO TO DO.md`, en la raíz y fuera de git; el padre, 20-nov: ahí deja notas para la sesión siguiente). Compáralo con lo leído la última vez: `git diff --no-index -- .claude/todo-visto.md "M.ESTUDIO TO DO.md"` (si no existe la copia, todo es nuevo). Lleva al resumen solo lo nuevo o cambiado y, de cada punto, di si ya está hecho (con su commit) o en qué punto del plan de `ESTADO.md` entraría, y si es esencial o extra. No apuntes nada todavía: lo decide él. Si algo trae nombres de niños o del colegio, no lo copies tal cual a ningún archivo del repo.
 4. **Fechas.** Si hay un examen en los próximos 3 días (campo `examen` de cada `<juego>/temario.json`), dilo arriba del todo.
 5. **Propuesta.** Termina con una propuesta corta: lo esencial abierto primero. Si lo que él suele pedir es extra, dilo en una frase.
 
-El 🔊 final: cómo está lo esencial, qué ha subido el otro Claude y una pregunta que se pueda contestar hablando.
+El 🔊 final: cómo está lo esencial, qué ha subido el otro Claude, lo nuevo de su TO DO si lo hay y una pregunta que se pueda contestar hablando.

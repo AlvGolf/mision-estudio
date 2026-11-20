@@ -7,6 +7,7 @@ description: "Cierre de sesión de Misión Estudio para no perder nada: verifica
 
 1. **Verificar.** Si en la sesión se tocó algún juego: `npm run verificar -- <juego>` (o sin argumento, todos). Con un FALLO no se sube: se arregla o se le cuenta al padre.
 2. **ESTADO.md.** Pon al día «Lo esencial» (estado de cada pieza), «Abierto» y «Pendiente del padre». Lo cerrado sale de «Abierto»; nada se pierde por estar «para más adelante»: o queda escrito o el padre lo descarta.
+2b. **Su TO DO** (`M.ESTUDIO TO DO.md`, fuera de git). Vuelve a compararlo con `.claude/todo-visto.md` (puede haber escrito durante la sesión). Lo que él decidió hoy queda apuntado en el plan de `ESTADO.md` (sin nombres de niños ni del colegio); lo que no decidió se le recuerda en el resumen. Al final, guarda lo leído: `cp "M.ESTUDIO TO DO.md" .claude/todo-visto.md`. El TO DO no se edita: es suyo.
 3. **Turno.** Borra tu fila de `TRABAJO.md`.
 4. **Memoria.** Solo lecciones nuevas (correcciones del padre, cosas que no se deducen del código): un archivo por lección en la memoria de Claude Code de este proyecto y su línea en `MEMORY.md`. No repitas lo que ya dicen el repo o `git log`.
 5. **Catálogo de artefactos.** Si en la sesión se creó o cambió algún artefacto, un solo lote de ArtifactData al catálogo, proyecto «Misión Estudio» (proyecto propio, un tema por juego).
