@@ -20,6 +20,7 @@ Reglas:
 5. Mensajes de commit en español, cortos y que digan qué cambia para el niño.
 
 ### Flujo de un juego nuevo
+La guía paso a paso es la skill `juego-nuevo` (`.claude/skills/juego-nuevo/SKILL.md`).
 1. El padre manda fotos del temario → se saca la lista de contenidos a `<juego>/temario.json` (vocabulario, verbos, gramática y fecha del examen; ver `ingles-u2/temario.json`).
 2. Claude Code crea `<juego>-beta/index.html` (p. ej. `mates-t3-beta/`) con solo los datos y las misiones, y al final carga `../motor-beta/motor.js` (ver `ingles-u2-beta/`). Lleva su `JUEGO.id` propio y claves de guardado propias, y lo sube.
 3. Revisión: `npm run verificar -- <juego>-beta` (cobertura contra el temario, 390 / 820 / 1440 px y la ruta entera jugada arrastrando en Chrome). El Claude de la app, que no puede ejecutarlo, juega la ruta en su navegador.

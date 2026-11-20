@@ -1,0 +1,12 @@
+{
+ "juego": "pruebas-motor",
+ "asignatura": "Pruebas del motor (contenido de ejemplo de Inglés Unit 2)",
+ "curso": "-",
+ "examen": "-",
+ "fuente": "Juego de pruebas: comprueba que la cobertura por «puntos» funciona en cualquier asignatura.",
+ "puntos": [
+  { "id": "past-irregular", "punto": "Pasado de verbos irregulares (buy, eat, draw, go, cut, catch)", "test": "MC", "escribir": "CRUCI", "ordenar": "-" },
+  { "id": "like-ing", "punto": "enjoy / love / hate + -ing", "test": "ESCUCHA", "escribir": "PRIMERA", "ordenar": "-" },
+  { "id": "invitaciones", "punto": "Would you like…? y cómo contestar", "test": "INVESTIGA", "escribir": "DICTADO", "ordenar": "-" }
+ ]
+}

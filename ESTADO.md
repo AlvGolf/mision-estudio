@@ -43,4 +43,4 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 ## Para el segundo juego (decidido el 19-nov)
 
 - ~~Separar el motor común de los datos de cada juego.~~ Hecho en beta el 19-nov.
-- Skill «juego nuevo» con el flujo desde las fotos hasta la beta.
+- ~~Skill «juego nuevo» con el flujo desde las fotos hasta la beta.~~ Hecha el 20-nov: `.claude/skills/juego-nuevo/`. El temario de cualquier asignatura usa `puntos` en `temario.json` (el verificador comprueba sus listas; probado en `pruebas-motor/`).

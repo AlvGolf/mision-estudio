@@ -95,7 +95,7 @@ for (const juego of juegos) {
     if (temario && A === ANCHOS[0]) {
       const c = await page.evaluate(comprobarCobertura, temario);
       c.F.forEach(fallo); c.A.forEach(aviso);
-      R.notas.push(`Cobertura: ${c.n.vocab} palabras, ${c.n.verbos} verbos y ${c.n.gram} puntos de gramática comprobados contra el temario`);
+      R.notas.push(`Cobertura: ${c.n.vocab} palabras, ${c.n.verbos} verbos y ${c.n.gram} puntos del temario comprobados`);
     }
 
     /* ---------- Comprobaciones de cada pantalla ---------- */
@@ -530,12 +530,13 @@ function comprobarCobertura(T) {
     if (J(x[1]) !== J(v.pasado) || J(x[2]) !== J(v.participio)) F.push(`«${v.base}»: las formas del juego no coinciden con el temario`);
     if (!VS || !/_{3,}/.test(VS[v.base] || '')) F.push(`«${v.base}» no tiene frase`);
   }
-  for (const p of T.gramatica || []) for (const f of ['test', 'escribir', 'ordenar']) {
+  /* gramatica (Inglés) y puntos (cualquier asignatura): cada punto del temario dice qué lista del juego lo practica de cada forma ('-' si no aplica) */
+  for (const p of [...(T.gramatica || []), ...(T.puntos || [])]) for (const f of ['test', 'escribir', 'ordenar']) {
     const n = p[f];
     if (n === '-') continue;
-    if (n == null) { A.push(`Gramática «${p.punto}»: falta la forma «${f}»`); continue; }
+    if (n == null) { A.push(`Punto «${p.punto}»: falta la forma «${f}»`); continue; }
     const arr = g(n);
-    if (!Array.isArray(arr) || !arr.length) F.push(`Gramática «${p.punto}»: la lista ${n} no existe en el juego o está vacía`);
+    if (!Array.isArray(arr) || !arr.length) F.push(`Punto «${p.punto}»: la lista ${n} no existe en el juego o está vacía`);
   }
-  return { F, A, n: { vocab: (T.vocabulario || []).length, verbos: (T.verbos || []).length, gram: (T.gramatica || []).length } };
+  return { F, A, n: { vocab: (T.vocabulario || []).length, verbos: (T.verbos || []).length, gram: (T.gramatica || []).length + (T.puntos || []).length } };
 }
