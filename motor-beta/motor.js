@@ -5,6 +5,23 @@
    con nota), MIC (estrellas del ranking), ROUTE_ST (estaciones de la ruta)
    y R (una función por misión). El motor pone R.route, R.arcade y R.exam.
    ===================================================================== */
+/* ================== ESTILO VISUAL (rediseño, 20-nov) ==================
+   El estilo cambia con la hora real: mañana (7 a 15) de día, tarde (15 a 20) al atardecer y noche (20 a 7).
+   Cada juego lleva su grupo (JUEGO.estilo, de 0 a 5), así dos juegos seguidos no se ven iguales; el cómic (B) entra en los tres momentos.
+   JUEGO.curso (2 o 5) pone el estilo de 2º, más grande y con más color. Para ver uno a propósito: ?estilo=C2 y ?hora=9 en la dirección. */
+const ESTILOS={manana:['D1','B1','D2','D3','B3','B2'],tarde:['A1','A2','B2','A3','B1','B3'],noche:['C1','C2','C3','B3','B2','B1']};
+const ESTILO_LETRAS={A:'Baloo+2:wght@600;700;800',B:'Lilita+One',C:'Fredoka:wght@500;600;700',D:'Baloo+2:wght@600;700;800',B2:'Bangers',D2:'Lilita+One',D3:'Fredoka:wght@500;600;700',c2:'Luckiest+Guy'};
+function parametro(k){try{return new URLSearchParams(location.search).get(k)}catch(e){return null}}
+function momentoAhora(){const p=parametro('hora'),h=p!=null&&p!==''&&!isNaN(+p)?+p:new Date().getHours();return h>=7&&h<15?'manana':h>=15&&h<20?'tarde':'noche'}
+function luzAhora(){return{manana:'dia',tarde:'atardecer',noche:'noche'}[momentoAhora()]}
+function estiloAhora(){const q=(parametro('estilo')||'').toUpperCase();if(/^[ABCD][123]$/.test(q))return q;return ESTILOS[momentoAhora()][(((JUEGO.estilo|0)%6)+6)%6]}
+function aplicaEstilo(){const e=estiloAhora(),h=document.documentElement,c2=String(parametro('curso')||JUEGO.curso||5)==='2';
+  if(h.dataset.estilo===e&&h.classList.contains('c2')===c2)return;
+  h.dataset.estilo=e;h.dataset.fam=e[0];h.classList.toggle('c2',c2);
+  const fams=['Nunito:wght@400;600;700;800',ESTILO_LETRAS[e]||ESTILO_LETRAS[e[0]]];if(c2&&(e[0]==='B'||e==='D2'))fams.push(ESTILO_LETRAS.c2);
+  const href='https://fonts.googleapis.com/css2?family='+fams.join('&family=')+'&display=swap';
+  let l=document.getElementById('estilo-letras');if(!l){l=document.createElement('link');l.id='estilo-letras';l.rel='stylesheet';document.head.appendChild(l)}if(l.href!==href)l.href=href}
+aplicaEstilo();
 /* ================== ESTADO ================== */
 let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}, REAL=null;
 try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;}catch(e){}
@@ -20,7 +37,7 @@ function hoyToca(){
   const miss=BLOCKS.find(b=>nota(b.k)==null);if(miss)return{b:miss,why:'aún no lo has jugado'};
   const w=[...BLOCKS].sort((a,b)=>nota(a.k)-nota(b.k))[0];return nota(w.k)>=8?null:{b:w,why:'es tu nota más baja'};}
 const MAXSTAR=c=>c=='arcade'?1:3;const MAXST=MIC.reduce((s,[k])=>s+MAXSTAR(k),0);
-function starLine(b){return MIC.map(([k,ic])=>{const s=Math.min((b&&b[k])||0,MAXSTAR(k));const M3=MAXSTAR(k);return `<span style="display:inline-block;background:#0c1633;border-radius:8px;padding:2px 7px;margin:2px;white-space:nowrap">${ic} <span style="color:var(--gold)">${'★'.repeat(s)}</span><span style="color:#4a5a8f">${'★'.repeat(M3-s)}</span></span>`}).join('')}
+function starLine(b){return MIC.map(([k,ic])=>{const s=Math.min((b&&b[k])||0,MAXSTAR(k));const M3=MAXSTAR(k);return `<span style="display:inline-block;background:var(--sunk);border-radius:8px;padding:2px 7px;margin:2px;white-space:nowrap">${ic} <span style="color:var(--gold)">${'★'.repeat(s)}</span><span style="color:var(--line2)">${'★'.repeat(M3-s)}</span></span>`}).join('')}
 const totalStars=()=>Object.values(BEST).reduce((a,b)=>a+b,0);
 /* Partidas antiguas sin desglose: si sus estrellas coinciden con las actuales, se rellena */
 HIST.forEach(e=>{if(!e.sb&&e.st===totalStars())e.sb={...BEST}});save();
@@ -66,6 +83,7 @@ function quiz(title,sub,qs,key,after){
 
 /* ================== MISIONES ================== */
 function home(){
+  aplicaEstilo();
   if(typeof ARC!=='undefined')ARC.clear();
   if(ROUTE&&ROUTE.on){ROUTE.on=false;saveRoute()}
   STREAK=STREAK;hud();
@@ -668,7 +686,7 @@ function escPersona(p){
 }
 /* Dibuja una escena: sitios [{k, l}] (de 2 a 4), luz y lo que vaya encima (personajes). Devuelve el SVG y dónde se coloca cada uno */
 function escSVG(sitios,luz,encima,etiqueta){
-  const L=ESC_LUZ[luz]||ESC_LUZ.atardecer,W=sitios.length*100,u=++ESC_UID;
+  const L=ESC_LUZ[luz]||ESC_LUZ[luzAhora()]||ESC_LUZ.atardecer,W=sitios.length*100,u=++ESC_UID;
   const svg=`<svg class="esc" viewBox="0 0 ${W} 300" style="max-width:${Math.round(W*1.3)}px" role="img" aria-label="${esc(etiqueta||sitios.map(z=>z.l).join(', '))}">${escFondo(W,L,u)}
     ${sitios.map((z,i)=>{const d=ESC_SITIOS[z.k];if(!d){console.error(`Escena: no hay dibujo del sitio «${z.k}» (los que hay: ${Object.keys(ESC_SITIOS).join(', ')})`);return ''}
       return `<g transform="translate(${(i-d.col)*100} 0)">${d.svg(L.s)}</g>`}).join('')}
@@ -742,7 +760,7 @@ Object.assign(STEP,{
           if(anim&&estaba&&antes!==ahora){g.classList.add('anda');setTimeout(()=>g.classList.remove('anda'),escQuieto()?0:900)}}
         else g.classList.add('fuera');
         if(!anim){void g.getBBox();g.style.transition=''}})};
-    const pinta=n=>{const lz=n.luz||s.luz||'atardecer';
+    const pinta=n=>{const lz=n.luz||s.luz||luzAhora();
       if(lz!==luz){luz=lz;E=escSVG(s.sitios,lz,'',s.titulo);
         $('#hesc').innerHTML=E.svg.replace('</svg>',RP.map((p,k)=>`<g class="pj fuera" data-pj="${k}" style="transform:translate(${E.W/2}px,276px)">${escPersona(p)}</g>`).join('')+'</svg>');
         $('#hesc').querySelectorAll('.zona').forEach(z=>{z.removeAttribute('tabindex');z.removeAttribute('role');z.style.pointerEvents='none'});

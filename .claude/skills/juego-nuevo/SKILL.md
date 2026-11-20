@@ -67,7 +67,8 @@ Es algo importante, así que el plan tiene que estar completo antes de empezar.
   - `claves` de guardado propias (`estado`, `ruta`, `arcade`) y `nombre:'mision_name'`;
   - `saludo`, `notaBoletin`, `menu`, `chuleta`;
   - `examen` (`min`, `dia`, `preguntas()`), `ruta`, `arcade` (`bloques`, `jefes`, `test`, `deletreo`);
-  - `voz` (`en-GB` en Inglés, `es-ES` en Lengua o Ciencias) y `tildesCuentan` (`true` en Lengua de 5º).
+  - `voz` (`en-GB` en Inglés, `es-ES` en Lengua o Ciencias) y `tildesCuentan` (`true` en Lengua de 5º);
+  - `curso` (2 o 5: en 2º el estilo es más grande y con más color) y `estilo` (de 0 a 5, el grupo de estilos del juego: el siguiente al del último juego hecho, para que dos juegos seguidos no se vean iguales). Se prueba uno a propósito con `?estilo=C2` o `?hora=9` en la dirección.
 - **Además de `JUEGO`:** `BLOCKS` (con `w:2` en lo más parecido al examen), `MIC`, `ROUTE_ST` (de lo más difícil a lo más ligero; sus `min` suman de 15 a 20 en 2º y de 30 a 35 en 5º, y `JUEGO.ruta.minutos` lo dice: «15 a 20» o «30 a 35») y `R` (una función por misión).
 - **Para que el verificador juegue:** en Inglés se mantienen los nombres `VOCAB`, `VERBS`, `VSENT`, `VPARTS` y `vocabSentQ`. En cualquier juego, las listas que nombre `temario.json`.
 - **Revisa a mano antes de seguir:**

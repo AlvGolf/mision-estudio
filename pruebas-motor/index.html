@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=6">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=7">
 </head>
 <body>
 <header>
@@ -105,6 +105,7 @@ const MC=[
  {q:'"countryside" es…',opts:['el campo','la ciudad','la costa'],a:'el campo'}];
 const JUEGO={
  id:'pruebas-motor',codigo:'PRUEBAS DEL MOTOR',ranking:false,voz:'en-GB',tildesCuentan:false,
+ curso:5, estilo:0,
  claves:{estado:'pruebas_motor',ruta:'pruebas_motor_ruta',arcade:'pruebas_motor_arcade',nombre:'mision_name'},
  saludo:'Juego de pruebas: una misión por cada formato nuevo del motor.',
  notaBoletin:'Solo cuenta la primera respuesta.',
@@ -118,6 +119,6 @@ const JUEGO={
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/motor.js?v=6"></script>
+<script src="../motor-beta/motor.js?v=7"></script>
 </body>
 </html>
