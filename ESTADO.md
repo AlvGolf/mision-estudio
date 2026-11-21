@@ -8,7 +8,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 | Pieza | Estado | Nota |
 |---|---|---|
-| Menú con una tarjeta por juego | ✅ hecho | `index.html` |
+| Menú de la suite (lo que abre la app) | ✅ en producción | 21-nov: pregunta el curso, estanterías por asignatura con el próximo examen y la nota; los juegos salen de `juegos.js`. La app se instala con el icono del cohete y funciona sin conexión |
 | Inglés Unit 2 (5º) | ✅ en producción | Examen el 20-nov-2026. El 19-nov pasaron a la normal los arreglos del verificador (gramática también escrita, tarjeta en el móvil, letra, corrector) |
 | Ranking compartido de la clase | ✅ hecho | Apps Script; copia en `apps-script/Code.gs` |
 | Pruebas automáticas (`npm run verificar`) | ✅ hecho | Ruta entera a 390/820/1440 px, cobertura y examen |
@@ -49,7 +49,9 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 ## Pendiente del padre
 
 - La nota real del examen de Inglés Unit 2 (20-nov), cuando la sepa, para compararla con la «nota prevista» del juego.
-- Nada pendiente. (19-nov: el nombre de la marca de prueba sigue en el commit antiguo 32d677d; el padre decidió dejarlo así.)
+- Instalar la app en las tablets de los niños (Android: botón «Instalar la app» en el menú; iPad: Compartir → «Añadir a pantalla de inicio») y contar cómo va.
+- Temario del juego de 2º la semana del 23-nov.
+- (19-nov: el nombre de la marca de prueba sigue en el commit antiguo 32d677d; el padre decidió dejarlo así.)
 
 ## Para el segundo juego (decidido el 19-nov)
 
