@@ -4,6 +4,8 @@ Juegos de estudio para primaria (5º y 2º), hechos con el temario del colegio.
 Objetivo: que los niños estudien de forma fácil, rápida, dinámica y gamificada.
 
 > Repositorio PÚBLICO. Nunca escribas aquí nombres de niños, del colegio ni datos personales.
+>
+> **El temario no se sube nunca** (el padre, 21-nov): ni fotos, ni escaneos, ni PDF de libros o libretas. Se quedan en el PC (`5º PRIM/`, `2º PRIM/`, `Material de apoyo/`, todo fuera de git). Al repositorio solo va lo que sacamos de ellas: `<juego>/temario.json` y los datos del juego. Antes de cada commit, `git status` y los archivos añadidos uno a uno, nunca `git add -A` (21-nov: así se subieron 13 fotos por error y hubo que reescribir el historial).
 
 ## Cómo trabajamos (dos Claudes, un solo repositorio)
 

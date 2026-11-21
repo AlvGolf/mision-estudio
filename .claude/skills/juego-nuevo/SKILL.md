@@ -16,6 +16,7 @@ De las fotos del temario a una beta que el padre pueda probar, sin saltarse nada
 
 ## 1. El temario → `<juego>/temario.json`
 Lo que sale en las fotos es lo que entra en el examen: ni más ni menos.
+- **Las fotos no se suben nunca** al repositorio (es público): se leen donde las deja el padre (`5º PRIM/temario/…`) y se quedan en el PC. Solo se sube el `temario.json`.
 - Copia la forma de `ingles-u2/temario.json`: `juego`, `asignatura`, `curso`, `examen` (AAAA-MM-DD), `fuente` (de dónde sale y cuándo).
 - **Inglés:** `vocabulario` (`{en, es}`), `verbos` (`{base, pasado:[], participio:[], es}`) y `gramatica`.
 - **Cualquier otra asignatura:** `puntos`. Cada punto del temario es una línea `{id, punto, test, escribir, ordenar}`, donde cada forma es el nombre de la lista del juego que lo practica, o `"-"` si no aplica. El verificador comprueba que esas listas existen y no están vacías.
