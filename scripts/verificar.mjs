@@ -144,10 +144,13 @@ for (const juego of juegos) {
     /* ---------- 2. La ruta entera ---------- */
     /* Duración de la ruta según el curso (el padre, 20-nov): 2º, de 15 a 20 minutos en total; 5º, de 30 a 35 */
     if (A === ANCHOS[0]) {
-      const d = await page.evaluate(() => ({ suma: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.reduce((a, s) => a + (s.min || 0), 0) : null, min: typeof JUEGO !== 'undefined' && JUEGO.ruta ? JUEGO.ruta.minutos : null }));
+      const d = await page.evaluate(() => ({ suma: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.reduce((a, s) => a + (s.min || 0), 0) : null, min: typeof JUEGO !== 'undefined' && JUEGO.ruta ? JUEGO.ruta.minutos : null,
+        dias: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.reduce((a, s) => { a[a.length - 1] += s.min || 0; if (s.corte) a.push(0); return a; }, [0]).filter(x => x) : [] }));
       const curso = temario && String(temario.curso || '');
       const pide = /2/.test(curso) ? [15, 20] : /5/.test(curso) ? [30, 35] : null;
-      if (d.suma != null && pide) {
+      // Ruta en varios días (el padre, 21-nov, Mates): cada día, unos 20 minutos
+      if (d.dias.length > 1) { d.dias.forEach((m, k) => { if (m < 15 || m > 25) aviso(`El día ${k + 1} de la ruta suma ${m} minutos: cada día tiene que durar unos 20 (de 15 a 25)`); }); }
+      else if (d.suma != null && pide) {
         if (d.suma < pide[0] || d.suma > pide[1]) aviso(`La ruta suma ${d.suma} minutos y en ${curso} tiene que durar de ${pide[0]} a ${pide[1]}: ajusta los «min» de ROUTE_ST`);
         if (!d.min) aviso(`JUEGO.ruta.minutos no está puesto: el botón dirá «unos 30 minutos» (en ${curso}: «${pide[0]} a ${pide[1]}»)`);
       }
@@ -207,9 +210,15 @@ for (const juego of juegos) {
     const btnExamen = page.locator('.routeend .btn');
     if (acabada && await btnExamen.count()) {
       await btnExamen.first().click();
-      if (await visible('#go')) { await page.click('#go'); await page.waitForSelector('#app .opt', { timeout: 8000 }).catch(() => {}); }
+      if (await visible('#go')) { await page.click('#go'); await page.waitForSelector('#app .opt, #app .pad', { timeout: 8000 }).catch(() => {}); }
       let preguntas = 0;
-      for (let k = 0; k < 60 && await visible('#app .opt'); k++) { await page.locator('#app .opt').first().click(); preguntas++; }
+      for (let k = 0; k < 60; k++) {
+        if (await visible('#app .opt')) { await page.locator('#app .opt').first().click(); preguntas++; }
+        else if (await visible('#app .pad')) { // preguntas con teclado de números (Mates)
+          await page.locator('#app .pad [data-n="1"]').click(); await page.locator('#app .pad #wchk').click(); preguntas++;
+          await page.waitForTimeout(250);
+        } else break;
+      }
       const txt = await page.locator('#app').innerText();
       if (/Nota/.test(txt)) R.notas.push(`[${tag}] Examen: ${preguntas} preguntas y sale la nota`);
       else fallo(`[${tag}] El examen no termina con nota (${preguntas} preguntas contestadas)`);
@@ -306,6 +315,14 @@ async function arrastrar(page, de, a) {
   await page.mouse.move(bx, by, { steps: 12 });
   await page.mouse.up();
   return true;
+}
+
+/* La división al estilo del cole, igual que en el motor: qué cifras se cogen, cociente y resto de cada paso */
+function pasosDiv(D, d) {
+  const s = String(D); let m = 1; while (m < s.length && +s.slice(0, m) < d) m++;
+  const P = []; let e = m - 1, cur = +s.slice(0, m);
+  for (;;) { const q = Math.floor(cur / d), r = cur - q * d; P.push({ e, cur, q, r }); if (e + 1 >= s.length) break; e++; cur = r * 10 + (+s[e]); }
+  return { s, m, P, q: Math.floor(D / d), r: D % d };
 }
 
 async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
@@ -556,6 +573,58 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
         await arrastrarOTocar(ficha, st.locator(`.caja[data-rc="${r},${c}"]`), 'cajas 2×2');
         if (!await ficha.evaluate(e => e.classList.contains('used'))) { fallo(`[${tag}] «${t}»: arrastrar «${txt}» a su caja no la coloca`); return; }
       }
+      break;
+    }
+    // Cuentas en pantalla (21-nov): divisiones en la cuadrícula y problemas con la cuenta montada
+    case 'divi': {
+      const pd = pasosDiv(S.D, S.d);
+      const teclea = async (v, que) => { for (const ch of String(v)) await st.locator(`.pad [data-n="${ch}"]`).click(); await st.locator('.pad #wchk').click();
+        if (!await st.locator('#pn.ok').count()) fallo(`[${tag}] «${t}»: en la división guiada ${S.D} : ${S.d}, ${que} bien contestado (${v}) sale como malo`); };
+      const espera = async re => page.waitForFunction(r => new RegExp(r).test(document.querySelector('#stage .q')?.textContent || ''), re.source, { timeout: 4000 }).then(() => true, () => false);
+      if (S.modo === 'libre') {
+        const q = String(mal ? pd.q + 1 : pd.q);
+        for (const [k, ch] of [...q].entries()) await st.locator('[data-f="q"]').nth(k).fill(ch);
+        for (const [k, ch] of [...String(pd.r)].entries()) await st.locator(`[data-f="${pd.P.length}"]`).nth(k).fill(ch);
+        await st.locator('#wchk').click();
+        if (!mal && !/✅ Cociente.*✅ Resto/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: la división libre ${S.D} : ${S.d} bien hecha (${pd.q}, resto ${pd.r}) no sale bien`);
+        break;
+      }
+      await st.locator(`[data-dg="${mal && pd.m > 1 ? 0 : pd.m - 1}"]`).click();
+      for (const [k, p] of pd.P.entries()) {
+        if (!await espera(/cabe/)) { fallo(`[${tag}] «${t}»: la división guiada no pregunta cuántas veces cabe (paso ${k + 1})`); return; }
+        await teclea(p.q, `cuántas veces cabe ${S.d} en ${p.cur}`);
+        if (!await espera(/sobra/)) { fallo(`[${tag}] «${t}»: la división guiada no pregunta cuánto sobra (paso ${k + 1})`); return; }
+        await teclea(p.r, `lo que sobra de ${p.cur}`);
+        if (k + 1 < pd.P.length) {
+          if (!await espera(/Baja/)) { fallo(`[${tag}] «${t}»: la división guiada no pide bajar la cifra (paso ${k + 1})`); return; }
+          await st.locator(`[data-dg="${p.e + 1}"]`).click();
+        }
+      }
+      if (!await espera(/Cociente/)) fallo(`[${tag}] «${t}»: la división guiada ${S.D} : ${S.d} no llega al final`);
+      else if (!new RegExp(`Cociente ${pd.q} y resto ${pd.r}`).test(await st.locator('.q').innerText())) fallo(`[${tag}] «${t}»: la división guiada ${S.D} : ${S.d} no da cociente ${pd.q} y resto ${pd.r}`);
+      break;
+    }
+    case 'prob': {
+      if (S.cuenta) {
+        const [a, op, b] = S.cuenta;
+        await st.locator('#n1').fill(String(a)); await st.locator(`[data-op="${op}"]`).click(); await st.locator('#n2').fill(String(b)); await st.locator('#mt').click();
+        if (!await st.locator('#cuh .cuenta').count()) { fallo(`[${tag}] «${t}»: montar la cuenta ${a} ${op} ${b} no la pinta`); break; }
+        if (op === ':') {
+          const pd = pasosDiv(a, b);
+          for (const [k, ch] of [...String(pd.q)].entries()) await st.locator('#cuh [data-f="q"]').nth(k).fill(ch);
+          for (const [k, ch] of [...String(pd.r)].entries()) await st.locator(`#cuh [data-f="${pd.P.length}"]`).nth(k).fill(ch);
+        } else {
+          const res = String(op === '+' ? a + b : op === '−' ? a - b : a * b), fila = st.locator('#cuh .cuenta input').last();
+          const ult = await fila.getAttribute('data-f'), cas = st.locator(`#cuh [data-f="${ult}"]`), n = await cas.count();
+          for (const [k, ch] of [...res].entries()) await cas.nth(n - res.length + k).fill(ch);
+        }
+        await st.locator('#cc').click();
+        if (!/✅/.test(await st.locator('#cfb').innerText())) fallo(`[${tag}] «${t}»: la cuenta ${a} ${op} ${b} bien hecha no sale bien`);
+      }
+      const bien = String(S.a).replace('.', ','), escribe = mal ? '1' : bien;
+      for (const ch of escribe) await st.locator(`#tk .pad [data-n="${ch}"]`).click();
+      await st.locator('#tk #wchk').click();
+      if (!mal && !await st.locator('#pn.ok').count()) fallo(`[${tag}] «${t}»: la respuesta correcta del problema («${bien}») sale como mala`);
       break;
     }
     default:

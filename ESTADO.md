@@ -15,7 +15,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 | Guarda de nombres antes de subir | ✅ hecho | Lista con 7 nombres (19-nov). Repaso de todo el repo: limpio |
 | Turnos entre los dos Claudes (`TRABAJO.md`) | ✅ hecho | |
 | Cada niño con su progreso en el mismo dispositivo | ✅ en producción | 20-nov, «no soy yo» aparta el progreso y lo recupera con el nombre |
-| Juego de Mates de 5º | ⚪ sin empezar | Examen el 27-nov-2026. Falta el temario (fotos) |
+| Juego de Mates de 5º (Unidad 3) | 🟡 en beta | Examen el 27-nov-2026. `mates-u3-beta/` (21-nov): divisiones en cuadrícula, múltiplos, divisores, criterios, primos, historia, miniinvestigación y problemas; examen de 20 preguntas en 30 minutos. Falta que el padre lo pruebe y lo apruebe, junto con los formatos nuevos del motor |
 | Juego de Lengua de 5º | ⚪ sin empezar | Examen el 1-dic-2026. Falta el temario (fotos) |
 | Juego de 2º | ⚪ sin empezar | Sin examen a la vista: el padre mandará temario la semana del 23-nov. Hasta entonces, tampoco hay examen nuevo de 5º: tiempo para mejorar la app |
 
@@ -51,7 +51,10 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
-- **Fotos del temario de Mates de 5º (examen el 27-nov) y de Lengua de 5º (examen el 1-dic).**
+- **Probar la beta de Mates** en https://alvgolf.github.io/mision-estudio/mates-u3-beta/ y aprobarla (los niños la usan el lunes 24 y el martes 25; el miércoles 26, el examen). Para pasarla a la normal hay que aprobar también los formatos nuevos de `motor-beta/` (se prueban en `pruebas-motor/`, secciones «Mates y Lengua» y Divisiones y Problemas).
+- Historia y miniinvestigación de Mates: el padre no eligió argumento; Claude puso H1 (la excursión) y M1 (la caja fuerte). Se pueden cambiar en el artefacto «Modalidades nuevas», ronda 5.
+
+- **Fotos del temario de Lengua de 5º (examen el 1-dic).**
 - Probar los formatos nuevos en https://alvgolf.github.io/mision-estudio/pruebas-motor/ (sección «Mates y Lengua») y aprobarlos para el motor normal.
 
 - La nota real del examen de Inglés Unit 2 (20-nov), cuando la sepa, para compararla con la «nota prevista» del juego.

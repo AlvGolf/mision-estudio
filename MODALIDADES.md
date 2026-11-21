@@ -105,6 +105,16 @@ Se hacen por tandas (el padre, 21-nov). Las escenas y viñetas se dibujan con la
 | Separar en sílabas | `silabas` | `{w, c:[cortes delante de la letra n, desde 0], ton?}` | el corte; con `ton`, también la tónica (y dice si es aguda, llana o esdrújula) |
 | Clasificar con dos criterios | `cajas2` | `{q, fil:[2], col:[2], w:[[ficha, fila, columna]]}` | cada ficha a la primera; se arrastra o se toca |
 
+**Cuentas en pantalla, ronda 5 (21-nov), para Mates:** el padre pidió que todo se haga en la tablet como en la hoja, sin cuaderno. Eligió divisiones guiadas al principio y libres después, y en los problemas la cuenta montada. Hechas en `motor-beta/`:
+
+| Modalidad | Paso | Datos | Cómo cuenta |
+|---|---|---|---|
+| División en la cuadrícula | `divi` | `{D, d, modo:'guiada'\|'libre', q?}` | guiada: cada paso (qué cifras coge, cuántas veces cabe, cuánto sobra); libre: cociente y resto |
+| Problema con la cuenta montada | `prob` | `{q, a, cuenta?:[a, op, b], ex?}` | solo la respuesta; la cuenta (suma, resta, multiplicación en columna o división libre) se comprueba pero no puntúa. `cuenta` es para el verificador |
+| Examen con teclado y borrador | pregunta `{q, a, num:true, borrador?, neg?}` en `JUEGO.examen.preguntas()` | | sin corrección a la vista: todo al final |
+
+La ruta puede ir en varios días: la estación con `corte:'Hasta aquí el primer día'` pinta la raya en el mapa y, al acabarla, el guía dice que por hoy se para (se puede seguir). `JUEGO.ruta.facil:true` cambia el texto a «de lo más sencillo a lo más difícil».
+
 Ojo con los nombres de los campos: `t` (tipo de paso) y `sub` (subtítulo) los usa `runSteps` para todos los pasos, así que ningún paso puede usarlos para sus datos.
 
 **Las que quedan:**

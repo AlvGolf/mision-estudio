@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=14">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=15">
 </head>
 <body>
 <header>
@@ -99,10 +99,17 @@ const SILABAS=[{w:'camión',c:[2],ton:1},{w:'lápiz',c:[2],ton:0},{w:'murciélag
 const CAJAS2=[{q:'Clasifica cada palabra',fil:['Aguda','Llana'],col:['Con tilde','Sin tilde'],
  w:[['camión',0,0],['sofá',0,0],['reloj',0,1],['pared',0,1],['lápiz',1,0],['árbol',1,0],['mesa',1,1],['casa',1,1]]}];
 
+/* Cuentas en pantalla (21-nov): divisiones en cuadrícula y problemas con la cuenta montada */
+const DIVIS=[{D:7488,d:32,modo:'guiada'},{D:958,d:7,modo:'guiada'},{D:6350,d:45,modo:'libre'}];
+const PROBS=[
+ {q:'En un almacén hay 1.344 botellas y se guardan en cajas de 24. ¿Cuántas cajas se llenan?',a:56,cuenta:[1344,':',24]},
+ {q:'Un cine tiene 18 filas de 26 butacas. ¿Cuántas butacas hay?',a:468,cuenta:[18,'×',26]},
+ {q:'Una tienda tenía 2.050 € y gasta 875 €. ¿Cuánto le queda?',a:1175,cuenta:[2050,'−',875]}];
+
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
 const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1},{k:'historia',n:'Historia',w:1},{k:'investiga',n:'Miniinvestigación',w:1},
- {k:'numero',n:'Número',w:1},{k:'recta',n:'Recta numérica',w:1},{k:'cadena',n:'Cálculo en cadena',w:1},{k:'tabla',n:'Completar tablas',w:1},{k:'marcar',n:'Marcar palabras',w:1},{k:'silabas',n:'Sílabas',w:1},{k:'cajas2',n:'Cajas 2×2',w:1}];
-const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['investiga','🔎'],['numero','🔢'],['recta','📏'],['cadena','⛓️'],['tabla','📋'],['marcar','🖍️'],['silabas','✂️'],['cajas2','🗃️'],['exam','👑'],['arcade','🎮']];
+ {k:'numero',n:'Número',w:1},{k:'recta',n:'Recta numérica',w:1},{k:'cadena',n:'Cálculo en cadena',w:1},{k:'tabla',n:'Completar tablas',w:1},{k:'marcar',n:'Marcar palabras',w:1},{k:'silabas',n:'Sílabas',w:1},{k:'cajas2',n:'Cajas 2×2',w:1},{k:'divis',n:'Divisiones',w:1},{k:'probs',n:'Problemas',w:1}];
+const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['investiga','🔎'],['numero','🔢'],['recta','📏'],['cadena','⛓️'],['tabla','📋'],['marcar','🖍️'],['silabas','✂️'],['cajas2','🗃️'],['divis','➗'],['probs','📝'],['exam','👑'],['arcade','🎮']];
 
 /* ================== MISIONES ================== */
 const R={
@@ -120,13 +127,16 @@ const R={
  tabla(){runSteps('📋 Completar tablas',TABLAS.map(x=>({t:'tabla',...x,sub:'Escribe lo que falta en cada fila'})),'tabla',R.tabla,'📋')},
  marcar(){runSteps('🖍️ Marcar palabras',MARCAS.map(x=>({t:'marcar',...x,sub:'Toca las palabras y comprueba'})),'marcar',R.marcar,'🖍️')},
  silabas(){runSteps('✂️ Separar en sílabas',SILABAS.map(x=>({t:'silabas',...x,sub:'Toca entre las letras para cortar'})),'silabas',R.silabas,'✂️')},
+ divis(){runSteps('➗ Divisiones',DIVIS.map(x=>({t:'divi',...x,sub:x.modo=='guiada'?'Paso a paso':'Como en la hoja'})),'divis',R.divis,'➗')},
+ probs(){runSteps('📝 Problemas',PROBS.map(x=>({t:'prob',...x,sub:'Monta la cuenta y escribe la respuesta'})),'probs',R.probs,'📝')},
  cajas2(){runSteps('🗃️ Clasificar con dos criterios',CAJAS2.map(x=>({t:'cajas2',...x,sub:'Cada ficha tiene una sola caja'})),'cajas2',R.cajas2,'🗃️')},
 };
 const ROUTE_ST=[
  {k:'dictado',n:'Dictado',ic:'✍️',min:3},{k:'cruci',n:'Crucigrama',ic:'🧩',min:3},{k:'reparar',n:'Detecta y repara',ic:'🛠️',min:2},
  {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2},{k:'historia',n:'Historia',ic:'📖',min:3},{k:'investiga',n:'Miniinvestigación',ic:'🔎',min:2},
  {k:'cadena',n:'Cálculo en cadena',ic:'⛓️',min:2},{k:'tabla',n:'Completar tablas',ic:'📋',min:2},{k:'silabas',n:'Sílabas',ic:'✂️',min:2},{k:'marcar',n:'Marcar palabras',ic:'🖍️',min:2},
- {k:'cajas2',n:'Cajas 2×2',ic:'🗃️',min:2},{k:'recta',n:'Recta numérica',ic:'📏',min:1},{k:'numero',n:'Número',ic:'🔢',min:1}];
+ {k:'cajas2',n:'Cajas 2×2',ic:'🗃️',min:2},{k:'recta',n:'Recta numérica',ic:'📏',min:1},{k:'numero',n:'Número',ic:'🔢',min:1},
+ {k:'divis',n:'Divisiones',ic:'➗',min:3},{k:'probs',n:'Problemas',ic:'📝',min:3}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const MC=[
@@ -143,15 +153,16 @@ const JUEGO={
   ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],['historia','📖','Historia','El Theatre Club'],['investiga','🔎','Miniinvestigación','La agenda de Sam'],
   ['#','🧮 Mates y Lengua'],['numero','🔢','Número','Teclado con coma'],['recta','📏','Recta numérica','Decimales y fracciones'],['cadena','⛓️','Cálculo en cadena','Paso a paso'],
   ['tabla','📋','Completar tablas','Verbos y ceros'],['marcar','🖍️','Marcar palabras','Adjetivos y verbos'],['silabas','✂️','Sílabas','Y la tónica'],['cajas2','🗃️','Cajas 2×2','Aguda o llana, con tilde o sin'],
+  ['divis','➗','Divisiones','Guiadas y libres'],['probs','📝','Problemas','Con la cuenta montada'],
   ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
  chuleta:'',
- examen:{min:3,dia:'el examen',preguntas(){return shuf(MC)}},
+ examen:{min:3,dia:'el examen',preguntas(){return shuf([...MC,{q:'Calcula 7 × 8 (con teclado y borrador)',a:56,num:true,borrador:true}])}},
  ruta:{partes:[],estacion(){}},
  arcade:{bloques:[{k:'mix',n:'Todo mezclado',ic:'🎲'}],jefes:{mix:['🦖','Rex de pruebas']},
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/piel.js?v=14"></script>
-<script src="../motor-beta/motor.js?v=14"></script>
+<script src="../motor-beta/piel.js?v=15"></script>
+<script src="../motor-beta/motor.js?v=15"></script>
 </body>
 </html>

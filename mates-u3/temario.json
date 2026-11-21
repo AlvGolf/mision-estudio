@@ -1,0 +1,17 @@
+{
+ "juego": "mates-u3",
+ "asignatura": "Matemáticas",
+ "curso": "5º",
+ "examen": "2026-11-27",
+ "fuente": "Fotos del libro, Unidad 3 (páginas 36 a 46), mandadas por el padre el 21-nov-2026. Las fotos se quedan en el PC. Los ejercicios del juego son nuevos: ninguno es copia del libro. El punto «números grandes y aproximaciones» del índice no tiene páginas y no entra (el padre, 21-nov).",
+ "puntos": [
+  {"id": "div-una-cifra", "punto": "División por una cifra (repaso): exacta (resto 0), entera (resto distinto de 0), cero en el cociente", "test": "DIV1_MC", "escribir": "DIV1", "ordenar": "-"},
+  {"id": "prueba-division", "punto": "Prueba de la división: dividendo = cociente × divisor + resto", "test": "DIV1_MC", "escribir": "PRUEBA", "ordenar": "-"},
+  {"id": "div-dos-cifras", "punto": "División por dos cifras, paso a paso (y el código de la puerta: hallar el dividendo)", "test": "-", "escribir": "DIV2", "ordenar": "-"},
+  {"id": "multiplos", "punto": "Múltiplos de un número: multiplicarlo por 0, 1, 2, 3…; es múltiplo si la división es exacta", "test": "MULT_MC", "escribir": "MULT_TAB", "ordenar": "-"},
+  {"id": "divisores", "punto": "Divisores: los que dividen a un número de forma exacta; frases con «múltiplo» o «divisor»", "test": "DIVS_GAP", "escribir": "DIVS_NUM", "ordenar": "-"},
+  {"id": "criterios", "punto": "Criterios de divisibilidad por 1, 2, 3 y 5", "test": "CRIT_MC", "escribir": "CRIT_NUM", "ordenar": "-"},
+  {"id": "primos", "punto": "Números primos (solo dos divisores) y compuestos (más de dos); el 2 es el único primo par", "test": "PRIM_MC", "escribir": "PRIM_NUM", "ordenar": "-"},
+  {"id": "problemas", "punto": "Problemas de la vida cotidiana con divisiones, múltiplos y divisores", "test": "-", "escribir": "PROBS", "ordenar": "-"}
+ ]
+}

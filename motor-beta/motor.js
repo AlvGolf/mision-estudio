@@ -230,7 +230,7 @@ function wireFame(){
   wireClass();
 }
 function examRun(qs){
-  qs=qs.map(q=>({...q,opts:shuf(q.opts)}));let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
+  qs=qs.map(q=>q.num?{...q}:{...q,opts:shuf(q.opts)});let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
   app().innerHTML=`<div class="box"><h2>👑 EXAMEN FINAL</h2><p class="sub">Sin pistas. Las correcciones salen al final. Tienes ${JUEGO.examen.min} minutos.</p>
   ${guia('Sin pistas, pero tú puedes. ¡Respira y a por ello!',{saluda:1})}
   <button class="btn" id="go">Empezar el examen ⏱️</button></div>`;
@@ -239,7 +239,9 @@ function examRun(qs){
       const q=qs[i];
       app().innerHTML=`<div class="box"><div style="display:flex;justify-content:space-between"><h2>👑 Examen</h2><span class="pill" id="clk">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></div>
       <div class="bar"><div style="width:${i/qs.length*100}%"></div></div><div class="hint">Pregunta ${i+1} de ${qs.length}</div>
-      <div class="q">${esc(q.q)}</div><div class="opts">${q.opts.map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div></div>`;
+      <div class="q">${esc(q.q)}</div>${q.num?`${q.borrador?'<div id="eb"></div>':''}<div id="tk"></div>`:`<div class="opts">${q.opts.map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`}</div>`;
+      /* Con teclado (Mates, 21-nov): se apunta sin enseñar si está bien; las correcciones salen al final */
+      if(q.num){if(q.borrador)borrador($('#eb'));teclado($('#tk'),v=>{if(mismoNum(v,q.a))ok++;else wrong.push({q:q.q,yo:v,a:fmtN(numES(q.a))});i++;setTimeout(show,120)},{neg:q.neg,boton:'Siguiente ➜'});return}
       document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(b.textContent==q.a)ok++;else wrong.push({q:q.q,yo:b.textContent,a:q.a});i++;show()});}
     show();
     function finish(timeout){if(done)return;done=true;
@@ -608,19 +610,19 @@ const numES=s=>{if(typeof s=='number')return s;s=String(s).replace(/\s/g,'').rep
 const mismoNum=(a,b)=>Math.abs(numES(a)-numES(b))<1e-9;
 /* Teclado de números en pantalla (el del móvil tapa media pantalla y trae letras). En el ordenador también vale el teclado.
    onOk(v) corrige y devuelve true o false */
-function teclado(box,onOk,{neg}={}){
+function teclado(box,onOk,{neg,boton}={}){
   let v='',hecho=false;
   box.innerHTML=`<div class="pantalla" id="pn" aria-live="polite">&nbsp;</div>
   <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-n="${n}">${n}</button>`).join('')}
     ${neg?'<button data-n="−" aria-label="Menos">−</button>':'<span></span>'}<button data-n="0">0</button><button data-n="," aria-label="Coma">,</button>
-    <button id="pb" aria-label="Borrar">⌫</button><button class="ok" id="wchk" style="grid-column:span 2">✔ Comprobar</button></div>`;
+    <button id="pb" aria-label="Borrar">⌫</button><button class="ok" id="wchk" style="grid-column:span 2">${boton||'✔ Comprobar'}</button></div>`;
   const pinta=()=>{$('#pn').innerHTML=esc(v)||'&nbsp;'};
   const tecla=k=>{if(hecho)return;
     if(k=='⌫')v=v.slice(0,-1);else if(k=='−')v=v.startsWith('−')?v.slice(1):'−'+v;
     else if(k==','){if(!v.includes(',')&&/\d$/.test(v))v+=','}else if(v.replace(/[−,]/g,'').length<7)v+=k;
     pinta();sfxTap()};
   const ok=()=>{if(hecho)return;if(!/\d/.test(v)){$('#fb').textContent='Escribe tu número 😉';return}
-    hecho=true;const r=onOk(v);$('#pn').classList.add(r?'ok':'bad');box.querySelectorAll('button').forEach(b=>b.disabled=true)};
+    hecho=true;const r=onOk(v);if(r!==undefined)$('#pn').classList.add(r?'ok':'bad');box.querySelectorAll('button').forEach(b=>b.disabled=true)};
   box.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>tecla(b.dataset.n));
   $('#pb').onclick=()=>tecla('⌫');$('#wchk').onclick=ok;
   const kd=e=>{if(!box.isConnected){document.removeEventListener('keydown',kd);return}
@@ -755,6 +757,130 @@ Object.assign(STEP,{
     st.querySelectorAll('#bt .chip').forEach(el=>{const x=W.find(y=>y.k==el.dataset.w);
       dnd(el,{onTap:()=>{st.querySelectorAll('#bt .chip').forEach(y=>y.classList.remove('sel'));el.classList.add('sel');sel={x,el}},onDrop:d=>poner(x,el,d)})});
     st.querySelectorAll('.caja').forEach(b=>{const f=()=>{if(sel)poner(sel.x,sel.el,b)};b.onclick=f;b.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();f()}}});
+  },
+});
+/* =====================================================================
+   CUENTAS EN PANTALLA (21-nov, ronda 5 del artefacto de modalidades): en
+   Mates todo se hace en la tablet, como en la hoja, sin cuaderno. El padre
+   eligió divisiones guiadas al principio y libres después, y en los
+   problemas, la cuenta montada (solo puntúa la respuesta).
+   ===================================================================== */
+/* Pasos de una división al estilo del cole: se escribe solo el resto de cada paso y se baja la cifra siguiente */
+function pasosDiv(D,d){const s=String(D);let m=1;while(m<s.length&&+s.slice(0,m)<d)m++;
+  const P=[];let e=m-1,cur=+s.slice(0,m);
+  for(;;){const q=Math.floor(cur/d),r=cur-q*d;P.push({e,cur,q,r});if(e+1>=s.length)break;e++;cur=r*10+(+s[e])}
+  return {s,m,P,q:Math.floor(D/d),r:D%d}}
+/* Cuadrícula de la cuenta: cel[fila][columna] = {t, cls, attr}; «div» es la columna de la raya de dividir */
+function hojaHTML(C,filas,cel,{div,lin}={}){let h='';
+  for(let f=0;f<filas;f++)for(let c=0;c<C;c++){const x=(cel[f]&&cel[f][c])||{};
+    h+=`<div class="c ${c===div?'div':''} ${lin&&lin(f,c)?'lin':''} ${x.cls||''}" ${x.attr||''}>${x.t??''}</div>`}
+  return `<div class="hoja"><div class="cuenta" style="grid-template-columns:repeat(${C},var(--celda))">${h}</div></div>`}
+const casilla=a=>`<input inputmode="numeric" maxlength="1" ${NOAUTO} ${a}>`;
+/* Las casillas saltan solas a la de la derecha al escribir */
+function casillas(box){const ins=[...box.querySelectorAll('.cuenta input')];
+  ins.forEach((i,k)=>{i.oninput=()=>{i.value=i.value.replace(/\D/g,'').slice(-1);i.classList.remove('ok','bad');
+    const nx=ins[k+1];if(i.value&&nx&&nx.dataset.f===i.dataset.f)nx.focus({preventScroll:true})};
+    i.onkeydown=e=>{if(e.key=='Backspace'&&!i.value&&ins[k-1]&&ins[k-1].dataset.f===i.dataset.f){ins[k-1].focus();ins[k-1].value='';e.preventDefault()}}});
+  return ins}
+const filaNum=(box,f)=>[...box.querySelectorAll(`.cuenta input[data-f="${f}"]`)].map(i=>i.value).join('');
+/* División libre en cuadrícula: devuelve {comprobar()} con el cociente y el resto que escribió */
+function divLibre(box,D,d){
+  const {s,P,q,r}=pasosDiv(D,d),n=s.length,ds=String(d),C=n+Math.max(ds.length,P.length+1),R=P.length+1,cel=[[]];
+  [...s].forEach((ch,c)=>cel[0][c]={t:ch});[...ds].forEach((ch,k)=>cel[0][n+k]={t:ch});
+  for(let f=1;f<R;f++){cel[f]=[];for(let c=0;c<n;c++)cel[f][c]={t:casilla(`data-f="${f}" aria-label="Fila ${f}, columna ${c+1}"`)}}
+  for(let j=0;j<P.length+1;j++)cel[1][n+j]={t:casilla(`data-f="q" aria-label="Cifra ${j+1} del cociente"`)};
+  box.innerHTML=hojaHTML(C,R,cel,{div:n,lin:(f,c)=>f==0&&c>=n});
+  const ins=casillas(box);ins.find(i=>i.dataset.f=='q').focus({preventScroll:true});
+  return {comprobar(){const qv=filaNum(box,'q');let rv='';for(let f=R-1;f>=1;f--){const v=filaNum(box,f);if(v){rv=v;break}}
+    if(!qv||!rv)return null;const bq=+qv===q,br=+rv===r;
+    box.querySelectorAll('[data-f="q"]').forEach(i=>i.classList.add(bq?'ok':'bad'));ins.forEach(i=>i.disabled=true);return{bq,br,q,r}}}
+}
+/* Suma, resta o multiplicación montada en columna: el niño rellena las casillas; devuelve {comprobar()} con la última fila */
+function cuentaColumna(box,a,op,b){
+  const A=String(a),B=String(b),res=op=='+'?a+b:op=='−'?a-b:a*b,W=Math.max(A.length,B.length,String(res).length)+1;
+  const parc=op=='×'&&B.length>1?B.length:0,R=2+(parc?parc+1:1),cel=[[],[]];
+  [...A].forEach((ch,k)=>cel[0][W-A.length+k]={t:ch});cel[1][0]={t:op};[...B].forEach((ch,k)=>cel[1][W-B.length+k]={t:ch});
+  for(let f=2;f<R;f++){cel[f]=[];for(let c=0;c<W;c++)cel[f][c]={t:casilla(`data-f="${f}" aria-label="Fila ${f-1}, columna ${c+1}"`)}}
+  box.innerHTML=hojaHTML(W,R,cel,{lin:(f,c)=>f==1||(parc&&f==R-2)});
+  const ins=casillas(box);ins[0]&&ins[0].focus({preventScroll:true});
+  return {comprobar(){const v=filaNum(box,R-1);if(!v)return null;const ok=+v===res;
+    box.querySelectorAll(`[data-f="${R-1}"]`).forEach(i=>i.classList.add(ok?'ok':'bad'));return{ok,res}}}
+}
+/* Borrador para escribir con el dedo, como en papel (no se corrige) */
+function borrador(box){
+  box.innerHTML=`<canvas class="borr" aria-label="Borrador: escribe con el dedo"></canvas><button class="btn sec bb" type="button">🧽 Borrar el borrador</button>`;
+  const cv=box.querySelector('canvas'),ctx=cv.getContext('2d');let dib=false,ult=null;
+  const ajusta=()=>{const r=cv.getBoundingClientRect(),k=devicePixelRatio||1;cv.width=r.width*k;cv.height=r.height*k;ctx.setTransform(k,0,0,k,0,0);ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#17224a'};
+  requestAnimationFrame(ajusta);
+  const pt=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+  cv.addEventListener('pointerdown',e=>{dib=true;ult=pt(e);try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+  cv.addEventListener('pointermove',e=>{if(!dib)return;const p=pt(e);ctx.beginPath();ctx.moveTo(ult.x,ult.y);ctx.lineTo(p.x,p.y);ctx.stroke();ult=p});
+  ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,()=>dib=false));
+  box.querySelector('.bb').onclick=()=>{const r=cv.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height)};
+}
+
+Object.assign(STEP,{
+  /* ➗ División en la cuadrícula: {D, d, modo:'guiada'|'libre'}.
+     Guiada: qué cifras coge, cuántas veces cabe, cuánto sobra y bajar la cifra; cuenta cada paso.
+     Libre: como en la hoja; cuentan el cociente y el resto */
+  divi(st,s,done){
+    const {s:ds,m,P,q,r}=pasosDiv(s.D,s.d),n=ds.length,dv=String(s.d);
+    if(s.modo=='libre'){
+      st.innerHTML=`<div class="q">${esc(s.q||`Haz la división ${fmtN(s.D)} : ${s.d}`)}</div><div id="dh"></div>
+      <div class="hint">Escribe los restos debajo y el cociente debajo del ${s.d}. Se corrigen el cociente y el resto.</div>
+      <button class="btn" id="wchk" style="margin-top:6px">Comprobar ✔</button>`;
+      const L=divLibre($('#dh'),s.D,s.d);
+      $('#wchk').onclick=()=>{const c=L.comprobar();if(!c){$('#fb').textContent='Escribe el cociente y el resto 😉';return}
+        $('#wchk').remove();c.bq&&c.br?win(15):lose();
+        done((c.bq?1:0)+(c.br?1:0),2,`${c.bq?'✅':'❌'} Cociente <b>${q}</b> · ${c.br?'✅':'❌'} Resto <b>${r}</b>: es ${r?'entera':'exacta'}.`)};
+      return}
+    const cel=[[]];let fase='coge',k=0,ok=0,tot=0;const coc=[];
+    [...ds].forEach((ch,c)=>cel[0][c]={t:ch,attr:`data-dg="${c}" role="button" tabindex="0"`});[...dv].forEach((ch,j)=>cel[0][n+j]={t:ch});
+    const C=n+Math.max(dv.length,P.length+1),R=P.length+1;
+    const pinta=(preg,extra='')=>{const c2=cel.map(f=>f.map(x=>x&&{...x}));c2[1]=c2[1]||[];
+      coc.forEach((x,j)=>c2[1][n+j]={t:x.t,cls:x.cls});
+      if(fase=='q'||fase=='r'){const p=P[k],f=k,ini=p.e-String(p.cur).length+1;for(let c=ini;c<=p.e;c++)if(c2[f]&&c2[f][c])c2[f][c].cls=(c2[f][c].cls||'')+' now'}
+      if(fase=='coge'||fase=='baja')for(let c=0;c<n;c++)c2[0][c].cls=(c2[0][c].cls||'')+' toc';
+      st.innerHTML=`<div id="dh">${hojaHTML(C,R,c2,{div:n,lin:(f,c)=>f==0&&c>=n})}</div><div class="q" style="font-size:20px">${preg}</div>${extra}<div id="tk"></div>`};
+    const nota=(b,txt)=>{tot++;if(b){ok++;win(5)}else lose();$('#fb').innerHTML=(b?'✅ ':'❌ ')+txt};
+    const sigue=(b,f)=>setTimeout(()=>{if(st.isConnected)f()},b?650:1700);
+    const tocar=(f)=>st.querySelectorAll('[data-dg]').forEach(x=>{x.onclick=()=>f(+x.dataset.dg,x);x.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();f(+x.dataset.dg,x)}}});
+    function paso(){const p=P[k];
+      if(fase=='coge'){pinta(`¿Hasta qué cifra coges? Toca la última cifra que coges.`);
+        tocar(c=>{if(fase!='coge')return;const b=c==m-1;nota(b,b?`Coges ${ds.slice(0,m)}: ya cabe el ${s.d}.`:`Hay que coger ${ds.slice(0,m)}: con menos cifras no cabe el ${s.d}.`);
+          for(let j=0;j<m;j++)cel[0][j].cls='arco';fase='q';sigue(b,paso)});return}
+      if(fase=='q'){pinta(`¿Cuántas veces cabe ${s.d} en ${p.cur}?`,`<button class="btn sec" id="ay" style="font-size:15px;padding:7px 12px;margin-top:0">💡 Ayuda</button> <span class="hint" id="ayt"></span>`);
+        $('#ay').onclick=()=>{$('#ayt').textContent=[...Array(10).keys()].slice(Math.max(1,p.q-1),Math.min(10,p.q+2)).map(x=>`${s.d} × ${x} = ${s.d*x}`).join(' · ')};
+        teclado($('#tk'),v=>{const b=+numES(v)===p.q;coc.push({t:p.q,cls:b?'ok':'bad'});nota(b,b?`Cabe ${p.q} ${p.q==1?'vez':'veces'}.`:`Cabe ${p.q} ${p.q==1?'vez':'veces'} (${s.d} × ${p.q} = ${s.d*p.q}).`);fase='r';sigue(b,paso);return b});return}
+      if(fase=='r'){pinta(`¿Cuánto sobra? (${p.cur} menos ${p.q} × ${s.d})`);
+        teclado($('#tk'),v=>{const b=+numES(v)===p.r,t=String(p.r);cel[k+1]=cel[k+1]||[];[...t].forEach((ch,j)=>cel[k+1][p.e-t.length+1+j]={t:ch,cls:b?'ok':'bad'});
+          nota(b,b?`Sobran ${p.r}.`:`Sobran ${p.r}: ${p.cur} − ${s.d*p.q} = ${p.r}.`);fase=k+1<P.length?'baja':'fin';sigue(b,paso);return b});return}
+      if(fase=='baja'){const sig=p.e+1;pinta(`Baja la siguiente cifra: tócala.`);
+        tocar((c,x)=>{if(fase!='baja')return;if(c!==sig){x.classList.remove('shake');void x.offsetWidth;x.classList.add('shake');$('#fb').textContent='Esa no: baja la primera cifra que aún no has usado.';return}
+          sfxTap();cel[k+1][sig]={t:ds[sig]};k++;fase='q';$('#fb').textContent='';paso()});return}
+      const qv=coc.map(x=>x.t).join('');pinta(`Cociente <b>${+qv}</b> y resto <b>${P[P.length-1].r}</b>: la división es ${P[P.length-1].r?'entera':'exacta'}.`);
+      done(ok,tot,ok==tot?'✅ ¡Todos los pasos a la primera!':`👍 ${ok} de ${tot} pasos a la primera.`);
+    }
+    paso();
+  },
+  /* 📝 Problema con la cuenta montada: {q, a, ex?}. Elige la operación, escribe los números y hace la cuenta en la cuadrícula
+     (se puede montar más de una). La cuenta se comprueba pero no puntúa: solo cuenta la respuesta */
+  prob(st,s,done){
+    st.innerHTML=`<div class="q" style="font-size:19px">${esc(s.q)}</div>
+    <div class="montar"><div class="hint" style="margin:0">Monta la cuenta: escribe los números y elige la operación</div>
+      <div class="fila-m"><input class="typ" id="n1" inputmode="numeric" ${NOAUTO} aria-label="Primer número"><span class="opsel" role="group" aria-label="Operación">${['+','−','×',':'].map(o=>`<button type="button" data-op="${o}" aria-pressed="false" aria-label="${{'+':'Más','−':'Menos','×':'Por',':':'Entre'}[o]}">${o}</button>`).join('')}</span><input class="typ" id="n2" inputmode="numeric" ${NOAUTO} aria-label="Segundo número"><button class="btn sec" id="mt" type="button">Montar</button></div></div>
+    <div id="cu"></div><div class="q" style="font-size:18px;margin-top:10px">Respuesta del problema</div><div id="tk"></div>`;
+    let op=null,cu=null;
+    st.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{op=b.dataset.op;st.querySelectorAll('[data-op]').forEach(x=>x.setAttribute('aria-pressed',x===b));sfxTap()});
+    $('#mt').onclick=()=>{const a=numES($('#n1').value),b=numES($('#n2').value);
+      if(!(a>0)||!(b>0)||!op){$('#fb').textContent='Escribe los dos números y elige la operación 😉';return}
+      if(op=='−'&&b>a){$('#fb').textContent='En la resta, el número grande va arriba 😉';return}
+      $('#fb').textContent='';const box=$('#cu');box.innerHTML=`<div id="cuh"></div><button class="btn sec" id="cc" type="button" style="margin-top:6px">Comprobar la cuenta</button> <span class="hint" id="cfb"></span>`;
+      if(op==':'){const L=divLibre($('#cuh'),a,b);cu=()=>{const c=L.comprobar();return c&&(c.bq&&c.br?`✅ La cuenta está bien: ${c.q}${c.r?', resto '+c.r:''}.`:`❌ Revisa la cuenta: da ${c.q}${c.r?', resto '+c.r:''}.`)}}
+      else{const L=cuentaColumna($('#cuh'),a,op,b);cu=()=>{const c=L.comprobar();return c&&(c.ok?'✅ La cuenta está bien.':`❌ Revisa la cuenta: da ${fmtN(c.res)}.`)}}
+      $('#cc').onclick=()=>{const t=cu();$('#cfb').innerHTML=t||'Rellena la cuenta 😉'}};
+    teclado($('#tk'),v=>{const ok=mismoNum(v,s.a);ok?win(15):lose();st.querySelectorAll('.montar button,.montar input').forEach(x=>x.disabled=true);
+      done(ok?1:0,1,(ok?'✅ ¡Problema resuelto! ':`❌ La respuesta era <b>${fmtN(numES(s.a))}</b>. `)+exTxt(s));return ok});
   },
 });
 /* =====================================================================
@@ -1019,7 +1145,7 @@ function startStation(){
 function routeMap(){
   const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+(tiempoReal(s.k)||s.min),0);
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=!ROUTE?'':n<ROUTE.i?'done':n==ROUTE.i?'now':'';
-    return `<div class="rst ${st}" style="--i:${n}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>`}).join('')}</div>
+    return `<div class="rst ${st}" style="--i:${n}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}</div>`:''}`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
@@ -1035,8 +1161,10 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
       ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
       <button class="btn destaca" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
     box.querySelector('#again').remove();return}
-  saveRoute();const nx=ROUTE_ST[ROUTE.i];
-  box.querySelector('#again').outerHTML=`<button class="btn" id="rnext">▶ Siguiente estación: ${nx.ic} ${nx.n}</button>`;
+  saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ROUTE.i-1];
+  /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere */
+  if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
+  box.querySelector('#again').outerHTML=`<button class="btn ${hecha.corte?'sec':''}" id="rnext">▶ ${hecha.corte?'Seguir hoy de todas formas':'Siguiente estación'}: ${nx.ic} ${nx.n}</button>`;
   box.insertAdjacentHTML('beforeend',`<div style="margin-top:14px">${routeMap()}</div><p class="center" style="color:var(--gold)">+20 XP por estación completada</p>`);
   $('#rnext').onclick=startStation;
 };
@@ -1044,8 +1172,8 @@ R.route=function(){
   const resume=ROUTE&&ROUTE.i>0;
   if(!ROUTE)ROUTE={i:0,part:0,on:false};
   app().innerHTML=`<div class="box"><h2>🧭 Ruta de estudio</h2>
-  ${guia(resume?`¡Seguimos! Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length}.`:'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
-  <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero. Cuenta igual que las misiones sueltas.</p>
+  ${guia(resume?`¡Seguimos! Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
+  <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
   <div class="center">${resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${ROUTE.i+1}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ruta</button>`}
