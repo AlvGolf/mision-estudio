@@ -2,6 +2,8 @@
 
 Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo evita que se pisen.
 
+> **21-nov: historial reescrito** para quitar unas fotos que se subieron por error. Si tienes una copia anterior al commit 5849c18, no la mezcles: bájate el proyecto de nuevo (o `git fetch` y `git reset --hard origin/main`).
+
 **Cómo se usa**
 1. Al empezar: `git pull` y mira la tabla. Si el juego que vas a tocar tiene a otro, **no lo toques**: elige otra cosa o avisa al padre.
 2. Si está libre: añade tu fila, haz commit («Turno: Claude Code con ingles-u2») y `git push` **antes** de cambiar nada.
