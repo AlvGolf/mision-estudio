@@ -12,4 +12,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| — | — | — | Nadie trabajando ahora |
+| motor-beta, menu-beta, mates-u3-beta | Claude Code | 21-nov | El logo ME en la app, el cohete en la ruta y el sello animado (beta) |
