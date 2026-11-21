@@ -93,7 +93,7 @@ Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/
 
 Se hacen por tandas (el padre, 21-nov). Las escenas y viñetas se dibujan con la biblioteca de sitios del motor, no con emojis.
 
-**Primera tanda, hecha en `motor-beta/` (21-nov)**, para los exámenes de Mates (27-nov) y Lengua (1-dic) de 5º. El padre las eligió todas «al motor ya» en la ronda 4 del artefacto [Modalidades nuevas](https://claude.ai/artifact/FfjxVWGYQJwPv4fBk5y4F8). Las juega el verificador en `pruebas-motor/` y los datos de cada paso están comentados en `motor-beta/motor.js`:
+**Primera tanda, en `motor/` desde el 21-nov**, para los exámenes de Mates (27-nov) y Lengua (1-dic) de 5º. El padre las eligió todas «al motor ya» en la ronda 4 del artefacto [Modalidades nuevas](https://claude.ai/artifact/FfjxVWGYQJwPv4fBk5y4F8). Las juega el verificador en `pruebas-motor/` y los datos de cada paso están comentados en `motor-beta/motor.js`:
 
 | Modalidad | Paso | Datos | Cómo cuenta |
 |---|---|---|---|
@@ -105,7 +105,7 @@ Se hacen por tandas (el padre, 21-nov). Las escenas y viñetas se dibujan con la
 | Separar en sílabas | `silabas` | `{w, c:[cortes delante de la letra n, desde 0], ton?}` | el corte; con `ton`, también la tónica (y dice si es aguda, llana o esdrújula) |
 | Clasificar con dos criterios | `cajas2` | `{q, fil:[2], col:[2], w:[[ficha, fila, columna]]}` | cada ficha a la primera; se arrastra o se toca |
 
-**Cuentas en pantalla, ronda 5 (21-nov), para Mates:** el padre pidió que todo se haga en la tablet como en la hoja, sin cuaderno. Eligió divisiones guiadas al principio y libres después, y en los problemas la cuenta montada. Hechas en `motor-beta/`:
+**Cuentas en pantalla, ronda 5 (21-nov), para Mates:** el padre pidió que todo se haga en la tablet como en la hoja, sin cuaderno. Eligió divisiones guiadas al principio y libres después, y en los problemas la cuenta montada. En `motor/` desde el 21-nov (las usa Mates Unidad 3):
 
 | Modalidad | Paso | Datos | Cómo cuenta |
 |---|---|---|---|

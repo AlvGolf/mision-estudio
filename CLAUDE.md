@@ -123,3 +123,4 @@ Semáforo: 🟢 ≥8 · 🟡 5–7,9 · 🔴 <5 · ⚪ sin jugar. "Hoy toca" pro
 ## Juegos hechos
 
 - **Inglés Unit 2, 5º** (`ingles-u2/`, examen 20-nov-2026): 5 adverbios de frecuencia, Do you like / Would you like, 20 verbos irregulares (be → feel), 52 palabras (actor → worried). 10 bloques con nota + ruta + arcade (40 estrellas).
+- **Mates Unidad 3, 5º** (`mates-u3/`, examen 27-nov-2026): división por una y dos cifras (en cuadrícula, guiadas y libres), múltiplos, divisores, criterios de divisibilidad, primos y compuestos, una historia (la excursión), una miniinvestigación (el torneo) y problemas con la cuenta montada. 9 bloques con nota, ruta en dos días de unos 20 minutos y examen de 20 preguntas en 30 minutos con borrador.

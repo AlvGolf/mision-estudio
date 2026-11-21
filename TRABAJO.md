@@ -12,4 +12,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| motor, mates-u3, mates-u3-beta, juegos.js | Claude Code | 21-nov | Paso a producción del motor nuevo y de Mates Unidad 3 (aprobado por el padre) |
+| — | — | — | Nadie trabajando ahora |
