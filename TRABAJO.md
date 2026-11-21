@@ -10,4 +10,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| — | — | — | Nadie trabajando ahora |
+| motor-beta, pruebas-motor | Claude Code | 21-nov | Seis formatos nuevos para Mates y Lengua (recta, cadena, tablas, marcar, sílabas, cajas 2×2) y el teclado de números |
