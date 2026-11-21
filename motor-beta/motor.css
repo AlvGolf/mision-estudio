@@ -492,6 +492,9 @@ html.c2 .cf .guia.salta .cuerpo{animation-iteration-count:4}
 @media (prefers-reduced-motion:reduce){.ent,#blab.tarde,.rst .rdot,.rst::after,.opts .opt.ok,.opts .opt.ok::after,.bar>div,#xp,#streak,.escw *,.cf *{animation:none!important;transition:none!important}}
 
 /* ===== Repaso pantalla a pantalla (20-nov): examen, fin de la ruta, ranking y botón de sonido ===== */
+header .amenu{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;margin-right:10px;color:inherit;text-decoration:none;font-weight:700;font-size:20px;line-height:1;flex:none}
+header .amenu img{border-radius:7px;display:block}
+header .amenu+h1{margin-right:auto}
 .pill.sonido{border:0;cursor:pointer;font:inherit;color:inherit}
 #clk.prisa{background:var(--no);color:#fff;animation:prisa 1s ease infinite}
 @keyframes prisa{50%{scale:1.08}}

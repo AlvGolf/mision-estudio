@@ -902,6 +902,11 @@ function botonSonido(){const h=document.querySelector('header .hud');if(!h||docu
   const pon=()=>{b.textContent=SONIDO?'🔊':'🔇';b.setAttribute('aria-label',SONIDO?'Quitar el sonido':'Poner el sonido');b.setAttribute('aria-pressed',String(!SONIDO))};
   b.onclick=()=>{SONIDO=!SONIDO;try{localStorage.setItem('mision_sonido',SONIDO?'1':'0')}catch(e){}pon();son('tap')};pon();h.appendChild(b)}
 botonSonido();
+/* Volver al menú de la suite (21-nov): en la app instalada no hay barra del navegador, así que sin esto el niño no sale del juego. */
+function botonMenu(){const h=document.querySelector('header');if(!h||document.getElementById('amenu'))return;
+  const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href='../';b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
+  b.innerHTML='<span aria-hidden="true">‹</span><img src="../iconos/icono.svg" alt="" width="24" height="24">';b.onclick=()=>son('tap');h.insertBefore(b,h.firstChild)}
+botonMenu();
 function sfxOk(){son('ok');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
 function sfxTap(){son('tap');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
 
