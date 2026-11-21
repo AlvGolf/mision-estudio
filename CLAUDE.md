@@ -22,7 +22,7 @@ Reglas:
 ### Flujo de un juego nuevo
 La guía paso a paso es la skill `juego-nuevo` (`.claude/skills/juego-nuevo/SKILL.md`).
 1. El padre manda fotos del temario → se saca la lista de contenidos a `<juego>/temario.json` (vocabulario, verbos, gramática y fecha del examen; ver `ingles-u2/temario.json`).
-2. Claude Code crea `<juego>-beta/index.html` (p. ej. `mates-t3-beta/`) con solo los datos y las misiones, y al final carga `../motor-beta/motor.js` (ver `ingles-u2-beta/`). Lleva su `JUEGO.id` propio y claves de guardado propias, y lo sube.
+2. Claude Code crea `<juego>-beta/index.html` (p. ej. `mates-t3-beta/`) con solo los datos y las misiones, y al final carga `../motor-beta/piel.js` y `../motor-beta/motor.js` (ver `pruebas-motor/`). Lleva su `JUEGO.id` propio y claves de guardado propias, y lo sube.
 3. Revisión: `npm run verificar -- <juego>-beta` (cobertura contra el temario, 390 / 820 / 1440 px y la ruta entera jugada arrastrando en Chrome). El Claude de la app, que no puede ejecutarlo, juega la ruta en su navegador.
 
 ## Herramientas
@@ -34,12 +34,13 @@ La guía paso a paso es la skill `juego-nuevo` (`.claude/skills/juego-nuevo/SKIL
 - **`ESTADO.md`**: lo esencial de cada juego, lo abierto y lo pendiente del padre. Se lee al empezar y se pone al día al cerrar.
 - Puesta en marcha en un PC nuevo: `npm install` y `git config core.hooksPath .githooks`.
 4. El padre lo prueba en `https://alvgolf.github.io/mision-estudio/<juego>-beta/`.
-5. Aprobado → se copia a `<juego>/` cambiando `motor-beta` por `motor` en sus dos enlaces, se añade la tarjeta en el `index.html` de la raíz y la beta redirige.
+5. Aprobado → se copia a `<juego>/` cambiando `motor-beta` por `motor` en sus dos enlaces, se añade la tarjeta en el `index.html` de la raíz y la fila en `juegos.js` (menú de la suite), y la beta redirige.
 
 ## Estructura
 
 - `index.html` — menú con una tarjeta por juego.
-- `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura.
+- `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura. En `motor-beta/`, `piel.js` (estilo por hora, app, guía y sonidos) es común con el menú de la suite.
+- `menu-beta/` y `juegos.js` — menú de la suite en beta (21-nov): pregunta el curso, estanterías por asignatura, próximo examen y la nota de cada juego.
 - `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que el motor.
 - `apps-script/Code.gs` — copia de referencia del script del ranking. El que funciona está en Google Apps Script; si cambias este, avisa al padre para que lo pegue y redespliegue.
 - Web: https://alvgolf.github.io/mision-estudio/ (GitHub Pages, rama `main`, raíz).

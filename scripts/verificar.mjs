@@ -36,7 +36,7 @@ const ES_REDIRECCION = f => /http-equiv="refresh"/i.test(fs.readFileSync(f, 'utf
 let juegos = ARGS.filter(a => !a.startsWith('--'));
 if (!juegos.length) {
   juegos = fs.readdirSync(RAIZ, { withFileTypes: true })
-    .filter(d => d.isDirectory() && !d.name.startsWith('.') && !['node_modules', 'scripts', 'verificacion', 'apps-script'].includes(d.name))
+    .filter(d => d.isDirectory() && !d.name.startsWith('.') && !['node_modules', 'scripts', 'verificacion', 'apps-script', 'iconos', 'menu-beta'].includes(d.name))
     .map(d => d.name)
     .filter(n => fs.existsSync(path.join(RAIZ, n, 'index.html')) && !ES_REDIRECCION(path.join(RAIZ, n, 'index.html')));
 }
@@ -257,6 +257,35 @@ for (const juego of juegos) {
     if (d > 1) R.fallos.push(`[${A.n}px] El menú desborda ${d}px en horizontal`);
     await ctx.close();
   }
+}
+
+/* ---------- Menú de la suite (beta, 21-nov): pinta las tarjetas desde juegos.js ---------- */
+if (fs.existsSync(path.join(RAIZ, 'menu-beta', 'index.html'))) {
+  const R = { juego: 'menú de la suite (beta)', fallos: [], avisos: [], notas: [] };
+  RESUMEN.push(R);
+  for (const A of ANCHOS) for (const curso of ['5', '2']) {
+    const ctx = await navegador.newContext({ viewport: A.viewport, isMobile: !!A.isMobile });
+    await ctx.addInitScript(c => localStorage.setItem('mision_curso', c), curso);
+    const page = await ctx.newPage();
+    const errores = [];
+    page.on('pageerror', e => errores.push(e.message));
+    await page.goto(`${BASE}/menu-beta/`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    errores.forEach(e => R.fallos.push(`[${A.n}px, ${curso}º] Error en la página: ${e}`));
+    const enlaces = await page.$$eval('#app a', as => as.map(a => a.getAttribute('href')));
+    const juegos = await page.evaluate(c => JUEGOS.filter(j => String(j.curso) === c).length, curso);
+    const tarjetas = await page.$$eval('.tarj', a => a.length);
+    if (tarjetas !== juegos) R.fallos.push(`[${A.n}px, ${curso}º] Hay ${juegos} juegos de ${curso}º en juegos.js y el menú enseña ${tarjetas}`);
+    for (const href of enlaces) {
+      const dest = path.join(RAIZ, 'menu-beta', href.replace(/\/$/, '/index.html'));
+      if (!fs.existsSync(dest)) R.fallos.push(`El menú de la suite enlaza a «${href}», que no existe`);
+    }
+    const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (d > 1) R.fallos.push(`[${A.n}px, ${curso}º] El menú de la suite desborda ${d}px en horizontal`);
+    await page.screenshot({ path: path.join(RAIZ, 'verificacion', `menu-suite-${A.n}-${curso}.png`), fullPage: true });
+    await ctx.close();
+  }
+  if (!R.fallos.length) R.notas.push(`Cursos 5º y 2º a ${ANCHOS.map(a => a.n).join(', ')} px: tarjetas y enlaces bien, sin desbordes`);
 }
 
 await navegador.close();

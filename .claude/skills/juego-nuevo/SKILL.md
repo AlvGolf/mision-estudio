@@ -60,7 +60,7 @@ Es algo importante, así que el plan tiene que estar completo antes de empezar.
 
 ## 4. La beta → `<juego>-beta/index.html`
 - Parte de `pruebas-motor/index.html` (lo más corto) o de `ingles-u2/index.html` (un juego completo). Solo lleva datos y misiones: nada de motor.
-- **Enlaces:** `../motor-beta/motor.css?v=N` y `../motor-beta/motor.js?v=N`, con el mismo `N` que `pruebas-motor/`. El juego se carga **antes** que el motor.
+- **Enlaces:** `../motor-beta/motor.css?v=N`, `../motor-beta/piel.js?v=N` y `../motor-beta/motor.js?v=N`, con el mismo `N` que `pruebas-motor/`. El juego se carga **antes** que la piel, y la piel antes que el motor (desde el 21-nov la piel lleva el estilo, la app, el guía y los sonidos, comunes con el menú de la suite).
 - **`JUEGO`:**
   - `id` propio, igual que la carpeta sin `-beta`;
   - `codigo`;
@@ -92,6 +92,7 @@ Es algo importante, así que el plan tiene que estar completo antes de empezar.
 ## 7. Cuando el padre la aprueba
 - Copia `<juego>-beta/index.html` a `<juego>/index.html` y cambia `motor-beta` por `motor` en sus dos enlaces. Si el motor beta tiene algo que el juego usa y `motor/` no, primero se pasa el motor, que también necesita su visto bueno.
 - Añade la tarjeta en el `index.html` de la raíz, igual que la de `ingles-u2`: icono, nombre, curso y de qué trata.
+- Añade su fila en `juegos.js` (menú de la suite: carpeta, curso, asignatura, título, temas y fecha del examen). Cuando el menú de la suite pase a la raíz, esta fila sustituye a la tarjeta.
 - La beta pasa a redirigir a la normal: copia la forma de `ingles-u2-beta/index.html`.
 - `npm run verificar` (todos) y comprueba en la web que la normal carga.
 - Añade el juego a «Juegos hechos» de `CLAUDE.md` y a «Lo esencial» de `ESTADO.md`.
