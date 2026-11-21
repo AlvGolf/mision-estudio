@@ -36,14 +36,26 @@ function selloMarca(h){return `<span class="lgm sello-m" style="--lgh:${h}px" ro
 /* El cohete que sale del libro (el icono que eligió el padre el 21-nov) es ahora el símbolo del avance: ficha del mapa, botón de la ruta y despegue */
 const COHETE_SVG=`<svg class="cohete" viewBox="140 56 232 350" aria-hidden="true"><path d="M224 352 q32 -30 64 0 q-8 30 -32 46 q-24 -16 -32 -46z" fill="#ffb02e" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M240 352 q16 -14 32 0 q-4 16 -16 26 q-12 -10 -16 -26z" fill="#fff3c4"/><path d="M256 70 q70 60 62 196 h-124 q-8 -136 62 -196z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M194 210 q-48 26 -46 92 l52 -26z M318 210 q48 26 46 92 l-52 -26z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M206 266 h100 l-10 46 h-80z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="256" cy="168" r="34" fill="#7fd3ff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="246" cy="158" r="9" fill="#fff" opacity=".8"/></svg>`;
 const DESPEGUE_SVG=`<svg viewBox="96 56 320 400" aria-hidden="true"><path d="M256 362 C214 338 156 334 112 344 V420 C156 410 214 414 256 440 Z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M256 362 C298 338 356 334 400 344 V420 C356 410 298 414 256 440 Z" fill="#e8eeff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><g class="vuela"><path d="M224 352 q32 -30 64 0 q-8 30 -32 46 q-24 -16 -32 -46z" fill="#ffb02e" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M240 352 q16 -14 32 0 q-4 16 -16 26 q-12 -10 -16 -26z" fill="#fff3c4"/><path d="M256 70 q70 60 62 196 h-124 q-8 -136 62 -196z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M194 210 q-48 26 -46 92 l52 -26z M318 210 q48 26 46 92 l-52 -26z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M206 266 h100 l-10 46 h-80z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="256" cy="168" r="34" fill="#7fd3ff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="246" cy="158" r="9" fill="#fff" opacity=".8"/></g></svg>`;
-/* Animación de entrada: la primera vez que se abre la app cada día (3 s; se salta tocando) */
+/* Animación de entrada: la primera vez que se abre la app cada día (unos 3 s; se salta tocando).
+   21-nov, el padre eligió la E3 · versión 2 del artefacto del logo (ronda 11): el contorno del ME se dibuja a lápiz mientras
+   «Misión Estudio» entra ya relleno, se rellena el ME, sale el descriptor, se dibuja el visto y cruza un brillo.
+   Se hace con el propio dibujo (marca/descriptor-negativo.svg), no con vídeo: azul sobre claro por la mañana y blanco el resto.
+   Si el dispositivo pide menos movimiento, el logo quieto un momento. Sin el dibujo (sin conexión la primera vez), no sale. */
 function entradaMarca(){let hoy=new Date().toISOString().slice(0,10),ya=null;try{ya=localStorage.getItem('mision_entrada')}catch(e){}
-  if(ya===hoy||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)||/[?&]sinentrada/.test(location.search))return;
-  try{localStorage.setItem('mision_entrada',hoy)}catch(e){}
-  const d=document.createElement('div');d.className='entrada-m';d.setAttribute('role','button');d.setAttribute('aria-label','Saltar la animación');
-  d.innerHTML=`<video src="${MARCA}entrada.mp4" autoplay muted playsinline></video><span>Toca para saltar</span>`;
-  let fuera=false;const quita=()=>{if(fuera)return;fuera=true;d.classList.add('sale');setTimeout(()=>d.remove(),350)};
-  d.onclick=quita;d.querySelector('video').onended=quita;setTimeout(quita,4500);document.body.appendChild(d)}
+  if(ya===hoy||/[?&]sinentrada/.test(location.search))return;
+  const quieto=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  fetch(MARCA+'descriptor-negativo.svg').then(r=>r.ok?r.text():Promise.reject()).then(txt=>{
+    const p=[...txt.matchAll(/<path d="([^"]+)"/g)].map(m=>m[1]);if(p.length!==4)return;
+    try{localStorage.setItem('mision_entrada',hoy)}catch(e){}
+    const d=document.createElement('div');d.className='entrada-m'+(quieto?' quieto':'');d.setAttribute('role','button');d.setAttribute('aria-label','Misión Estudio. Toca para saltar');
+    d.innerHTML=`<svg viewBox="-72.8 9.3 315.9 183.3" aria-hidden="true"><defs>
+      <linearGradient id="ent-b" x1="0" x2="1"><stop offset="0" class="ent-bs" stop-opacity="0"/><stop offset=".5" class="ent-bs" stop-opacity=".9"/><stop offset="1" class="ent-bs" stop-opacity="0"/></linearGradient>
+      <clipPath id="ent-c"><path d="${p[0]}"/><path d="${p[1]}"/><path d="${p[2]}"/><path d="${p[3]}"/></clipPath>
+      <mask id="ent-m" maskUnits="userSpaceOnUse" x="-80" y="0" width="330" height="200"><path class="ent-vm" d="M30 45 L60 94 L124 17" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/></mask></defs>
+      <path class="ent-me" d="${p[0]}" pathLength="1"/><path class="ent-n" d="${p[2]}"/><path class="ent-d" d="${p[3]}"/><path class="ent-v" d="${p[1]}" mask="url(#ent-m)"/>
+      <g clip-path="url(#ent-c)"><g transform="skewX(-20)"><rect class="ent-br" x="-130" y="0" width="60" height="200" fill="url(#ent-b)"/></g></g></svg><span>Toca para saltar</span>`;
+    let fuera=false;const quita=()=>{if(fuera)return;fuera=true;d.classList.add('sale');setTimeout(()=>d.remove(),350)};
+    d.onclick=quita;setTimeout(quita,quieto?1400:3500);document.body.appendChild(d)}).catch(()=>{})}
 /* ================== APP INSTALABLE (20-nov) ==================
    Icono en la pantalla de inicio, pantalla completa y sin conexión (sw.js de la raíz). La beta solo controla su carpeta;
    el motor normal, todo el sitio. En el menú sale «Instalar la app» (Android y ordenador) o cómo hacerlo en el iPhone. */

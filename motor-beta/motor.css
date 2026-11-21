@@ -602,8 +602,21 @@ html[data-fam=D] .portada-t{color:#1D3BA8}
 .despegue .vuela{animation:despega 1.7s .35s ease-in forwards}
 @keyframes despega{0%{transform:none}8%{transform:translate(-3px,0)}16%{transform:translate(3px,0)}24%{transform:none}100%{transform:translateY(-900px)}}
 .sello-fin{display:flex;justify-content:center;min-height:0;margin:6px 0}
-.entrada-m{position:fixed;inset:0;z-index:60;background:#0A1441;display:grid;place-items:center;align-content:center;gap:14px;cursor:pointer;transition:opacity .35s}
-.entrada-m video{width:min(78vw,60vh,520px);aspect-ratio:1;background:#0A1441}
+.entrada-m{--ink:#fff;--brillo:#5f8dff;position:fixed;inset:0;z-index:60;background:#0A1441;display:grid;place-items:center;align-content:center;gap:22px;cursor:pointer;transition:opacity .35s}
+html[data-fam=D] .entrada-m{--ink:#1D3BA8;--brillo:#fff;background:#FAF7F0}
+.entrada-m svg{width:min(84vw,560px);height:auto;overflow:visible}
 .entrada-m span{color:#aab4e6;font:600 14px system-ui,sans-serif;border:1px solid #2a376f;border-radius:999px;padding:4px 12px}
+html[data-fam=D] .entrada-m span{color:#6a6a78;border-color:#c9c9d4}
+/* E3 · versión 2 (ronda 11 del artefacto del logo) */
+.entrada-m .ent-me{fill:var(--ink);fill-opacity:0;stroke:var(--ink);stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;animation:ent-traza .8s ease-in-out forwards,ent-rellena .45s 1.05s ease-out forwards}
+.entrada-m .ent-n{fill:var(--ink);opacity:0;animation:ent-entra .6s .25s ease-out forwards}
+.entrada-m .ent-d{fill:var(--ink);opacity:0;animation:ent-aparece .5s 1.3s ease-out forwards}
+.entrada-m .ent-v{fill:#EE3B4F}
+.entrada-m .ent-vm{stroke-dasharray:1;stroke-dashoffset:1;animation:ent-traza .55s 1.6s cubic-bezier(.5,0,.3,1) forwards}
+.entrada-m .ent-bs{stop-color:var(--brillo)}
+.entrada-m .ent-br{transform:translateX(-140px);animation:ent-brillo .8s 2.3s ease-in-out forwards}
+@keyframes ent-traza{to{stroke-dashoffset:0}}@keyframes ent-rellena{to{fill-opacity:1;stroke-opacity:0}}@keyframes ent-aparece{to{opacity:1}}
+@keyframes ent-entra{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}@keyframes ent-brillo{to{transform:translateX(360px)}}
+.entrada-m.quieto *{animation:none!important}.entrada-m.quieto .ent-me{fill-opacity:1;stroke-opacity:0}.entrada-m.quieto .ent-n,.entrada-m.quieto .ent-d{opacity:1}.entrada-m.quieto .ent-vm{stroke-dashoffset:0}.entrada-m.quieto .ent-br{display:none}
 .entrada-m.sale{opacity:0}
 @media (prefers-reduced-motion:reduce){.rst .ficha-m,.despegue .vuela{animation:none}.despegue .vuela{opacity:0}}
