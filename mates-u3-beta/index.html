@@ -114,15 +114,15 @@ const HISTORIA={titulo:'La excursión de la clase',
   {relato:'En la cafetería, la profe repasa una cuenta: el cociente es 23, el divisor 4 y el resto 3.',luz:'noche',donde:{'Tú':'cocina','La profe':'cocina'},
    q:'¿Cuál era el dividendo?',acc:['95'],repaso:'Dividendo = cociente × divisor + resto: 23 × 4 + 3 = 95.'}]};
 
-/* Miniinvestigación del martes (M1, la caja fuerte): pistas a la vista y una pregunta por paso */
-const DETECTIVE={quien:{n:'Detective',pein:'rizos',ropa:'#a78bfa',pelo:'#2b1a0f',piel:'#c98e62',extra:'libro'},
- ficha:[['🔢','El código tiene tres números'],['1️⃣','Divisible por 3 y por 5, impar y menor que 40'],['2️⃣','El único primo entre 24 y 30'],['3️⃣','El cociente de 1.176 : 24']],
-};
-const CAJA=[
- {...DETECTIVE,q:'¿Cuál es el primer número del código?',opts:['15','30','25'],a:'15',ex:'Divisibles por 3 y por 5 y menores que 40: 15 y 30. Impar, solo el 15.'},
- {...DETECTIVE,q:'¿Y el segundo?',opts:['27','29','25'],a:'29',ex:'27 = 3 × 9 y 25 = 5 × 5 son compuestos; 29 solo se divide entre 1 y 29.'},
- {...DETECTIVE,q:'¿Y el tercero? Haz 1.176 : 24.',opts:['49','48','52'],a:'49',ex:'1.176 : 24 = 49, exacta.'},
- {...DETECTIVE,q:'¿Qué código abre la caja fuerte?',opts:['15-29-49','30-29-49','15-27-49'],a:'15-29-49',ex:'15, 29 y 49. ¡Caja abierta!'}];
+/* Miniinvestigación del martes (M2, el torneo; elegida por el padre el 21-nov): la ficha y la agenda a la vista, una pregunta por paso */
+const ORGANIZA={quien:{n:'Organizadora',pein:'coleta',ropa:'#2ecc71',pelo:'#2b1a0f',piel:'#c98e62',extra:'balon'},
+ ficha:[['👥','84 jugadores apuntados'],['🏆','1.250 € para premios, a partes iguales entre 25 equipos'],['🏟️','Pista A: empieza un partido cada 10 minutos'],['🏟️','Pista B: empieza un partido cada 8 minutos']],
+ agendaT:'Sábado',agenda:[['9:00','Empiezan las dos pistas a la vez'],['','29 partidos en total']]};
+const TORNEO=[
+ {...ORGANIZA,q:'Hay que hacer equipos iguales con los 84 jugadores, sin que sobre nadie. ¿Qué equipos valen?',opts:['Equipos de 7','Equipos de 8','Equipos de 5'],a:'Equipos de 7',ex:'84 : 7 = 12, exacta. 84 : 8 y 84 : 5 no son exactas: 7 es divisor de 84.'},
+ {...ORGANIZA,q:'¿Se pueden repartir los 29 partidos en jornadas iguales de más de un partido?',opts:['No, porque 29 es primo','Sí, en jornadas de 3','Sí, en jornadas de 7'],a:'No, porque 29 es primo',ex:'29 solo se divide entre 1 y 29: es primo.'},
+ {...ORGANIZA,q:'¿Cuánto dinero de premio le toca a cada equipo?',opts:['50 €','25 €','52 €'],a:'50 €',ex:'1.250 : 25 = 50, exacta.'},
+ {...ORGANIZA,q:'¿A qué hora vuelven a empezar a la vez un partido en las dos pistas?',opts:['A las 9:40','A las 9:18','A las 9:20'],a:'A las 9:40',ex:'Múltiplos de 10: 10, 20, 30, 40… Múltiplos de 8: 8, 16, 24, 32, 40… El primero común es 40.'}];
 
 /* Examen: divisiones nuevas cada vez (nunca las del libro), con borrador */
 const azar=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -133,8 +133,8 @@ function divExamen(dos){const d=dos?azar(12,48):azar(3,9),D=azar(dos?600:1000,99
 
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
 const BLOCKS=[{k:'div1',n:'División por una cifra',w:1},{k:'mult',n:'Múltiplos',w:1},{k:'divs',n:'Divisores',w:1},{k:'hist',n:'La excursión',w:1},
- {k:'crit',n:'Criterios de divisibilidad',w:1},{k:'prim',n:'Primos y compuestos',w:1},{k:'div2',n:'División por dos cifras',w:2},{k:'caja',n:'La caja fuerte',w:1},{k:'prob',n:'Problemas',w:2}];
-const MIC=[['div1','➗'],['mult','✖️'],['divs','🧩'],['hist','🎢'],['crit','🔍'],['prim','💎'],['div2','🧮'],['caja','🔐'],['prob','📝'],['exam','👑'],['arcade','🎮']];
+ {k:'crit',n:'Criterios de divisibilidad',w:1},{k:'prim',n:'Primos y compuestos',w:1},{k:'div2',n:'División por dos cifras',w:2},{k:'torneo',n:'El torneo',w:1},{k:'prob',n:'Problemas',w:2}];
+const MIC=[['div1','➗'],['mult','✖️'],['divs','🧩'],['hist','🎢'],['crit','🔍'],['prim','💎'],['div2','🧮'],['torneo','🏆'],['prob','📝'],['exam','👑'],['arcade','🎮']];
 
 /* ================== MISIONES ================== */
 const S=(t,x,sub)=>({t,...x,sub});
@@ -152,14 +152,14 @@ const R={
    ...pick(PRIM_MC,2).map(x=>S('mc',x,'Primos')),...pick(PRIM_NUM,1).map(x=>S('num',x,'Cuenta sus divisores'))],'prim',R.prim,'💎')},
  div2(){runSteps('🧮 División por dos cifras',[...DIV2.map(x=>S('divi',x,x.modo=='guiada'?'Paso a paso':'Como en la hoja: escribe los restos y el cociente')),
    ...pick(PUERTAS,1).map(x=>S('num',x,'Usa la prueba de la división'))],'div2',R.div2,'🧮')},
- caja(){runSteps('🔐 La caja fuerte',CAJA.map(x=>S('probe',x,'Mira las pistas antes de decidir')),'caja',R.caja,'🔐')},
+ torneo(){runSteps('🏆 El torneo',TORNEO.map(x=>S('probe',x,'Mira la ficha y la agenda antes de decidir')),'torneo',R.torneo,'🏆')},
  prob(){runSteps('📝 Problemas',pick(PROBS,5).map(x=>S('prob',x,'Monta la cuenta, hazla y escribe la respuesta')),'prob',R.prob,'📝')},
 };
 const ROUTE_ST=[
  {k:'div1',n:'División por una cifra',ic:'➗',min:6},{k:'mult',n:'Múltiplos',ic:'✖️',min:4},{k:'divs',n:'Divisores',ic:'🧩',min:4},
  {k:'hist',n:'La excursión',ic:'🎢',min:4,corte:'Hasta aquí el primer día'},
  {k:'crit',n:'Criterios',ic:'🔍',min:4},{k:'prim',n:'Primos',ic:'💎',min:3},{k:'div2',n:'División por dos cifras',ic:'🧮',min:6},
- {k:'caja',n:'La caja fuerte',ic:'🔐',min:3},{k:'prob',n:'Problemas',ic:'📝',min:6}];
+ {k:'torneo',n:'El torneo',ic:'🏆',min:3},{k:'prob',n:'Problemas',ic:'📝',min:6}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const TODO_MC=()=>[...DIV1_MC,...MULT_MC,...DIVS_MC,...DIVS_GAP,...CRIT_MC,...PRIM_MC];
@@ -181,7 +181,7 @@ const JUEGO={
    ['prim','💎','Primos','Primos y compuestos'],
    ['#','🧠 Para pensar'],
    ['hist','🎢','La excursión','Una historia con cuentas'],
-   ['caja','🔐','La caja fuerte','Detective de los números'],
+   ['torneo','🏆','El torneo','Organiza el torneo del colegio'],
    ['prob','📝','Problemas','Monta la cuenta y resuélvelo'],
    ['#','👑 Examen'],
    ['exam','👑','EXAMEN FINAL','20 preguntas · 30 minutos · con borrador'],
