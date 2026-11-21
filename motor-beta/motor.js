@@ -83,7 +83,7 @@ function home(){
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}const vuelve=recuperaPerfil(v);try{localStorage.setItem(JUEGO.claves.nombre,vuelve||v)}catch(e){}if(vuelve)return location.reload();home()};
    if(!escQuieto())[...app().querySelector('.box').children].forEach((el,i)=>{el.style.setProperty('--i',i);el.classList.add('ent')});
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
-  app().innerHTML=`${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">🧭 Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button>
+  app().innerHTML=`${JUEGO.marca?`<div class="portada-m" role="img" aria-label="Misión Estudio · ${esc(JUEGO.marca)}">${logoMarca('simbolo','',44)}<span class="portada-t">${esc(JUEGO.marca)}</span></div>`:''}${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">${COHETE_SVG} Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
@@ -107,7 +107,7 @@ function boletin(){
   </div>
   <table class="rules">${BLOCKS.map(b=>`<tr><td style="width:30px">${sem(nota(b.k))}</td><td>${b.n}${b.w==2?' <span style="color:var(--gold);font-size:13px">×2</span>':''}</td><td style="text-align:right"><b>${fmt(nota(b.k))}</b></td><td style="color:var(--mut);font-size:13px;text-align:right">${(GR[b.k]||[]).map(fmt).join(' · ')||'sin jugar'}</td></tr>`).join('')}</table>
   ${h?`<button class="btn" id="hoy" data-k="${h.b.k}">🎯 Hoy toca: ${h.b.n} <span style="font-weight:400">(${h.why})</span></button>`:'<p style="font-size:18px">🟢 ¡Todo dominado! Haz el examen final para confirmar.</p>'}
-  <p class="sub" style="font-size:13px;margin-top:10px">${JUEGO.notaBoletin}</p></div>`;
+  <p class="sub" style="font-size:13px;margin-top:10px">${JUEGO.notaBoletin}</p><div class="pie-m">${logoMarca('descriptor','Misión Estudio · Juegos de estudio de primaria',64)}</div></div>`;
 }
 /* Nota real del colegio (20-nov): se apunta a mano y se compara con la nota prevista del juego.
    Va con el progreso de cada niño (también en su perfil de «no soy yo») y congela la nota prevista de ese momento,
@@ -251,10 +251,10 @@ function examRun(qs){
       <h2>${timeout?'⏰ ¡Tiempo! ':''}${ok} de ${qs.length}</h2><p style="font-size:26px;margin:4px">Nota: <b data-cuenta="${g}">${fmt(g)}</b> <span class="cf-lab">· ${label(g)} ${sem(g)}</span></p>
       <div class="cf-estr" aria-label="${s} de 3 estrellas">${[0,1,2].map(k=>`<span class="${k<s?'si':'no'}">${k<s?'★':'☆'}</span>`).join('')}</div>
       ${p>=.5?`<div class="cf-sello"><span>¡${label(g).toUpperCase()}!</span></div>`:''}
-      <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p>${guiaFin(p)}</div>
+      <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p>${guiaFin(p)}${p>=.5?'<div class="sello-fin" id="sfin"></div>':''}</div>
       ${wrong.length?`<div class="box"><h2>📌 Repasa estas</h2><table class="rules">${wrong.map(w=>`<tr><td>${esc(w.q)}<br><span style="color:var(--no)">Tú: ${esc(w.yo)}</span> · <span style="color:var(--yes)">Bien: ${esc(w.a)}</span></td></tr>`).join('')}</table></div>`:''}
       <div class="center"><button class="btn" onclick="R.exam()">🔁 Otro examen</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
-      celebra(app().querySelector('.box'),p,g);}
+      celebra(app().querySelector('.box'),p,g);if(p>=.5)setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(150)},escQuieto()?0:3600);}
   };
 }
 /* ===== Motores genéricos ===== */
@@ -1094,8 +1094,8 @@ Object.assign(STEP,{
 });
 /* Volver al menú de la suite (21-nov): en la app instalada no hay barra del navegador, así que sin esto el niño no sale del juego. */
 function botonMenu(){const h=document.querySelector('header');if(!h||document.getElementById('amenu'))return;
-  const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href='../';b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
-  b.innerHTML='<span aria-hidden="true">‹</span><img src="../iconos/icono.svg" alt="" width="24" height="24">';b.onclick=()=>son('tap');h.insertBefore(b,h.firstChild)}
+  const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href=ES_BETA?'../menu-beta/':'../';b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
+  b.innerHTML='<span aria-hidden="true">‹</span>'+logoMarca('simbolo','',22);b.onclick=()=>son('tap');h.insertBefore(b,h.firstChild)}
 botonMenu();
 function sfxOk(){son('ok');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
 function sfxTap(){son('tap');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
@@ -1144,8 +1144,9 @@ function startStation(){
 }
 function routeMap(){
   const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+(tiempoReal(s.k)||s.min),0);
+  const aparca=ROUTE&&ROUTE.i>0&&ROUTE.i<ROUTE_ST.length&&ROUTE_ST[ROUTE.i-1].corte;
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=!ROUTE?'':n<ROUTE.i?'done':n==ROUTE.i?'now':'';
-    return `<div class="rst ${st}" style="--i:${n}"><div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}</div>`:''}`}).join('')}</div>
+    return `<div class="rst ${st}" style="--i:${n}">${st=='now'&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n==ROUTE.i-1?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
@@ -1156,11 +1157,11 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){
     ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;saveRoute();confetti();setTimeout(confetti,600);
-    box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="big">🏁</div><h2>¡Ruta completada!</h2>
+    box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="despegue">${DESPEGUE_SVG}</div><div class="sello-fin" id="sfin"></div><h2>¡Ruta completada!</h2>
       <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
       ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
       <button class="btn destaca" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
-    box.querySelector('#again').remove();return}
+    box.querySelector('#again').remove();setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(170)},escQuieto()?0:2000);return}
   saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ROUTE.i-1];
   /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere */
   if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
@@ -1171,7 +1172,7 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
 R.route=function(){
   const resume=ROUTE&&ROUTE.i>0;
   if(!ROUTE)ROUTE={i:0,part:0,on:false};
-  app().innerHTML=`<div class="box"><h2>🧭 Ruta de estudio</h2>
+  app().innerHTML=`<div class="box"><h2 class="ruta-tit">${COHETE_SVG} Ruta de estudio</h2>
   ${guia(resume?`¡Seguimos! Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
   <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
   ${routeMap()}

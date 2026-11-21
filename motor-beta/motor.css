@@ -577,3 +577,30 @@ html[data-fam] #clase .rk.yo .rk-n::after{content:"tú";font:700 12px var(--fb);
 @media(max-width:600px){.hoja{--celda:30px}.cuenta{font-size:21px}}
 .rcorte{grid-column:1/-1;text-align:center;font-size:14px;font-weight:600;color:var(--gold);border-top:2px dashed var(--gold);padding-top:4px;margin:4px 0}
 .hoyfin{margin:12px 0 4px}
+
+/* ===== MARCA (21-nov) ===== */
+.lgm{display:inline-flex;height:var(--lgh);line-height:0;vertical-align:middle}.lgm img{height:100%;width:auto;display:block}
+.lgm .lg-col{display:none}html[data-fam=D] .lgm .lg-col{display:block}html[data-fam=D] .lgm .lg-neg{display:none}
+header .amenu .lgm{margin-left:2px}
+.portada-m{display:flex;justify-content:center;align-items:center;gap:12px;margin:2px 0 12px}
+.portada-t{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:30px;line-height:1;color:#fff;padding-left:12px;border-left:2px solid currentColor}
+html[data-fam=D] .portada-t{color:#1D3BA8}
+.pie-m{display:flex;justify-content:center;margin-top:12px;opacity:.9}
+.cohete{display:inline-block;width:1em;height:1.5em;vertical-align:middle}
+.routebtn .cohete,.ruta-tit .cohete{transform:rotate(45deg);margin-right:4px}
+.rst{position:relative}
+.rst .ficha-m{position:absolute;left:50%;top:-30px;width:26px;height:26px;margin-left:-13px;display:grid;place-items:center;pointer-events:none;animation:ficha-bota .6s ease-in-out infinite alternate}
+.ficha-m .cohete,.aparcado .cohete{width:16px;height:24px;transform:rotate(90deg)}
+.rmap:has(.ficha-m){padding-top:26px}
+.aparcado{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
+@keyframes ficha-bota{to{transform:translateX(3px)}}
+.despegue{width:130px;height:165px;margin:0 auto -6px;overflow:visible}
+.despegue svg{width:100%;height:100%;overflow:visible}
+.despegue .vuela{animation:despega 1.7s .35s ease-in forwards}
+@keyframes despega{0%{transform:none}8%{transform:translate(-3px,0)}16%{transform:translate(3px,0)}24%{transform:none}100%{transform:translateY(-900px)}}
+.sello-fin{display:flex;justify-content:center;min-height:0;margin:6px 0}
+.entrada-m{position:fixed;inset:0;z-index:60;background:#0A1441;display:grid;place-items:center;align-content:center;gap:14px;cursor:pointer;transition:opacity .35s}
+.entrada-m video{width:min(78vw,60vh,520px);aspect-ratio:1;background:#0A1441}
+.entrada-m span{color:#aab4e6;font:600 14px system-ui,sans-serif;border:1px solid #2a376f;border-radius:999px;padding:4px 12px}
+.entrada-m.sale{opacity:0}
+@media (prefers-reduced-motion:reduce){.rst .ficha-m,.despegue .vuela{animation:none}.despegue .vuela{opacity:0}}

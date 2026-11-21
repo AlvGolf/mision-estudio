@@ -1,6 +1,98 @@
 <!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Misión Estudio</title>
-<meta http-equiv="refresh" content="0; url=../">
-<script>location.replace('../'+location.hash)</script></head>
-<body><p><a href="../">El menú está ahora en la portada.</a></p></body></html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>(beta) Misión Estudio</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../iconos/apple-touch-icon.png">
+<link rel="icon" href="../marca/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=16">
+<style>
+/* Menú de la suite (ronda 6 del rediseño, 21-nov): S1 «estanterías por asignatura» con la pantalla de curso de la S2 al empezar. */
+header h1{display:flex;align-items:center;gap:8px;cursor:default}
+header h1 img{display:block}
+/* Marca (21-nov): el logo con el nombre; en 2º, solo el ME, más grande */
+.lg-corto{display:none!important}html.c2 .lg-corto{display:inline-flex!important}html.c2 .lg-largo{display:none!important}
+.curso{display:grid;gap:14px;max-width:520px;margin:0 auto}
+.curso button{border:var(--bw) solid var(--cline);box-shadow:var(--sh);border-radius:20px;padding:22px 16px;color:#fff;cursor:pointer;display:grid;gap:4px;font-family:var(--ft);font-size:26px;font-weight:700;text-align:center}
+.curso button small{font-family:var(--fb);font-size:14px;font-weight:600;opacity:.9}
+.curso .c5{background:linear-gradient(135deg,#2a8bf2,#433b80)}.curso .c2{background:linear-gradient(135deg,#ffb02e,#ff5c8a)}
+.prox{display:grid;gap:3px;border:var(--bw) solid var(--cline);box-shadow:var(--sh);border-radius:18px;padding:14px 16px;margin:0 0 18px;background:linear-gradient(135deg,#ffb02e,#ff5c6c);color:#2a0d12;text-decoration:none}
+.prox small{font-weight:800;font-size:12px;letter-spacing:.6px;text-transform:uppercase;opacity:.8}
+.prox b{font-family:var(--ft);font-size:22px}.prox span{font-size:14px;font-weight:700}
+.estante{margin:0 0 18px}
+.estante h2{display:flex;align-items:center;gap:8px;font-size:20px;margin:0 0 8px}
+.fila{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;scrollbar-width:thin}
+.tarj{flex:none;width:200px;scroll-snap-align:start;display:grid;gap:4px;align-content:start;background:var(--card);border:var(--bw) solid var(--cline);box-shadow:var(--sh);border-radius:16px;padding:12px;color:var(--txt);text-decoration:none;border-top:5px solid var(--asig)}
+.tarj b{font-family:var(--ft);font-size:18px;line-height:1.15}
+.tarj small{color:var(--mut);font-size:13px;line-height:1.3}
+.tarj .sem{font-weight:700;font-size:14px;margin-top:2px}
+.tarj.pasado{opacity:.62}
+.tarj:focus-visible,.prox:focus-visible,.curso button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.vacio{background:var(--card);border-radius:16px;padding:16px;color:var(--mut)}
+.cambia{background:none;border:0;color:var(--acc);font:700 15px var(--fb);cursor:pointer;padding:6px 0;margin-top:4px}
+@media (hover:hover){.tarj:hover,.prox:hover{transform:translateY(-2px)}.tarj,.prox{transition:transform .15s}}
+@media (max-width:600px){.tarj{width:168px}.prox b{font-size:20px}.curso button{font-size:23px;padding:18px 14px}}
+@media (min-width:601px){.fila{flex-wrap:wrap;overflow:visible}}
+</style>
+</head>
+<body>
+<header>
+  <h1 role="img" aria-label="Misión Estudio"><span class="lgm lg-largo" style="--lgh:30px"><img class="lg-neg" src="../marca/horizontal-negativo.svg" alt=""><img class="lg-col" src="../marca/horizontal-color.svg" alt=""></span><span class="lgm lg-corto" style="--lgh:36px"><img class="lg-neg" src="../marca/simbolo-negativo.svg" alt=""><img class="lg-col" src="../marca/simbolo-color.svg" alt=""></span></h1>
+  <div class="hud"></div>
+</header>
+<main id="app"></main>
+<script>
+/* El menú no es un juego: este JUEGO mínimo solo dice a la piel qué grupo de estilos y qué curso usar. */
+let CURSO=null;try{CURSO=+localStorage.getItem('mision_curso')||null}catch(e){}
+const JUEGO={id:'menu',estilo:0,curso:CURSO||5};
+</script>
+<script src="../juegos.js"></script>
+<script src="../motor-beta/piel.js?v=16"></script>
+<script>
+const app=()=>document.getElementById('app');
+const RAIZ='../';
+/* Beta (21-nov): los juegos que tienen beta abren su beta */
+const BETAS={'mates-u3/':'mates-u3-beta/'};
+const ir=c=>RAIZ+(BETAS[c]||c);
+function resumen(){try{return JSON.parse(lsGet('mision_suite')||'{}')}catch(e){return{}}}
+function dias(f){const h=new Date();h.setHours(0,0,0,0);const d=new Date(f+'T00:00:00');return Math.round((d-h)/864e5)}
+const fecha=f=>{const d=new Date(f+'T00:00:00');return d.getDate()+'-'+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]};
+const cuando=n=>n===0?'hoy':n===1?'mañana':'en '+n+' días';
+function semaforo(r){if(!r)return'⚪ sin jugar';if(r.nota!=null){const n=r.nota,t=String(n.toFixed(1)).replace('.',',');return(n>=8?'🟢 ':n>=5?'🟡 ':'🔴 ')+t}
+  return r.xp?'⭐ '+r.xp+' XP · nota al jugarlo todo':'⚪ sin jugar'}
+function elegirCurso(){
+  const de=c=>{const as=[...new Set(JUEGOS.filter(j=>j.curso===c).map(j=>ASIGNATURAS[j.asignatura]?.n).filter(Boolean))];return as.length?as.join(', '):'Pronto, sus juegos'};
+  app().innerHTML=`${guia('¡Hola! Soy tu guía de Misión Estudio. ¿De qué curso eres?',{saluda:1})}
+    <div class="curso"><button class="c5 ent" style="--i:1" data-c="5">5º de primaria<small>${esc(de(5))}</small></button>
+    <button class="c2 ent" style="--i:2" data-c="2">2º de primaria<small>${esc(de(2))}</small></button>
+    <p class="sub ent" style="--i:3;text-align:center">La tablet lo recuerda. Se cambia abajo del todo.</p></div>`;
+  app().querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{CURSO=+b.dataset.c;try{localStorage.setItem('mision_curso',String(CURSO))}catch(e){}JUEGO.curso=CURSO;aplicaEstilo();son('tap');pinta()})}
+function pinta(){
+  if(!CURSO)return elegirCurso();
+  const R=resumen(),js=JUEGOS.filter(j=>j.curso===CURSO).map(j=>({...j,d:dias(j.examen),r:R[j.id]}));
+  const prox=js.filter(j=>j.d>=0).sort((a,b)=>a.d-b.d)[0];
+  const A=j=>ASIGNATURAS[j.asignatura]||{n:j.asignatura,ic:'📘',col:'#3dd6ff'};
+  let i=0;const ent=()=>`ent" style="--i:${i++}`;
+  const saludo=prox?`¡Hola! Hoy toca ${A(prox).n}: el examen es ${cuando(prox.d)}.`:js.length?'¡Hola! Elige tu misión. Los exámenes pasados sirven para repasar.':'¡Hola! Los juegos de tu curso llegarán muy pronto.';
+  const tarjeta=j=>`<a class="tarj ${j.d<0?'pasado ':''}${ent()};--asig:${A(j).col}" href="${ir(j.carpeta)}"><b>${esc(j.titulo)}</b><small>${esc(j.temas||'')}</small>
+    <small>Examen ${fecha(j.examen)}${j.d<0?' · para repasar':' · '+cuando(j.d)}</small><span class="sem">${semaforo(j.r)}</span></a>`;
+  // asignaturas ordenadas por su próximo examen; las que solo tienen exámenes pasados, al final
+  const orden=a=>{const f=js.filter(j=>j.asignatura===a&&j.d>=0).map(j=>j.d);return f.length?Math.min(...f):1e6};
+  const asigs=[...new Set(js.map(j=>j.asignatura))].sort((a,b)=>orden(a)-orden(b));
+  app().innerHTML=`${guia(esc(saludo),{saluda:1})}
+    ${prox?`<a class="prox ${ent()}" href="${ir(prox.carpeta)}"><small>Próximo examen · ${cuando(prox.d)}</small><b>${A(prox).ic} ${esc(A(prox).n)} · ${esc(prox.titulo)}</b>
+      <span>${prox.r&&prox.r.nota!=null?'Tu nota ahora: '+semaforo(prox.r).slice(3)+' · sigue la ruta de hoy':'Empieza por la 🧭 ruta de estudio'}</span></a>`:''}
+    ${asigs.map(a=>`<section class="estante"><h2 class="${ent()}">${ASIGNATURAS[a]?.ic||'📘'} ${esc(ASIGNATURAS[a]?.n||a)}</h2><div class="fila">${js.filter(j=>j.asignatura===a).sort((x,y)=>(x.d<0)-(y.d<0)||(x.d<0?y.d-x.d:x.d-y.d)).map(tarjeta).join('')}</div></section>`).join('')
+      ||`<div class="vacio ${ent()}">Todavía no hay juegos de ${CURSO}º. En cuanto llegue el temario, aparecerán aquí.</div>`}
+    <button class="cambia" id="cambia">↺ Cambiar de curso (ahora: ${CURSO}º)</button>
+    <div id="instalar"></div>`;
+  document.getElementById('cambia').onclick=()=>{CURSO=null;try{localStorage.removeItem('mision_curso')}catch(e){}son('tap');pinta()};
+  app().querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>son('tap')));
+  pintaInstalar()}
+entradaMarca();
+pinta();
+</script>
+</body>
+</html>

@@ -51,6 +51,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
+- **Probar la beta del logo** (21-nov): el menú en https://alvgolf.github.io/mision-estudio/menu-beta/ y Mates en https://alvgolf.github.io/mision-estudio/mates-u3-beta/. Opción B del artefacto «Logo de Misión Estudio» (rondas 8 a 10): animación del ME la primera vez del día, el ME en las cabeceras, portada del juego con el ME y su nombre, el cohete como ficha del mapa (aparcado en la raya del primer día) y en el botón de la ruta, el despegue del libro y el sello animado al acabar la ruta y al aprobar el examen, y el logo al pie del boletín. Archivos en `marca/`. Al aprobarlo: `motor-beta` → `motor`, la portada y la cabecera en `index.html`, `marca:` en cada juego, y el icono de la app y el `manifest` pasan al ME (en la beta no se puede probar el icono: es el de la raíz).
 - Mates Unidad 3 ya está en el menú (21-nov): el lunes 24 y el martes 25, la ruta; el miércoles 26, el examen. Contar cómo va, y después del examen del 27, la nota real.
 - (21-nov) Historia y miniinvestigación de Mates, elegidas por el padre en el artefacto: H1 (la excursión) y M2 (el torneo del colegio).
 

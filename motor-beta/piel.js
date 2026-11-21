@@ -20,11 +20,30 @@ function estiloAhora(){const q=(parametro('estilo')||'').toUpperCase();if(/^[ABC
 function aplicaEstilo(){const e=estiloAhora(),h=document.documentElement,c2=String(parametro('curso')||JUEGO.curso||5)==='2';
   if(h.dataset.estilo===e&&h.classList.contains('c2')===c2)return;
   h.dataset.estilo=e;h.dataset.fam=e[0];h.classList.toggle('c2',c2);
-  const fams=['Nunito:wght@400;600;700;800',ESTILO_LETRAS[e]||ESTILO_LETRAS[e[0]]];if(c2&&(e[0]==='B'||e==='D2'))fams.push(ESTILO_LETRAS.c2);
+  const fams=['Nunito:wght@400;600;700;800',ESTILO_LETRAS[e]||ESTILO_LETRAS[e[0]],'Fraunces:opsz,wght@9..144,600'];if(c2&&(e[0]==='B'||e==='D2'))fams.push(ESTILO_LETRAS.c2);
   const href='https://fonts.googleapis.com/css2?family='+fams.join('&family=')+'&display=swap';
   let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc)}tc.content={A:'#2b2357',B:'#18214a',C:'#0e1636',D:'#7cc6f2'}[e[0]];
   let l=document.getElementById('estilo-letras');if(!l){l=document.createElement('link');l.id='estilo-letras';l.rel='stylesheet';document.head.appendChild(l)}if(l.href!==href)l.href=href}
 aplicaEstilo();
+
+/* ================== MARCA (21-nov, rondas 8 a 10 del artefacto «Logo de Misión Estudio») ==================
+   Opción B, equilibrada: el ME en la cabecera, la portada de cada juego, el boletín y el sello; nada mientras se estudia.
+   Los archivos están en /marca/. A color en los estilos claros (familia D, la mañana) y en blanco en los oscuros. */
+const MARCA=new URL('../marca/',(document.currentScript||{}).src||location.href).href;
+const ES_BETA=/motor-beta\//.test((document.currentScript||{}).src||'');
+function logoMarca(n,alt,h){return `<span class="lgm" style="--lgh:${h}px"${alt?` role="img" aria-label="${alt}"`:' aria-hidden="true"'}><img class="lg-neg" src="${MARCA}${n}-negativo.svg" alt=""><img class="lg-col" src="${MARCA}${n}-color.svg" alt=""></span>`}
+function selloMarca(h){return `<span class="lgm sello-m" style="--lgh:${h}px" role="img" aria-label="Misión cumplida"><img class="lg-neg" src="${MARCA}sello-animado-negativo.svg?${Date.now()}" alt=""><img class="lg-col" src="${MARCA}sello-animado-color.svg?${Date.now()}" alt=""></span>`}
+/* El cohete que sale del libro (el icono que eligió el padre el 21-nov) es ahora el símbolo del avance: ficha del mapa, botón de la ruta y despegue */
+const COHETE_SVG=`<svg class="cohete" viewBox="140 56 232 350" aria-hidden="true"><path d="M224 352 q32 -30 64 0 q-8 30 -32 46 q-24 -16 -32 -46z" fill="#ffb02e" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M240 352 q16 -14 32 0 q-4 16 -16 26 q-12 -10 -16 -26z" fill="#fff3c4"/><path d="M256 70 q70 60 62 196 h-124 q-8 -136 62 -196z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M194 210 q-48 26 -46 92 l52 -26z M318 210 q48 26 46 92 l-52 -26z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M206 266 h100 l-10 46 h-80z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="256" cy="168" r="34" fill="#7fd3ff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="246" cy="158" r="9" fill="#fff" opacity=".8"/></svg>`;
+const DESPEGUE_SVG=`<svg viewBox="96 56 320 400" aria-hidden="true"><path d="M256 362 C214 338 156 334 112 344 V420 C156 410 214 414 256 440 Z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M256 362 C298 338 356 334 400 344 V420 C356 410 298 414 256 440 Z" fill="#e8eeff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><g class="vuela"><path d="M224 352 q32 -30 64 0 q-8 30 -32 46 q-24 -16 -32 -46z" fill="#ffb02e" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M240 352 q16 -14 32 0 q-4 16 -16 26 q-12 -10 -16 -26z" fill="#fff3c4"/><path d="M256 70 q70 60 62 196 h-124 q-8 -136 62 -196z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M194 210 q-48 26 -46 92 l52 -26z M318 210 q48 26 46 92 l-52 -26z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><path d="M206 266 h100 l-10 46 h-80z" fill="#ff5c6c" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="256" cy="168" r="34" fill="#7fd3ff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="246" cy="158" r="9" fill="#fff" opacity=".8"/></g></svg>`;
+/* Animación de entrada: la primera vez que se abre la app cada día (3 s; se salta tocando) */
+function entradaMarca(){let hoy=new Date().toISOString().slice(0,10),ya=null;try{ya=localStorage.getItem('mision_entrada')}catch(e){}
+  if(ya===hoy||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)||/[?&]sinentrada/.test(location.search))return;
+  try{localStorage.setItem('mision_entrada',hoy)}catch(e){}
+  const d=document.createElement('div');d.className='entrada-m';d.setAttribute('role','button');d.setAttribute('aria-label','Saltar la animación');
+  d.innerHTML=`<video src="${MARCA}entrada.mp4" autoplay muted playsinline></video><span>Toca para saltar</span>`;
+  let fuera=false;const quita=()=>{if(fuera)return;fuera=true;d.classList.add('sale');setTimeout(()=>d.remove(),350)};
+  d.onclick=quita;d.querySelector('video').onended=quita;setTimeout(quita,4500);document.body.appendChild(d)}
 /* ================== APP INSTALABLE (20-nov) ==================
    Icono en la pantalla de inicio, pantalla completa y sin conexión (sw.js de la raíz). La beta solo controla su carpeta;
    el motor normal, todo el sitio. En el menú sale «Instalar la app» (Android y ordenador) o cómo hacerlo en el iPhone. */
