@@ -50,9 +50,9 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 - (`ingles-u2/temario.json` se sacó del propio juego y el padre decidió no cotejarlo.)
 
 ### Del TO DO del padre (21-nov, sin decidir todavía)
-- **Divisiones guiadas que parecen paradas (Mates, en producción).** En el primer paso («¿Hasta qué cifra coges?») y en «Baja la siguiente cifra» hay que tocar una cifra de la cuadrícula, pero las cifras no parecen botones: solo cambian con el ratón encima, y en la tablet no hay ratón. Comprobado el 21-nov con toques simulados: al tocar, avanza. Arreglo propuesto: las cifras que se pueden tocar, en amarillo con borde y un pulso suave, y el texto «Toca una de las cifras en amarillo». Es un cambio en `motor/` (producción) antes del lunes: espera el «sí» del padre.
+- **Divisiones guiadas que parecen paradas (Mates, en producción).** ✅ (21-nov, en `motor-beta/`, el padre dijo «sí»): las cifras que se pueden tocar van en amarillo con borde y un pulso suave (tres veces; nada si el dispositivo pide menos movimiento), y el texto dice «toca… en amarillo». Al bajar la cifra solo se marcan las que aún no se han usado. El verificador comprueba ahora que la cifra que hay que tocar se ve tocable sin ratón (control positivo: sin el amarillo da FALLO). Falta: que el padre lo pruebe en la tablet en `mates-u3-beta/` y pasarlo a `motor/` antes del lunes 24 (solo este cambio, sin el logo).
 - **La animación de entrada con el logo con descriptor** (ahora es solo el ME). No existe: hay que crearla (ronda nueva en el artefacto del logo).
-- **Quitar el sonido al tocar las teclas**; se quedan los de recompensa y fin de bloque.
+- **Quitar el sonido al tocar las teclas.** ✅ (21-nov, en `motor-beta/piel.js`): el sonido `tap` ya no suena en ningún sitio (teclado, fichas, menú, botones); se quedan acertar, fallar, estrellas, sello, fanfarria y cuenta atrás. Pasa a `motor/` junto con las divisiones.
 - En la beta del logo, el examen aprobado tiene dos sellos (el de la nota y el de misión cumplida): decidir si se quedan los dos.
 
 ## Pendiente del padre

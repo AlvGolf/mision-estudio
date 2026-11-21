@@ -589,6 +589,10 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
         if (!mal && !/✅ Cociente.*✅ Resto/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: la división libre ${S.D} : ${S.d} bien hecha (${pd.q}, resto ${pd.r}) no sale bien`);
         break;
       }
+      /* 21-nov: en la tablet no hay ratón; las cifras que se tocan tienen que verse tocables sin pasar por encima */
+      const seVeTocable = async (c, que) => { const ok = await st.locator(`[data-dg="${c}"]`).evaluate(x => x.classList.contains('toc') && !/rgba\(0, 0, 0, 0\)|transparent/.test(getComputedStyle(x).backgroundColor));
+        if (!ok) fallo(`[${tag}] «${t}»: en la división guiada ${S.D} : ${S.d}, la cifra que hay que tocar (${que}) no se ve tocable sin ratón`); };
+      await seVeTocable(pd.m - 1, 'hasta qué cifra coges');
       await st.locator(`[data-dg="${mal && pd.m > 1 ? 0 : pd.m - 1}"]`).click();
       for (const [k, p] of pd.P.entries()) {
         if (!await espera(/cabe/)) { fallo(`[${tag}] «${t}»: la división guiada no pregunta cuántas veces cabe (paso ${k + 1})`); return; }
@@ -597,6 +601,7 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
         await teclea(p.r, `lo que sobra de ${p.cur}`);
         if (k + 1 < pd.P.length) {
           if (!await espera(/Baja/)) { fallo(`[${tag}] «${t}»: la división guiada no pide bajar la cifra (paso ${k + 1})`); return; }
+          await seVeTocable(p.e + 1, 'bajar la cifra');
           await st.locator(`[data-dg="${p.e + 1}"]`).click();
         }
       }
