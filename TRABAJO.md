@@ -12,4 +12,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| — | — | — | Nadie trabajando ahora |
+| mates-u3-beta, motor-beta, pruebas-motor | Claude Code | 21-nov | Juego de Mates de 5º, Unidad 3 (examen 27-nov) y las cuentas en pantalla (divisiones y problemas) |
