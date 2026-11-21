@@ -240,28 +240,9 @@ for (const juego of juegos) {
   }
 }
 
-/* ---------- Menú principal ---------- */
+/* ---------- Menú principal: la suite (21-nov), pinta las tarjetas desde juegos.js ---------- */
 {
   const R = { juego: 'menú principal', fallos: [], avisos: [], notas: [] };
-  RESUMEN.push(R);
-  const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8');
-  for (const [, href] of html.matchAll(/href="([^"#:]+)"/g)) {
-    const dest = path.join(RAIZ, href.replace(/\/$/, '/index.html'));
-    if (!fs.existsSync(dest)) R.fallos.push(`El menú enlaza a «${href}», que no existe`);
-  }
-  for (const A of ANCHOS) {
-    const ctx = await navegador.newContext({ viewport: A.viewport, isMobile: !!A.isMobile });
-    const page = await ctx.newPage();
-    await page.goto(`${BASE}/`);
-    const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    if (d > 1) R.fallos.push(`[${A.n}px] El menú desborda ${d}px en horizontal`);
-    await ctx.close();
-  }
-}
-
-/* ---------- Menú de la suite (beta, 21-nov): pinta las tarjetas desde juegos.js ---------- */
-if (fs.existsSync(path.join(RAIZ, 'menu-beta', 'index.html'))) {
-  const R = { juego: 'menú de la suite (beta)', fallos: [], avisos: [], notas: [] };
   RESUMEN.push(R);
   for (const A of ANCHOS) for (const curso of ['5', '2']) {
     const ctx = await navegador.newContext({ viewport: A.viewport, isMobile: !!A.isMobile });
@@ -269,7 +250,7 @@ if (fs.existsSync(path.join(RAIZ, 'menu-beta', 'index.html'))) {
     const page = await ctx.newPage();
     const errores = [];
     page.on('pageerror', e => errores.push(e.message));
-    await page.goto(`${BASE}/menu-beta/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(600);
     errores.forEach(e => R.fallos.push(`[${A.n}px, ${curso}º] Error en la página: ${e}`));
     const enlaces = await page.$$eval('#app a', as => as.map(a => a.getAttribute('href')));
@@ -277,11 +258,11 @@ if (fs.existsSync(path.join(RAIZ, 'menu-beta', 'index.html'))) {
     const tarjetas = await page.$$eval('.tarj', a => a.length);
     if (tarjetas !== juegos) R.fallos.push(`[${A.n}px, ${curso}º] Hay ${juegos} juegos de ${curso}º en juegos.js y el menú enseña ${tarjetas}`);
     for (const href of enlaces) {
-      const dest = path.join(RAIZ, 'menu-beta', href.replace(/\/$/, '/index.html'));
-      if (!fs.existsSync(dest)) R.fallos.push(`El menú de la suite enlaza a «${href}», que no existe`);
+      const dest = path.join(RAIZ, href.replace(/\/$/, '/index.html'));
+      if (!fs.existsSync(dest)) R.fallos.push(`El menú enlaza a «${href}», que no existe`);
     }
     const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    if (d > 1) R.fallos.push(`[${A.n}px, ${curso}º] El menú de la suite desborda ${d}px en horizontal`);
+    if (d > 1) R.fallos.push(`[${A.n}px, ${curso}º] El menú desborda ${d}px en horizontal`);
     await page.screenshot({ path: path.join(RAIZ, 'verificacion', `menu-suite-${A.n}-${curso}.png`), fullPage: true });
     await ctx.close();
   }

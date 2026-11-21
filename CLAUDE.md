@@ -34,14 +34,14 @@ La guía paso a paso es la skill `juego-nuevo` (`.claude/skills/juego-nuevo/SKIL
 - **`ESTADO.md`**: lo esencial de cada juego, lo abierto y lo pendiente del padre. Se lee al empezar y se pone al día al cerrar.
 - Puesta en marcha en un PC nuevo: `npm install` y `git config core.hooksPath .githooks`.
 4. El padre lo prueba en `https://alvgolf.github.io/mision-estudio/<juego>-beta/`.
-5. Aprobado → se copia a `<juego>/` cambiando `motor-beta` por `motor` en sus dos enlaces, se añade la tarjeta en el `index.html` de la raíz y la fila en `juegos.js` (menú de la suite), y la beta redirige.
+5. Aprobado → se copia a `<juego>/` cambiando `motor-beta` por `motor` en sus tres enlaces, se añade su fila en `juegos.js` (el menú de la suite la pinta sola) y la beta redirige.
 
 ## Estructura
 
-- `index.html` — menú con una tarjeta por juego.
-- `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura. En `motor-beta/`, `piel.js` (estilo por hora, app, guía y sonidos) es común con el menú de la suite.
-- `menu-beta/` y `juegos.js` — menú de la suite en beta (21-nov): pregunta el curso, estanterías por asignatura, próximo examen y la nota de cada juego.
-- `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que el motor.
+- `index.html` — menú de la suite (lo que abre la app): pregunta el curso y enseña los juegos de `juegos.js` por asignatura, con el próximo examen y la nota de cada uno.
+- `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura. `piel.js` (estilo por hora, app, guía y sonidos) es común con el menú de la suite y se carga antes que `motor.js`.
+- `juegos.js` — la lista de juegos del menú (una fila por juego) y las asignaturas con su icono y color.
+- `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que la piel y el motor.
 - `apps-script/Code.gs` — copia de referencia del script del ranking. El que funciona está en Google Apps Script; si cambias este, avisa al padre para que lo pegue y redespliegue.
 - Web: https://alvgolf.github.io/mision-estudio/ (GitHub Pages, rama `main`, raíz).
 

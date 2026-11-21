@@ -4,43 +4,8 @@
    El juego define antes: JUEGO (configuración y textos), BLOCKS (bloques
    con nota), MIC (estrellas del ranking), ROUTE_ST (estaciones de la ruta)
    y R (una función por misión). El motor pone R.route, R.arcade y R.exam.
+   Antes del motor se carga piel.js (estilo, app, guía y sonidos), común con el menú.
    ===================================================================== */
-/* ================== ESTILO VISUAL (rediseño, 20-nov) ==================
-   El estilo cambia con la hora real: mañana (7 a 15) de día, tarde (15 a 20) al atardecer y noche (20 a 7).
-   Cada juego lleva su grupo (JUEGO.estilo, de 0 a 5), así dos juegos seguidos no se ven iguales; el cómic (B) entra en los tres momentos.
-   JUEGO.curso (2 o 5) pone el estilo de 2º, más grande y con más color. Para ver uno a propósito: ?estilo=C2 y ?hora=9 en la dirección. */
-const ESTILOS={manana:['D1','B1','D2','D3','B3','B2'],tarde:['A1','A2','B2','A3','B1','B3'],noche:['C1','C2','C3','B3','B2','B1']};
-const ESTILO_LETRAS={A:'Baloo+2:wght@600;700;800',B:'Lilita+One',C:'Fredoka:wght@500;600;700',D:'Baloo+2:wght@600;700;800',B2:'Bangers',D2:'Lilita+One',D3:'Fredoka:wght@500;600;700',c2:'Luckiest+Guy'};
-function parametro(k){try{return new URLSearchParams(location.search).get(k)}catch(e){return null}}
-function momentoAhora(){const p=parametro('hora'),h=p!=null&&p!==''&&!isNaN(+p)?+p:new Date().getHours();return h>=7&&h<15?'manana':h>=15&&h<20?'tarde':'noche'}
-function luzAhora(){return{manana:'dia',tarde:'atardecer',noche:'noche'}[momentoAhora()]}
-function estiloAhora(){const q=(parametro('estilo')||'').toUpperCase();if(/^[ABCD][123]$/.test(q))return q;return ESTILOS[momentoAhora()][(((JUEGO.estilo|0)%6)+6)%6]}
-function aplicaEstilo(){const e=estiloAhora(),h=document.documentElement,c2=String(parametro('curso')||JUEGO.curso||5)==='2';
-  if(h.dataset.estilo===e&&h.classList.contains('c2')===c2)return;
-  h.dataset.estilo=e;h.dataset.fam=e[0];h.classList.toggle('c2',c2);
-  const fams=['Nunito:wght@400;600;700;800',ESTILO_LETRAS[e]||ESTILO_LETRAS[e[0]]];if(c2&&(e[0]==='B'||e==='D2'))fams.push(ESTILO_LETRAS.c2);
-  const href='https://fonts.googleapis.com/css2?family='+fams.join('&family=')+'&display=swap';
-  let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc)}tc.content={A:'#2b2357',B:'#18214a',C:'#0e1636',D:'#7cc6f2'}[e[0]];
-  let l=document.getElementById('estilo-letras');if(!l){l=document.createElement('link');l.id='estilo-letras';l.rel='stylesheet';document.head.appendChild(l)}if(l.href!==href)l.href=href}
-aplicaEstilo();
-/* ================== APP INSTALABLE (20-nov) ==================
-   Icono en la pantalla de inicio, pantalla completa y sin conexión (../sw.js). La beta solo controla su carpeta;
-   el motor normal, todo el sitio. En el menú sale «Instalar la app» (Android y ordenador) o cómo hacerlo en el iPhone. */
-let INSTALA=null;
-(function(){const beta=/motor-beta\//.test((document.currentScript||{}).src||'');
-  const add=(t,a)=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));document.head.appendChild(e)};
-  if(!document.querySelector('link[rel="manifest"]'))add('link',{rel:'manifest',href:'../manifest.webmanifest'});
-  if(!document.querySelector('link[rel="apple-touch-icon"]'))add('link',{rel:'apple-touch-icon',href:'../iconos/apple-touch-icon.png'});
-  add('meta',{name:'apple-mobile-web-app-capable',content:'yes'});add('meta',{name:'mobile-web-app-capable',content:'yes'});add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio'});
-  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('../sw.js',{scope:beta?'./':'../'}).catch(()=>{});
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALA=e;pintaInstalar()});
-  addEventListener('appinstalled',()=>{INSTALA=null;pintaInstalar()})})();
-function pintaInstalar(){const b=document.getElementById('instalar');if(!b)return;
-  if(matchMedia('(display-mode: standalone)').matches||navigator.standalone){b.innerHTML='';return}
-  if(INSTALA){b.innerHTML='<button class="btn sec" id="inst">📲 Instalar la app en este dispositivo</button>';
-    document.getElementById('inst').onclick=async()=>{const e=INSTALA;INSTALA=null;e.prompt();try{await e.userChoice}catch(x){}pintaInstalar()};return}
-  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  b.innerHTML=ios?'<p class="sub">📲 Para tenerla como una app: toca <b>Compartir</b> y luego <b>«Añadir a pantalla de inicio»</b>.</p>':''}
 /* ================== ESTADO ================== */
 let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}, REAL=null;
 try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;}catch(e){}
@@ -71,7 +36,6 @@ const $=s=>document.querySelector(s);
 const app=()=>document.getElementById('app');
 const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const pick=(a,n)=>shuf(a).slice(0,n);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function confetti(){const e=['⭐','🎉','✨','🏆','💥'];for(let i=0;i<24;i++){const d=document.createElement('div');d.className='conf';d.textContent=e[i%5];d.style.left=Math.random()*100+'vw';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}}
 function starsFor(p){return p>=.9?3:p>=.7?2:p>=.5?1:0}
 function setBest(k,p){const s=starsFor(p);if(!BEST[k]||s>BEST[k])BEST[k]=s;save()}
@@ -124,7 +88,7 @@ function home(){
   ${JUEGO.chuleta||''}
   ${classBox()}
   ${fame()}<div id="instalar"></div>`;
-  wireFame();wireReal();pintaInstalar();
+  wireFame();wireReal();pintaInstalar();resumenSuite();
   document.querySelectorAll('.mission').forEach(b=>b.onclick=()=>R[b.dataset.k]());
   const ht=$('#hoy');if(ht)ht.onclick=()=>R[ht.dataset.k]();
   /* Recargar: si no, la XP y las notas que hay en memoria pasarían al siguiente niño */
@@ -235,7 +199,9 @@ function fame(){
   ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)} <small>${new Date(r.d).toLocaleDateString('es-ES',{day:'numeric',month:'short'})} ${new Date(r.d).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</small></div><div class="rk-s"><span>⭐ ${r.xp}</span><span>★ ${r.st}</span><span>🔥 ${r.bs}</span>${r.no?`<span>📊 ${r.no}</span>`:''}${r.ex?`<span>👑 ${r.ex}</span>`:''}</div><div class="rk-st">${r.sb?starLine(r.sb):'<span style="color:var(--mut)">Sin desglose de estrellas</span>'}</div></div><button class="tab fdel" data-ix="${r.ix}" title="Borrar">🗑️</button></div>`).join('')}</div>`:'<p class="sub">Aún no hay marcas. ¡Sé el primero!</p>'}
   <p class="sub" style="font-size:13px;margin-top:10px">Tus partidas se guardan en este dispositivo.</p></div>`;
 }
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+/* Resumen para el menú de la suite (21-nov): nota de dominio y XP de este juego en este dispositivo.
+   El menú lo lee de «mision_suite» para enseñar el semáforo en cada tarjeta. */
+function resumenSuite(){try{const t=JSON.parse(lsGet('mision_suite')||'{}');const f=finalNota();t[JUEGO.id]={nota:f.miss?null:f.n,falta:f.miss,xp:XP,visto:Date.now()};localStorage.setItem('mision_suite',JSON.stringify(t))}catch(e){}}
 /* Perfiles: cada niño guarda su progreso aparte en el mismo dispositivo.
    El progreso activo sigue en las claves de siempre. «No soy yo» lo aparta con su nombre;
    al escribir un nombre que ya jugó aquí, se recupera el suyo. */
@@ -638,7 +604,7 @@ Object.assign(STEP,{
    sitios que cualquier juego elige por nombre. Un sitio nuevo se dibuja
    una vez aquí y sirve para todos los juegos.
    ===================================================================== */
-const ESC_L='#1d2033';let ESC_UID=0;
+let ESC_UID=0;
 const ESC_LUZ={
   atardecer:{cielo:['#433b80','#c8608a','#ffb36b'],estrellas:1,sol:'#ffd98a',mont:['#7a5c9e','#a46a9c'],colina:'#7f8f4c',suelo:['#5e7c3e','#36532c'],camino:'#c9a674',velo:'#ff8a3d',
     s:{muro:'#e9c79a',muroS:'#c9a274',tejado:'#b2463a',ventana:'#ffd56b',fronton:'#d1a07a',teatro:'#e0bb9c',tienda:'#e0782a',arbol:'#2f7a45',arbol2:'#36884c',brillo:1}},
@@ -698,38 +664,6 @@ const ESC_SITIOS={
     <g stroke="${ESC_L}" stroke-width=".7">${[[330,182,'#ff7aa8'],[358,186,'#ffe14d'],[388,180,'#ff7aa8'],[342,192,'#ffe14d'],[376,190,'#b28dff']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="${c}"/>`).join('')}</g>`},
 };
 /* Personajes de cómic con contorno. Si el juego no da colores, se toman en orden de aquí */
-const ESC_DEF=[{ropa:'#3dd6ff',pelo:'#5a3a1a',piel:'#f2c9a0',pein:'corto'},{ropa:'#a78bfa',pelo:'#2b1a0f',piel:'#c98e62',pein:'coleta'},
-  {ropa:'#ff7a45',pelo:'#e0b04a',piel:'#f5d2b0',pein:'rizos'},{ropa:'#2ecc71',pelo:'#7a2e12',piel:'#e8b48a',pein:'melena'},
-  {ropa:'#ff5c8a',pelo:'#1b1b1b',piel:'#8d5a3b',pein:'rizos'},{ropa:'#ffc83d',pelo:'#c0392b',piel:'#f6d7bd',pein:'coleta'}];
-function escPersona(p){
-  const L=ESC_L,o=`stroke="${L}" stroke-width="1.1"`,hy=-45,hr=7.4,sc=hr/6.5,NS='vector-effect="non-scaling-stroke"';
-  const t=`transform="translate(0 ${hy}) scale(${sc})"`,pst=`fill="${p.pelo}" stroke="${L}" stroke-width="1.1" ${NS}`;
-  const atras=p.pein=='coleta'?`<ellipse cx="7.2" cy="1.5" rx="2.6" ry="5"/>`:p.pein=='melena'?`<rect x="-7.6" y="-5" width="15.2" height="14" rx="5"/>`:'';
-  const delante=p.pein=='rizos'?`<circle cx="-5" cy="-3" r="3"/><circle cx="-1.7" cy="-5.6" r="3"/><circle cx="2" cy="-5.6" r="3"/><circle cx="5" cy="-3" r="3"/>`
-    :`<path d="M-6.7 -.6 a6.7 6.7 0 0 1 13.4 0 q-3 -2.6 -6.7 -2.1 q-3.7 -.5 -6.7 2.1z"/>`;
-  const ex={
-    gorro:`<path transform="translate(0 ${hy-hr+1.5}) scale(${sc})" d="M-6 0 h12 v-4 a4.5 4.5 0 0 0 -2.5 -7 a4.5 4.5 0 0 0 -7 0 a4.5 4.5 0 0 0 -2.5 7z" fill="#fff" stroke="${L}" stroke-width="1.1" ${NS}/>`,
-    mascara:`<path transform="translate(11 -19)" d="M-4.5 -2 q4.5 -3.4 9 0 q-1 5.5 -4.5 5.5 q-3.5 0 -4.5 -5.5z" fill="#ffc83d" ${o}/>`,
-    camara:`<path d="M-6 -34 L0 -31 L6 -34" stroke="#222" stroke-width=".8" fill="none"/><g transform="translate(0 -28)"><rect x="-5" y="-3.5" width="10" height="7" rx="1.5" fill="#222" ${o}/><circle r="2" fill="#7fd3ff"/></g>`,
-    libro:`<g transform="translate(11 -19) rotate(-10)"><rect x="-4" y="-5" width="8" height="10" rx="1" fill="#3d7bd9" ${o}/><path d="M-2 -3 h4 M-2 -1 h4" stroke="#fff" stroke-width=".7"/></g>`,
-    balon:`<circle cx="12" cy="-17" r="4" fill="#fff" ${o}/><path d="M12 -19.5 l2 1.5 l-.8 2.3 h-2.4 l-.8 -2.3z" fill="${L}"/>`
-  }[p.extra]||'';
-  return `<ellipse class="aro" cx="0" cy="0" rx="17" ry="5"/><ellipse cx="0" cy="0" rx="10" ry="2.8" fill="rgba(0,0,0,.22)"/><g class="cuerpo">
-    ${p.extra=='mochila'?`<rect x="-11" y="-33" width="7" height="14" rx="2.5" fill="#7a5530" ${o}/>`:''}
-    <path d="M-3 -17 v15 M3 -17 v15" stroke="${L}" stroke-width="5.4" stroke-linecap="round"/><path d="M-3 -17 v15 M3 -17 v15" stroke="#2c3e66" stroke-width="3.4" stroke-linecap="round"/>
-    <path d="${p.celebra?'M-7.5 -32 q-5 -5 -6 -13':'M-7.5 -32 q-3.5 6 -3.2 12.5'} ${p.saluda||p.celebra?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${L}" stroke-width="5" stroke-linecap="round" fill="none"/>
-    <path d="${p.celebra?'M-7.5 -32 q-5 -5 -6 -13':'M-7.5 -32 q-3.5 6 -3.2 12.5'} ${p.saluda||p.celebra?'M7.5 -32 q5 -5 6 -13':'M7.5 -32 q3.5 6 3.2 12.5'}" stroke="${p.ropa}" stroke-width="3" stroke-linecap="round" fill="none"/>
-    <circle cx="${p.celebra?-13.6:-10.7}" cy="${p.celebra?-46:-19}" r="2" fill="${p.piel}" ${o}/><circle cx="${p.saluda||p.celebra?13.6:10.7}" cy="${p.saluda||p.celebra?-46:-19}" r="2" fill="${p.piel}" ${o}/>
-    <path d="M-7.8 -32.5 q0 -3 3 -3 h9.6 q3 0 3 3 l-1.4 16 h-12.8z" fill="${p.ropa}" ${o}/>
-    ${atras?`<g ${t} ${pst}>${atras}</g>`:''}<circle cx="0" cy="${hy}" r="${hr}" fill="${p.piel}" ${o}/>
-    <ellipse cx="-2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/><ellipse cx="2.7" cy="-44.2" rx="1.9" ry="2.3" fill="#fff" stroke="${L}" stroke-width=".7"/>
-    <circle cx="-2.3" cy="-43.8" r="1.1" fill="${L}"/><circle cx="3.1" cy="-43.8" r="1.1" fill="${L}"/><circle cx="-1.9" cy="-44.3" r=".4" fill="#fff"/><circle cx="3.5" cy="-44.3" r=".4" fill="#fff"/>
-    <path d="M-4.4 -47.6 q1.6 -1 3.2 -.3 M1.2 -47.9 q1.6 -.7 3.2 .3" stroke="${L}" stroke-width=".8" fill="none" stroke-linecap="round"/>
-    <circle cx="-4.6" cy="-41.4" r="1.2" fill="#ff8a8a" opacity=".55"/><circle cx="4.6" cy="-41.4" r="1.2" fill="#ff8a8a" opacity=".55"/>
-    <path d="M-2.2 -40.6 q2.2 2.6 4.4 0z" fill="#8a2e2e" stroke="${L}" stroke-width=".6"/>
-    <g ${t} ${pst}>${delante}</g>${ex}</g>
-    <text y="13" text-anchor="middle" class="nom">${esc(p.n)}</text>`;
-}
 /* Dibuja una escena: sitios [{k, l}] (de 2 a 4), luz y lo que vaya encima (personajes). Devuelve el SVG y dónde se coloca cada uno */
 function escSVG(sitios,luz,encima,etiqueta){
   const L=ESC_LUZ[luz]||ESC_LUZ[luzAhora()]||ESC_LUZ.atardecer,W=sitios.length*100,u=++ESC_UID;
@@ -743,11 +677,6 @@ function escSVG(sitios,luz,encima,etiqueta){
   const spot=k=>{const i=sitios.findIndex(z=>z.k==k),d=ESC_SITIOS[k];return d&&i>=0?{x:d.spot.x+(i-d.col)*100,y:d.spot.y}:{x:i*100+50,y:190}};
   return {svg,spot,W};
 }
-/* Personaje guía (rediseño, 20-nov): uno por juego (JUEGO.guia o el del grupo de estilos), con bocadillo.
-   Sale en el menú, al empezar la ruta y en los resultados; el ejercicio queda limpio. */
-function guiaP(o={}){return{...ESC_DEF[(((JUEGO.estilo|0)%6)+6)%6],...(JUEGO.guia||{}),...(o.saluda?{saluda:1}:{}),...(o.celebra?{celebra:1}:{}),n:''}}
-function guia(txt,o={}){
-  return `<div class="guia${o.salta?' salta':''}"><svg viewBox="-18 -58 36 60" aria-hidden="true">${escPersona(guiaP(o))}</svg><div class="bocadillo${o.sinTexto?' oculto':''}">${txt}</div></div>`}
 function guiaFin(p){return guia(p>=.9?'¡Lo bordaste! 🎉':p>=.7?'¡Muy bien! Repite y a por las tres estrellas.':p>=.5?'Vas bien. A la segunda sale mejor.':'No pasa nada: repítela y verás cómo mejora. ¡Tú puedes!',{sinTexto:1})}
 const escQuieto=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -877,31 +806,11 @@ Object.assign(STEP,{
     });
   },
 });
-/* ================== SONIDOS (20-nov) ==================
-   Suaves y cortos, sintetizados (sin archivos). Encendidos al principio; el botón 🔊 de la cabecera los apaga y se recuerda en el dispositivo.
-   El arcade sigue con los suyos (aparcado). */
-let SONIDO=lsGet('mision_sonido')!=='0';
-function son(t,k=0){if(!SONIDO)return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());if(A.state==='suspended')A.resume();const n0=A.currentTime+.01;
-  const nota=(f,a,d,tipo='triangle',v=.06,f2)=>{const o=A.createOscillator(),g=A.createGain();o.type=tipo;o.connect(g);g.connect(A.destination);o.frequency.setValueAtTime(f,n0+a);if(f2)o.frequency.exponentialRampToValueAtTime(f2,n0+a+d);
-    g.gain.setValueAtTime(.0001,n0+a);g.gain.exponentialRampToValueAtTime(v,n0+a+.012);g.gain.exponentialRampToValueAtTime(.0001,n0+a+d);o.start(n0+a);o.stop(n0+a+d+.02)};
-  const ruido=(d,v,f1,f2,q=1)=>{const b=A.createBuffer(1,Math.ceil(A.sampleRate*d),A.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
-    const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain();s.buffer=b;fl.type='bandpass';fl.Q.value=q;fl.frequency.setValueAtTime(f1,n0);fl.frequency.exponentialRampToValueAtTime(f2,n0+d);
-    g.gain.setValueAtTime(v,n0);g.gain.exponentialRampToValueAtTime(.0001,n0+d);s.connect(fl);fl.connect(g);g.connect(A.destination);s.start(n0);s.stop(n0+d)};
-  ({ok:()=>{nota(660,0,.1);nota(990,.08,.16)},
-    bad:()=>nota(330,0,.2,'sine',.07,220),
-    tap:()=>nota(520,0,.07,'sine',.04),
-    estrella:()=>nota([784,988,1175][k]||1175,0,.16,'triangle',.06),
-    sello:()=>{ruido(.12,.12,500,180,.8);nota(120,0,.16,'sine',.14,70)},
-    fanfarria:()=>[523,659,784,1047].forEach((f,i)=>nota(f,i*.09,i==3?.32:.15,'triangle',.05)),
-    cuenta:()=>nota(523,0,.12,'square',.03),
-    ya:()=>{nota(784,0,.1,'square',.03);nota(1047,.08,.26,'square',.035)},
-    asoma:()=>{nota(880,0,.06,'sine',.05);nota(1320,.05,.09,'sine',.05)},
-    pasa:()=>ruido(.38,.05,350,2200,1.2)})[t]()}catch(e){}}
-function botonSonido(){const h=document.querySelector('header .hud');if(!h||document.getElementById('sonido'))return;
-  const b=document.createElement('button');b.id='sonido';b.className='pill sonido';b.type='button';
-  const pon=()=>{b.textContent=SONIDO?'🔊':'🔇';b.setAttribute('aria-label',SONIDO?'Quitar el sonido':'Poner el sonido');b.setAttribute('aria-pressed',String(!SONIDO))};
-  b.onclick=()=>{SONIDO=!SONIDO;try{localStorage.setItem('mision_sonido',SONIDO?'1':'0')}catch(e){}pon();son('tap')};pon();h.appendChild(b)}
-botonSonido();
+/* Volver al menú de la suite (21-nov): en la app instalada no hay barra del navegador, así que sin esto el niño no sale del juego. */
+function botonMenu(){const h=document.querySelector('header');if(!h||document.getElementById('amenu'))return;
+  const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href='../';b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
+  b.innerHTML='<span aria-hidden="true">‹</span><img src="../iconos/icono.svg" alt="" width="24" height="24">';b.onclick=()=>son('tap');h.insertBefore(b,h.firstChild)}
+botonMenu();
 function sfxOk(){son('ok');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}
 function sfxTap(){son('tap');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(520,n);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.08);o.start(n);o.stop(n+.09)}catch(e){}}
 

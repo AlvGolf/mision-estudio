@@ -2,7 +2,7 @@
    Primero la red (así cada cambio llega en cuanto hay internet) y, si no hay, lo último guardado.
    Las letras de Google se guardan la primera vez. El ranking (Apps Script) no se toca: va siempre por la red. */
 const CACHE = 'mision-v1';
-const BASICO = ['./', './index.html', './manifest.webmanifest', './iconos/icono-192.png', './iconos/icono-512.png'];
+const BASICO = ['./', './index.html', './manifest.webmanifest', './iconos/icono-192.png', './iconos/icono-512.png', './juegos.js', './motor/piel.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASICO)).catch(() => {}));
   self.skipWaiting();
