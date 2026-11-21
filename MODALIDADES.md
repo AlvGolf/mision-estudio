@@ -41,7 +41,7 @@ Condiciones de juego, no modalidades: **examen** (sin pistas, con tiempo) y **ru
 | Detectar y reparar | Adelante | Encontrar y arreglar cuentan por separado |
 | Crucigrama | Adelante | |
 | Hueco con la primera letra | Adelante | |
-| Responder con un número | Espera | Se construye con el primer temario de Matemáticas |
+| Responder con un número | Adelante (21-nov) | Esperaba al primer temario de Matemáticas: llega con el examen de Mates de 5º del 27-nov. Hecho en `motor-beta/` como paso `num` |
 | Historia ramificada | Al motor | Con el aspecto de las escenas (abajo) |
 | Construir una escena | Al motor | «Tiene que representar mucho mejor la escena»: de ahí salió el aspecto (abajo) |
 | Miniinvestigación (5º) | Al motor | |
@@ -91,28 +91,38 @@ Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/
 
 ## Para cuando un temario las pida
 
+Se hacen por tandas (el padre, 21-nov). Las escenas y viñetas se dibujan con la biblioteca de sitios del motor, no con emojis.
+
+**Primera tanda, hecha en `motor-beta/` (21-nov)**, para los exámenes de Mates (27-nov) y Lengua (1-dic) de 5º. El padre las eligió todas «al motor ya» en la ronda 4 del artefacto [Modalidades nuevas](https://claude.ai/artifact/FfjxVWGYQJwPv4fBk5y4F8). Las juega el verificador en `pruebas-motor/` y los datos de cada paso están comentados en `motor-beta/motor.js`:
+
+| Modalidad | Paso | Datos | Cómo cuenta |
+|---|---|---|---|
+| Responder con un número | `num` | `{q, a, neg?, ex?}`; `a` puede ser `6.5` o `'6,5'` | a la primera. Teclado en pantalla con coma (y signo menos con `neg`); vale 3500 o 3.500 |
+| Colocar en la recta numérica | `recta` | `{q, min, max, tic, paso, val, et}`: marca grande cada `tic`, el punto se ajusta a cada `paso`, solo se rotulan los valores de `et` | a la primera |
+| Cálculo en cadena | `cadena` | `{ini, ops:[['×',3],['−',6],['÷',5],['+',0.5]], q?}` | cada paso a la primera; si falla, el siguiente parte del resultado bueno |
+| Completar tablas | `tabla` | `{q, cab, f:[[izquierda, respuesta o lista, dada?]], num?, tildes?}` | cada casilla |
+| Marcar palabras en un texto | `marcar` | `{q, texto, si:[palabras]}` | aciertos menos marcadas de más, sobre las que había: marcarlo todo da 0 |
+| Separar en sílabas | `silabas` | `{w, c:[cortes delante de la letra n, desde 0], ton?}` | el corte; con `ton`, también la tónica (y dice si es aguda, llana o esdrújula) |
+| Clasificar con dos criterios | `cajas2` | `{q, fil:[2], col:[2], w:[[ficha, fila, columna]]}` | cada ficha a la primera; se arrastra o se toca |
+
+Ojo con los nombres de los campos: `t` (tipo de paso) y `sub` (subtítulo) los usa `runSteps` para todos los pasos, así que ningún paso puede usarlos para sus datos.
+
+**Las que quedan:**
+
 - **Generales:**
-  - marcar palabras en un texto;
-  - ordenar un diálogo o un proceso (también viñetas con emojis);
-  - completar tablas;
-  - escena con emojis (encontrar o etiquetar);
+  - ordenar un diálogo o un proceso (también viñetas, dibujadas);
+  - escena para encontrar o etiquetar (dibujada);
   - elegir y justificar;
-  - clasificar con dos criterios (cajas en 2×2);
-  - adivinanza con pistas;
-  - diálogo corto con decisiones.
+  - adivinanza con pistas.
 - **Con audio:**
   - bingo de escucha;
-  - Memory con audio;
   - escucha y ordena;
   - escucha y toca en la escena;
   - dictado de números.
 - **Matemáticas:**
-  - colocar en la recta numérica;
   - contar grupos de emojis;
   - poner la hora en un reloj;
-  - pagar con monedas;
-  - cálculo en cadena.
-- **Lengua:** separar en sílabas.
+  - pagar con monedas.
 - **Ciencias o Sociales:** situar en un mapa o esquema.
 
 ## Descartadas (con el motivo, por si cambian las cosas)
@@ -126,6 +136,8 @@ Primero se ven en maquetas jugables en un artefacto; después van a `motor-beta/
 | Dominó de asociaciones | Es otra forma de unir con líneas |
 | Imagen revelada por partes | Es lo mismo que la adivinanza con pistas |
 | Repaso de mis fallos | Propuesta de Claude (repaso espaciado), no elegida el 20-nov; se puede reabrir |
+| Diálogo corto con decisiones | Ya lo hace la historia ramificada (21-nov) |
+| Memory con audio | El Memory solo da XP: aporta poco al estudio (21-nov) |
 
 ## Del informe, lo que no se adopta
 

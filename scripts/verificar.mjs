@@ -472,6 +472,92 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       }
       break;
     }
+    // Formatos de Mates y Lengua (21-nov)
+    case 'num': {
+      const fmtN = v => String(+(+v).toFixed(4)).replace('.', ',').replace('-', '−');
+      const bien = fmtN(typeof S.a === 'number' ? S.a : +String(S.a).replace(',', '.'));
+      const escribe = mal ? (bien === '1' ? '2' : '1') : bien;
+      for (const ch of escribe) await st.locator(`.pad [data-n="${ch}"]`).click();
+      await st.locator('#wchk').click();
+      if (!mal && !await st.locator('#pn.ok').count()) fallo(`[${tag}] «${t}»: el número correcto («${bien}») escrito con el teclado sale como malo`);
+      if (mal && !await st.locator('#pn.bad').count()) fallo(`[${tag}] «${t}»: un número equivocado sale como bueno`);
+      break;
+    }
+    case 'recta': {
+      // Toca de verdad la recta, en la marca del número (o en la de al lado, si toca fallar)
+      const v = mal ? (S.val + S.paso <= S.max + 1e-9 ? S.val + S.paso : S.val - S.paso) : S.val;
+      const p = await page.evaluate(([v, min, max]) => { const svg = document.querySelector('#rc'), x = 24 + (v - min) / (max - min) * 312;
+        const pt = svg.createSVGPoint(); pt.x = x; pt.y = 50; const q = pt.matrixTransform(svg.getScreenCTM()); return { x: q.x, y: q.y }; }, [v, S.min, S.max]);
+      await page.mouse.click(p.x, p.y);
+      await st.locator('#wchk').click();
+      if (!mal && !await st.locator('.mio.ok').count()) fallo(`[${tag}] «${t}»: tocar la recta justo en el ${S.val} no se da por bueno`);
+      if (mal && !await st.locator('.mio.bad').count()) fallo(`[${tag}] «${t}»: tocar la recta fuera del ${S.val} se da por bueno`);
+      break;
+    }
+    case 'cadena': {
+      const fmtN = v => String(+(+v).toFixed(4)).replace('.', ',').replace('-', '−');
+      let a = S.ini;
+      for (const [k, [o, n]] of S.ops.entries()) {
+        a = o === '×' ? a * n : (o === '÷' || o === ':') ? a / n : o === '+' ? a + n : a - n;
+        const escribe = mal && k === 0 ? fmtN(a + 1) : fmtN(a);
+        for (const ch of escribe) await st.locator(`.pad [data-n="${ch}"]`).click();
+        await st.locator('#wchk').click();
+        const bola = st.locator('.cadena .bola').nth(k + 1);
+        if (!(mal && k === 0) && !await bola.evaluate(e => e.classList.contains('ok'))) { fallo(`[${tag}] «${t}»: el paso ${k + 1} de la cadena bien calculado («${escribe}») sale como malo`); return; }
+        if (k + 1 < S.ops.length) {
+          if (!await st.locator('#cs').count()) { fallo(`[${tag}] «${t}»: la cadena no deja pasar al paso ${k + 2}`); return; }
+          await st.locator('#cs').click();
+        }
+      }
+      break;
+    }
+    case 'tabla': {
+      const casillas = st.locator('input.typ'); const n = await casillas.count();
+      for (let i = 0; i < n; i++) {
+        const c = casillas.nth(i), f = S.f[+(await c.getAttribute('data-k'))], sol = Array.isArray(f[1]) ? f[1][0] : f[1];
+        await c.fill(mal && i === 0 ? 'x' : sol);
+      }
+      await st.locator('#wchk').click();
+      const malas = await st.locator('input.typ.bad').count();
+      if (!mal && malas) fallo(`[${tag}] «${t}»: la tabla bien rellenada tiene ${malas} casilla(s) en rojo`);
+      if (mal && malas !== 1) fallo(`[${tag}] «${t}»: la tabla no marca la casilla mal escrita`);
+      break;
+    }
+    case 'marcar': {
+      const si = S.si.map(w => w.toLowerCase());
+      const toks = st.locator('.texto .tok'); const txt = await toks.allTextContents();
+      for (const [i, w] of txt.entries()) if (si.includes(w.toLowerCase())) await toks.nth(i).click();
+      if (mal) { const otra = txt.findIndex(w => !si.includes(w.toLowerCase())); if (otra >= 0) await toks.nth(otra).click(); }
+      await st.locator('#wchk').click();
+      if (!mal && (await st.locator('.texto .tok.fa, .texto .tok.olv').count() || !await st.locator('.texto .tok.hit').count())) fallo(`[${tag}] «${t}»: marcar justo las palabras buenas (${S.si.join(', ')}) no sale perfecto`);
+      if (mal && !await st.locator('.texto .tok.fa').count()) fallo(`[${tag}] «${t}»: una palabra marcada de más no sale en rojo`);
+      break;
+    }
+    case 'silabas': {
+      for (const k of S.c) await st.locator(`.corte[data-k="${k}"]`).click();
+      if (mal) { const n = [...S.w].length; const otro = [...Array(n).keys()].slice(1).find(k => !S.c.includes(k)); if (otro) await st.locator(`.corte[data-k="${otro}"]`).click(); }
+      await st.locator('#wchk').click();
+      if (!mal && await st.locator('.corte.bad, .corte.olv').count()) fallo(`[${tag}] «${t}»: «${S.w}» bien cortada sale con cortes en rojo`);
+      if (S.ton != null) {
+        if (!await st.locator('#sils [data-s]').count()) { fallo(`[${tag}] «${t}»: tras cortar «${S.w}» no pide la sílaba tónica`); break; }
+        await st.locator(`#sils [data-s="${S.ton}"]`).click();
+        if (!/es una palabra (aguda|llana|esdrújula)/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: tras la tónica de «${S.w}» no dice si es aguda, llana o esdrújula`);
+      }
+      break;
+    }
+    case 'cajas2': {
+      for (const [k, [txt, r, c]] of S.w.entries()) {
+        const ficha = st.locator(`#bt .chip[data-w="${k}"]`);
+        if (mal && k === 0) {
+          await arrastrarOTocar(ficha, st.locator(`.caja[data-rc="${1 - r},${c}"]`), 'cajas 2×2');
+          await page.waitForTimeout(450);
+          if (await ficha.evaluate(e => e.classList.contains('used'))) { fallo(`[${tag}] «${t}»: «${txt}» entra en una caja que no es la suya`); return; }
+        }
+        await arrastrarOTocar(ficha, st.locator(`.caja[data-rc="${r},${c}"]`), 'cajas 2×2');
+        if (!await ficha.evaluate(e => e.classList.contains('used'))) { fallo(`[${tag}] «${t}»: arrastrar «${txt}» a su caja no la coloca`); return; }
+      }
+      break;
+    }
     default:
       fallo(`[${tag}] «${t}»: formato de ejercicio desconocido para el verificador (${S.t})`);
   }

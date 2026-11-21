@@ -598,6 +598,166 @@ Object.assign(STEP,{
   },
 });
 /* =====================================================================
+   FORMATOS NUEVOS (21-nov, ronda 4 del artefacto de modalidades), para
+   Mates y Lengua: número, recta numérica, cálculo en cadena, completar
+   tablas, marcar palabras, separar en sílabas y clasificar con dos criterios.
+   ===================================================================== */
+const fmtN=v=>String(+(+v).toFixed(4)).replace('.',',').replace('-','−');
+/* Número escrito por el niño: coma decimal; el punto de los miles (3.500) también vale */
+const numES=s=>{if(typeof s=='number')return s;s=String(s).replace(/\s/g,'').replace(/−/g,'-').replace(/\.(?=\d{3}(\D|$))/g,'');return s===''||s==='-'?NaN:Number(s.replace(',','.'))};
+const mismoNum=(a,b)=>Math.abs(numES(a)-numES(b))<1e-9;
+/* Teclado de números en pantalla (el del móvil tapa media pantalla y trae letras). En el ordenador también vale el teclado.
+   onOk(v) corrige y devuelve true o false */
+function teclado(box,onOk,{neg}={}){
+  let v='',hecho=false;
+  box.innerHTML=`<div class="pantalla" id="pn" aria-live="polite">&nbsp;</div>
+  <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-n="${n}">${n}</button>`).join('')}
+    ${neg?'<button data-n="−" aria-label="Menos">−</button>':'<span></span>'}<button data-n="0">0</button><button data-n="," aria-label="Coma">,</button>
+    <button id="pb" aria-label="Borrar">⌫</button><button class="ok" id="wchk" style="grid-column:span 2">✔ Comprobar</button></div>`;
+  const pinta=()=>{$('#pn').innerHTML=esc(v)||'&nbsp;'};
+  const tecla=k=>{if(hecho)return;
+    if(k=='⌫')v=v.slice(0,-1);else if(k=='−')v=v.startsWith('−')?v.slice(1):'−'+v;
+    else if(k==','){if(!v.includes(',')&&/\d$/.test(v))v+=','}else if(v.replace(/[−,]/g,'').length<7)v+=k;
+    pinta();sfxTap()};
+  const ok=()=>{if(hecho)return;if(!/\d/.test(v)){$('#fb').textContent='Escribe tu número 😉';return}
+    hecho=true;const r=onOk(v);$('#pn').classList.add(r?'ok':'bad');box.querySelectorAll('button').forEach(b=>b.disabled=true)};
+  box.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>tecla(b.dataset.n));
+  $('#pb').onclick=()=>tecla('⌫');$('#wchk').onclick=ok;
+  const kd=e=>{if(!box.isConnected){document.removeEventListener('keydown',kd);return}
+    if(hecho||(e.target.closest&&e.target.closest('input,textarea')))return;
+    const k=e.key;if(/^\d$/.test(k))tecla(k);else if(k==','||k=='.')tecla(',');else if(k=='-'&&neg)tecla('−');
+    else if(k=='Backspace')tecla('⌫');else if(k=='Enter')ok();else return;e.preventDefault()};
+  document.addEventListener('keydown',kd);
+}
+const exTxt=s=>s.ex?`<span style="color:var(--mut)">${esc(s.ex)}</span>`:'';
+
+Object.assign(STEP,{
+  /* 🔢 Responder con un número: {q, a (número o texto «6,5»), neg?, ex?} */
+  num(st,s,done){
+    st.innerHTML=`<div class="q">${esc(s.q)}</div><div id="tk"></div>`;
+    teclado($('#tk'),v=>{const ok=mismoNum(v,s.a);ok?win(15):lose();
+      done(ok?1:0,1,(ok?'✅ ¡Correcto! ':`❌ Era <b>${fmtN(numES(s.a))}</b>. `)+exTxt(s));return ok},{neg:s.neg});
+  },
+  /* 📏 Recta numérica: {q, min, max, tic (marca grande), paso (marca pequeña: el punto se ajusta a ella), val, et:[rótulos], ex?}.
+     Solo se rotulan los valores de «et», para que las marcas no den la respuesta */
+  recta(st,s,done){
+    const n=Math.round((s.max-s.min)/s.paso),X0=24,X1=336,x=v=>X0+(v-s.min)/(s.max-s.min)*(X1-X0);
+    if(Math.abs((s.val-s.min)/s.paso-Math.round((s.val-s.min)/s.paso))>1e-6)console.error(`Recta: ${s.val} no cae en ninguna marca (paso ${s.paso})`);
+    let pos=null,hecho=false;const tics=[];
+    for(let k=0;k<=n;k++){const v=s.min+k*s.paso,r=(v-s.min)/s.tic,big=Math.abs(r-Math.round(r))<1e-6;
+      tics.push(`<line class="${big?'tic':'sub'}" x1="${x(v)}" x2="${x(v)}" y1="${big?40:44}" y2="${big?60:56}"/>`)}
+    st.innerHTML=`<div class="q">${esc(s.q)}</div>
+    <svg class="recta" id="rc" viewBox="0 0 360 96" role="img" aria-label="Recta numérica de ${fmtN(s.min)} a ${fmtN(s.max)}">
+      <rect width="360" height="96" fill="transparent"/><line class="eje" x1="${X0-8}" x2="${X1+8}" y1="50" y2="50"/>${tics.join('')}
+      ${s.et.map(v=>`<text x="${x(v)}" y="82" text-anchor="middle">${fmtN(v)}</text>`).join('')}<g id="rm"></g></svg>
+    <div class="recta-bt"><button class="btn sec" id="ri" aria-label="Mover a la izquierda">◀</button><button class="btn sec" id="rd" aria-label="Mover a la derecha">▶</button><button class="btn" id="wchk">Comprobar ✔</button></div>
+    <div class="hint center">Toca la recta; con las flechas lo afinas</div>`;
+    const svg=$('#rc'),m=$('#rm');
+    const pinta=c=>{m.innerHTML=pos==null?'':`<path class="mio ${c||''}" transform="translate(${x(s.min+pos*s.paso)} 38)" d="M-8 -16 h16 l-8 14z"/>`};
+    svg.addEventListener('click',e=>{if(hecho)return;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());
+      pos=Math.max(0,Math.min(n,Math.round((q.x-X0)/(X1-X0)*n)));pinta();sfxTap()});
+    $('#ri').onclick=()=>{if(hecho)return;pos=pos==null?Math.floor(n/2):Math.max(0,pos-1);pinta()};
+    $('#rd').onclick=()=>{if(hecho)return;pos=pos==null?Math.floor(n/2):Math.min(n,pos+1);pinta()};
+    $('#wchk').onclick=()=>{if(hecho)return;if(pos==null){$('#fb').textContent='Primero toca un punto de la recta 😉';return}
+      hecho=true;const v=s.min+pos*s.paso,ok=Math.abs(v-s.val)<1e-6;pinta(ok?'ok':'bad');
+      if(!ok)m.insertAdjacentHTML('beforeend',`<circle class="sol" cx="${x(s.val)}" cy="50" r="7"/><text class="solt" x="${x(s.val)}" y="28" text-anchor="middle">aquí</text>`);
+      st.querySelectorAll('.recta-bt button').forEach(b=>b.disabled=true);
+      ok?win():lose();done(ok?1:0,1,(ok?'✅ ¡Justo ahí! ':`❌ Lo pusiste en ${fmtN(v)}. El punto verde es el ${fmtN(s.val)}. `)+exTxt(s))};
+  },
+  /* ⛓️ Cálculo en cadena: {ini, ops:[['×',3],['−',6],…], q?}. Si falla un paso, el siguiente parte del resultado bueno. Cuenta cada paso */
+  cadena(st,s,done){
+    const res=[s.ini];s.ops.forEach(([o,n])=>{const a=res[res.length-1];res.push(o=='×'?a*n:o=='÷'||o==':'?a/n:o=='+'?a+n:a-n)});
+    let i=0,ok=0;const est=[];
+    const pinta=()=>{
+      st.innerHTML=`<div class="q" style="font-size:19px">${esc(s.q||'Calcula cada paso de la cadena')}</div>
+      <div class="cadena"><span class="bola ok">${fmtN(s.ini)}</span>${s.ops.map(([o,n],k)=>`<span class="op">${o} ${fmtN(n)} →</span><span class="bola ${est[k]||(k==i?'now':'')}">${est[k]?fmtN(res[k+1]):'?'}</span>`).join('')}</div>
+      <div class="q">${fmtN(res[i])} ${s.ops[i][0]} ${fmtN(s.ops[i][1])} = ?</div><div id="tk"></div><div id="cn"></div>`;
+      teclado($('#tk'),v=>{const b=mismoNum(v,res[i+1]);est[i]=b?'ok':'bad';if(b){ok++;win(5)}else lose();
+        const t=(b?'✅ ¡Bien! ':`❌ Era <b>${fmtN(res[i+1])}</b>. `);
+        st.querySelectorAll('.cadena .bola')[i+1].className='bola '+est[i];st.querySelectorAll('.cadena .bola')[i+1].textContent=fmtN(res[i+1]);
+        if(i+1<s.ops.length){$('#fb').innerHTML=t+(b?'':'Sigues desde ahí.');$('#cn').innerHTML='<button class="btn" id="cs">Siguiente paso ➜</button>';
+          $('#cs').onclick=()=>{i++;$('#fb').innerHTML='';pinta()};$('#cs').focus({preventScroll:true})}
+        else done(ok,s.ops.length,t+(ok==s.ops.length?'¡Cadena completa a la primera!':`${ok} de ${s.ops.length} pasos a la primera.`));
+        return b});
+    };
+    pinta();
+  },
+  /* 📋 Completar tabla: {q, cab:[2 títulos], f:[[izquierda, respuesta (o lista de aceptadas), dada?]], num?, tildes?}. Cuenta cada casilla */
+  tabla(st,s,done){
+    const tildes=s.tildes??JUEGO.tildesCuentan??false,acc=b=>Array.isArray(b)?b:[b];
+    st.innerHTML=`<div class="q">${esc(s.q)}</div>
+    <div class="tabla-w"><table class="tabla"><thead><tr>${s.cab.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>
+    ${s.f.map(([a,b,dado],k)=>`<tr><td>${esc(a)}</td><td>${dado?`<span class="dado">${esc(acc(b)[0])}</span>`:`<input class="typ" data-k="${k}" ${s.num?'inputmode="decimal"':''} ${NOAUTO} aria-label="${esc(a)}">`}</td></tr>`).join('')}</tbody></table></div>
+    <button class="btn" id="wchk" style="margin-top:6px">Comprobar ✔</button>${tildes&&!s.num?'<div class="hint">Las tildes cuentan</div>':''}`;
+    const ins=[...st.querySelectorAll('input.typ')];ins[0]&&ins[0].focus({preventScroll:true});
+    ins.forEach((inp,k)=>inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();ins[k+1]?ins[k+1].focus():$('#wchk').click()}});
+    $('#wchk').onclick=()=>{if(ins.some(x=>!x.value.trim())){$('#fb').textContent='Rellena todas las casillas 😉';return}
+      let b=0;ins.forEach(inp=>{const sol=acc(s.f[+inp.dataset.k][1]),v=inp.value;
+        const bien=s.num?sol.some(x=>mismoNum(v,x)):sol.some(x=>limpiaR(x,tildes)==limpiaR(v,tildes));if(bien){b++;win(5)}
+        inp.disabled=true;inp.classList.add(bien?'ok':'bad');if(!bien)inp.insertAdjacentHTML('afterend',`<div class="sol">Es ${esc(sol[0])}</div>`)});
+      if(b<ins.length)lose();$('#wchk').remove();
+      done(b,ins.length,b==ins.length?'✅ ¡Tabla perfecta!':`📋 ${b} de ${ins.length} casillas bien.`)};
+  },
+  /* 🖍️ Marcar palabras: {q, texto:'…', si:[palabras que hay que marcar], ex?}. No dice cuántas hay.
+     Nota: aciertos menos marcadas de más, sobre las que había que marcar (marcarlo todo no sirve) */
+  marcar(st,s,done){
+    const si=s.si.map(w=>w.toLowerCase()),P=s.texto.match(/[\p{L}\p{N}'’-]+|[^\s\p{L}\p{N}]+/gu);
+    let k=0;st.innerHTML=`<div class="q">${esc(s.q)}</div>
+    <div class="texto">${P.map(w=>/[\p{L}\p{N}]/u.test(w)?`<button class="tok" data-i="${k++}" aria-pressed="false">${esc(w)}</button>`:`<span>${esc(w)}</span>`).join(' ')}</div>
+    <button class="btn" id="wchk" style="margin-top:0">Comprobar ✔</button><div class="hint">Toca para marcar; toca otra vez para quitar</div>`;
+    const toks=[...st.querySelectorAll('.texto .tok')],obj=toks.filter(t=>si.includes(t.textContent.toLowerCase())).length;let hecho=false;
+    if(!obj)console.error(`Marcar: ninguna palabra de «${s.si.join(', ')}» está en el texto`);
+    toks.forEach(b=>b.onclick=()=>{if(hecho)return;b.classList.toggle('mk');b.setAttribute('aria-pressed',b.classList.contains('mk'));sfxTap()});
+    $('#wchk').onclick=()=>{if(hecho)return;if(!toks.some(b=>b.classList.contains('mk'))){$('#fb').textContent='Marca al menos una palabra 😉';return}
+      hecho=true;let hit=0,fa=0,olv=0;
+      toks.forEach(t=>{const es=si.includes(t.textContent.toLowerCase()),mk=t.classList.contains('mk');t.disabled=true;t.classList.remove('mk');
+        if(es&&mk){t.classList.add('hit');hit++}else if(mk){t.classList.add('fa');fa++}else if(es){t.classList.add('olv');olv++}});
+      const n=Math.max(0,hit-fa);n==obj?win(10):lose();$('#wchk').remove();
+      done(n,obj,(fa+olv==0?'✅ ¡Todas bien! ':`🖍️ ${hit} de ${obj} encontradas${fa?` · ${fa} marcada${fa>1?'s':''} de más (en rojo)`:''}${olv?` · faltaba${olv>1?'n':''} ${olv} (borde verde)`:''}. `)+exTxt(s))};
+  },
+  /* ✂️ Separar en sílabas: {w, c:[posiciones de corte: delante de la letra n, empezando en 0], ton? (sílaba tónica, empezando en 0)}.
+     Con «ton», después de cortar se toca la tónica y se dice si es aguda, llana o esdrújula */
+  silabas(st,s,done){
+    const L=[...s.w],c=[...s.c].sort((a,b)=>a-b),TIPO=['aguda','llana','esdrújula','sobresdrújula'];
+    st.innerHTML=`<div class="q">Corta «${esc(s.w)}» en sílabas</div>
+    <div class="silabas">${L.map((l,k)=>`${k?`<button class="corte" data-k="${k}" aria-pressed="false" aria-label="Cortar entre la ${L[k-1]} y la ${l}"></button>`:''}<span class="le">${esc(l)}</span>`).join('')}</div>
+    <button class="btn" id="wchk" style="margin-top:0">Comprobar ✔</button><div class="hint">Toca entre dos letras para cortar. Si no se corta, comprueba sin cortar</div><div id="ston"></div>`;
+    const cortes=[...st.querySelectorAll('.corte')];let hecho=false;
+    cortes.forEach(b=>b.onclick=()=>{if(hecho)return;b.classList.toggle('on');b.setAttribute('aria-pressed',b.classList.contains('on'));sfxTap()});
+    $('#wchk').onclick=()=>{if(hecho)return;hecho=true;
+      const yo=cortes.filter(b=>b.classList.contains('on')).map(b=>+b.dataset.k),ok=yo.length==c.length&&yo.every(k=>c.includes(k));
+      const ay=st.querySelector('#wchk + .hint');if(ay)ay.remove();cortes.forEach(b=>{const k=+b.dataset.k,on=b.classList.contains('on'),es=c.includes(k);b.disabled=true;if(on)b.classList.add(es?'ok':'bad');else if(es)b.classList.add('olv','on')});
+      $('#wchk').remove();ok?win():lose();
+      const sil=[];let a=0;[...c,L.length].forEach(k=>{sil.push(L.slice(a,k).join(''));a=k});
+      const t=(ok?'✅ ¡Bien cortada! ':'❌ ')+`<b>${sil.map(esc).join(' - ')}</b>`;
+      if(s.ton==null)return done(ok?1:0,1,t);
+      $('#fb').innerHTML=t;
+      $('#ston').innerHTML=`<div class="q" style="font-size:19px;margin-top:10px">Ahora toca la sílaba que suena más fuerte</div><div class="sils" id="sils">${sil.map((x,k)=>`<button class="tok" data-s="${k}">${esc(x)}</button>`).join('')}</div>`;
+      st.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{st.querySelectorAll('[data-s]').forEach(x=>{x.disabled=true;if(+x.dataset.s==s.ton)x.classList.add('fixed')});
+        const bt=+b.dataset.s==s.ton;if(!bt)b.classList.add('nope');bt?win():lose();
+        done((ok?1:0)+(bt?1:0),2,`${t}<br>${bt?'✅':'❌'} La tónica es <b>${esc(sil[s.ton])}</b>: es una palabra <b>${TIPO[Math.min(3,sil.length-1-s.ton)]}</b>.`)});
+    };
+  },
+  /* 🗃️ Clasificar con dos criterios: {q, fil:[2], col:[2], w:[[ficha, fila, columna]]}. Se arrastra o se toca. Cuenta cada ficha a la primera */
+  cajas2(st,s,done){
+    const W=shuf(s.w.map((x,k)=>({t:x[0],r:x[1],c:x[2],k})));let sel=null,okc=0,left=W.length;const fallo=new Set();
+    st.innerHTML=`<div class="q" style="font-size:19px">${esc(s.q)}</div>
+    <div class="tray" id="bt">${W.map(x=>`<button class="chip" data-w="${x.k}">${esc(x.t)}</button>`).join('')}</div>
+    <div class="c22"><span></span>${s.col.map(c=>`<span class="h">${esc(c)}</span>`).join('')}
+      ${s.fil.map((f,r)=>`<span class="h">${esc(f)}</span>${s.col.map((cc,c)=>`<div class="caja drop" data-rc="${r},${c}" role="button" tabindex="0" aria-label="${esc(f)} y ${esc(cc)}"></div>`).join('')}`).join('')}</div>
+    <div class="hint center">Arrastra cada ficha a su caja (o tócala y luego toca la caja)</div>`;
+    const poner=(x,el,caja)=>{if(!caja||!caja.classList.contains('caja'))return;const [r,c]=caja.dataset.rc.split(',').map(Number);
+      if(r==x.r&&c==x.c){el.classList.add('used');el.disabled=true;caja.insertAdjacentHTML('beforeend',`<span class="chip placed">${esc(x.t)}</span>`);sparkle(caja);sfxOk();
+        if(!fallo.has(x.k)){okc++;win(5)}left--;sel=null;st.querySelectorAll('#bt .chip').forEach(y=>y.classList.remove('sel'));
+        if(!left)done(okc,W.length,okc==W.length?'✅ ¡Todo clasificado a la primera!':`👍 ${okc} de ${W.length} a la primera`)}
+      else{fallo.add(x.k);lose();caja.classList.add('shake');setTimeout(()=>caja.classList.remove('shake'),400);
+        $('#fb').textContent=`Ahí no. Piensa en las dos cosas: ${s.fil.join(' o ').toLowerCase()}, y ${s.col.join(' o ').toLowerCase()}.`}};
+    st.querySelectorAll('#bt .chip').forEach(el=>{const x=W.find(y=>y.k==el.dataset.w);
+      dnd(el,{onTap:()=>{st.querySelectorAll('#bt .chip').forEach(y=>y.classList.remove('sel'));el.classList.add('sel');sel={x,el}},onDrop:d=>poner(x,el,d)})});
+    st.querySelectorAll('.caja').forEach(b=>{const f=()=>{if(sel)poner(sel.x,sel.el,b)};b.onclick=f;b.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();f()}}});
+  },
+});
+/* =====================================================================
    ESCENAS (20-nov, MODALIDADES.md): dibujo SVG animado, elegido por el padre
    en el artefacto. Personajes de cómic con contorno, fondo al atardecer
    (luz 'dia' o 'noche' cuando una historia lo pida) y una biblioteca de

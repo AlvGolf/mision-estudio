@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=13">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=14">
 </head>
 <body>
 <header>
@@ -79,9 +79,30 @@ const INVESTIGA=[
  {...SAM,q:'¿Cuál de estas frases es verdad sobre Sam?',opts:['Sam is interested in nature.','Sam loves horror films.','Sam is free on Sunday.'],a:'Sam is interested in nature.',
   ex:'La ficha dice «is interested in nature». Odia las pelis de miedo y el domingo está ocupado.'}];
 
+/* Formatos de Mates y Lengua (21-nov): contenido de ejemplo, no de ningún temario */
+const NUMEROS=[
+ {q:'7,5 + 2,25 = ?',a:'9,75'},
+ {q:'Hay 48 lápices para 6 niños. ¿Cuántos le tocan a cada uno?',a:8},
+ {q:'Hace 3 grados bajo cero. Escribe la temperatura.',a:-3,neg:true,ex:'Bajo cero se escribe con el signo menos: −3.'}];
+const RECTAS=[
+ {q:'Toca dónde va el 2,7',min:2,max:3,tic:.1,paso:.05,val:2.7,et:[2,2.5,3]},
+ {q:'Toca dónde va la fracción 3/4',min:0,max:1,tic:.125,paso:.125,val:.75,et:[0,1]},
+ {q:'Toca dónde va el −3',min:-5,max:5,tic:1,paso:1,val:-3,et:[-5,0,5]}];
+const CADENAS=[{ini:12,ops:[['×',3],['−',6],['÷',5],['+',0.5]]},{ini:100,ops:[[':',4],['+',15],['×',2]]}];
+const TABLAS=[
+ {q:'Conjuga «cantar» en presente',cab:['Persona','Presente'],tildes:true,f:[['yo','canto',1],['tú','cantas'],['él / ella','canta',1],['nosotros','cantamos'],['vosotros','cantáis'],['ellos / ellas','cantan',1]]},
+ {q:'Multiplica y divide por la unidad seguida de ceros',cab:['Operación','Resultado'],num:true,f:[['3,5 × 10','35'],['3,5 × 100','350'],['3,5 × 1000','3500'],['3,5 : 10','0,35']]}];
+const MARCAS=[
+ {q:'Marca los adjetivos',texto:'El perro pequeño corre por el parque verde.',si:['pequeño','verde']},
+ {q:'Marca los verbos',texto:'Ayer mi hermano leyó un libro y después escribió una carta.',si:['leyó','escribió']}];
+const SILABAS=[{w:'camión',c:[2],ton:1},{w:'lápiz',c:[2],ton:0},{w:'murciélago',c:[3,6,8],ton:1},{w:'sol',c:[]}];
+const CAJAS2=[{q:'Clasifica cada palabra',fil:['Aguda','Llana'],col:['Con tilde','Sin tilde'],
+ w:[['camión',0,0],['sofá',0,0],['reloj',0,1],['pared',0,1],['lápiz',1,0],['árbol',1,0],['mesa',1,1],['casa',1,1]]}];
+
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
-const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1},{k:'historia',n:'Historia',w:1},{k:'investiga',n:'Miniinvestigación',w:1}];
-const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['investiga','🔎'],['exam','👑'],['arcade','🎮']];
+const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1},{k:'historia',n:'Historia',w:1},{k:'investiga',n:'Miniinvestigación',w:1},
+ {k:'numero',n:'Número',w:1},{k:'recta',n:'Recta numérica',w:1},{k:'cadena',n:'Cálculo en cadena',w:1},{k:'tabla',n:'Completar tablas',w:1},{k:'marcar',n:'Marcar palabras',w:1},{k:'silabas',n:'Sílabas',w:1},{k:'cajas2',n:'Cajas 2×2',w:1}];
+const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['investiga','🔎'],['numero','🔢'],['recta','📏'],['cadena','⛓️'],['tabla','📋'],['marcar','🖍️'],['silabas','✂️'],['cajas2','🗃️'],['exam','👑'],['arcade','🎮']];
 
 /* ================== MISIONES ================== */
 const R={
@@ -93,10 +114,19 @@ const R={
  historia(){runSteps('📖 Historia',[{t:'story',...HISTORIA,sub:'Cada decisión es un ejercicio'}],'historia',R.historia,'📖')},
  investiga(){runSteps('🔎 Miniinvestigación',INVESTIGA.map(x=>({t:'probe',...x,sub:'Mira la ficha y la agenda antes de decidir'})),'investiga',R.investiga,'🔎')},
  letra(){runSteps('🔡 Primera letra',shuf(PRIMERA).map(x=>({t:'first',...x,sub:'Escribe la palabra; la primera letra ya está'})),'letra',R.letra,'🔡')},
+ numero(){runSteps('🔢 Responder con un número',NUMEROS.map(x=>({t:'num',...x,sub:'Escribe con el teclado de números'})),'numero',R.numero,'🔢')},
+ recta(){runSteps('📏 Recta numérica',RECTAS.map(x=>({t:'recta',...x,sub:'Toca la recta y comprueba'})),'recta',R.recta,'📏')},
+ cadena(){runSteps('⛓️ Cálculo en cadena',CADENAS.map(x=>({t:'cadena',...x,sub:'Cada resultado es el comienzo del siguiente'})),'cadena',R.cadena,'⛓️')},
+ tabla(){runSteps('📋 Completar tablas',TABLAS.map(x=>({t:'tabla',...x,sub:'Escribe lo que falta en cada fila'})),'tabla',R.tabla,'📋')},
+ marcar(){runSteps('🖍️ Marcar palabras',MARCAS.map(x=>({t:'marcar',...x,sub:'Toca las palabras y comprueba'})),'marcar',R.marcar,'🖍️')},
+ silabas(){runSteps('✂️ Separar en sílabas',SILABAS.map(x=>({t:'silabas',...x,sub:'Toca entre las letras para cortar'})),'silabas',R.silabas,'✂️')},
+ cajas2(){runSteps('🗃️ Clasificar con dos criterios',CAJAS2.map(x=>({t:'cajas2',...x,sub:'Cada ficha tiene una sola caja'})),'cajas2',R.cajas2,'🗃️')},
 };
 const ROUTE_ST=[
  {k:'dictado',n:'Dictado',ic:'✍️',min:3},{k:'cruci',n:'Crucigrama',ic:'🧩',min:3},{k:'reparar',n:'Detecta y repara',ic:'🛠️',min:2},
- {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2},{k:'historia',n:'Historia',ic:'📖',min:3},{k:'investiga',n:'Miniinvestigación',ic:'🔎',min:2}];
+ {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2},{k:'historia',n:'Historia',ic:'📖',min:3},{k:'investiga',n:'Miniinvestigación',ic:'🔎',min:2},
+ {k:'cadena',n:'Cálculo en cadena',ic:'⛓️',min:2},{k:'tabla',n:'Completar tablas',ic:'📋',min:2},{k:'silabas',n:'Sílabas',ic:'✂️',min:2},{k:'marcar',n:'Marcar palabras',ic:'🖍️',min:2},
+ {k:'cajas2',n:'Cajas 2×2',ic:'🗃️',min:2},{k:'recta',n:'Recta numérica',ic:'📏',min:1},{k:'numero',n:'Número',ic:'🔢',min:1}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const MC=[
@@ -111,6 +141,8 @@ const JUEGO={
  notaBoletin:'Solo cuenta la primera respuesta.',
  menu:[['#','🧪 Formatos nuevos'],['escuchar','🎧','Escucha y elige','Oye y toca'],['dictado','✍️','Dictado','Oye y escribe'],
   ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],['historia','📖','Historia','El Theatre Club'],['investiga','🔎','Miniinvestigación','La agenda de Sam'],
+  ['#','🧮 Mates y Lengua'],['numero','🔢','Número','Teclado con coma'],['recta','📏','Recta numérica','Decimales y fracciones'],['cadena','⛓️','Cálculo en cadena','Paso a paso'],
+  ['tabla','📋','Completar tablas','Verbos y ceros'],['marcar','🖍️','Marcar palabras','Adjetivos y verbos'],['silabas','✂️','Sílabas','Y la tónica'],['cajas2','🗃️','Cajas 2×2','Aguda o llana, con tilde o sin'],
   ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
  chuleta:'',
  examen:{min:3,dia:'el examen',preguntas(){return shuf(MC)}},
@@ -119,7 +151,7 @@ const JUEGO={
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/piel.js?v=13"></script>
-<script src="../motor-beta/motor.js?v=13"></script>
+<script src="../motor-beta/piel.js?v=14"></script>
+<script src="../motor-beta/motor.js?v=14"></script>
 </body>
 </html>
