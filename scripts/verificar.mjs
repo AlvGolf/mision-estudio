@@ -278,6 +278,40 @@ for (const juego of juegos) {
   if (!R.fallos.length) R.notas.push(`Cursos 5º y 2º a ${ANCHOS.map(a => a.n).join(', ')} px: tarjetas y enlaces bien, sin desbordes`);
 }
 
+/* ---------- La ruta en el menú (22-nov, M2): en una tablet nueva, al tocar cada juego sale su mapa entero con el cohete
+   en la primera estación, leído de la propia página del juego. Se revisa en cada menú que tenga la ficha (beta o portada). ---------- */
+for (const ruta of ['/', '/menu-beta/']) {
+  const html = path.join(RAIZ, ruta, 'index.html');
+  if (!fs.existsSync(html) || ES_REDIRECCION(html) || !fs.readFileSync(html, 'utf8').includes('function abreFicha')) continue;
+  const R = { juego: `ruta en el menú (${ruta})`, fallos: [], avisos: [], notas: [] };
+  RESUMEN.push(R);
+  const errores = [];
+  for (const curso of ['5', '2']) {
+    const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
+    await ctx.addInitScript(c => { localStorage.setItem('mision_curso', c); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, curso);
+    const page = await ctx.newPage();
+    page.on('pageerror', e => errores.push(e.message));
+    await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(400);
+    for (const id of await page.$$eval('.tarj[data-id]', a => a.map(x => x.dataset.id))) {
+      await page.click(`.tarj[data-id="${id}"]`);
+      await page.waitForSelector('.ficha-r', { timeout: 4000 }).catch(() => {});
+      await page.waitForTimeout(300);
+      const carpeta = await page.$eval(`.tarj[data-id="${id}"]`, a => a.getAttribute('href'));
+      const fuente = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, carpeta)), 'index.html'), 'utf8').match(/const ROUTE_ST=(\[[\s\S]*?\]);/);
+      const esperadas = fuente ? new Function('return ' + fuente[1])().length : 0;
+      const f = await page.evaluate(() => { const r = document.querySelector('.ficha-r'); return r ? { est: r.querySelectorAll('.rst').length, primera: !!r.querySelector('.rst:first-child.now .ficha-m'), boton: (r.querySelector('.bts .btn') || {}).textContent || '' } : null; });
+      if (!f) R.fallos.push(`[${curso}º] Al tocar «${id}» no sale la ficha de la ruta`);
+      else if (!esperadas) R.avisos.push(`[${curso}º] «${id}» no tiene ROUTE_ST: su ficha sale sin mapa`);
+      else if (f.est !== esperadas) R.fallos.push(`[${curso}º] La ficha de «${id}» enseña ${f.est} estaciones y el juego tiene ${esperadas}`);
+      else if (!f.primera) R.fallos.push(`[${curso}º] La ficha de «${id}», en una tablet nueva, no pone el cohete en la primera estación`);
+      else R.notas.push(`[${curso}º] «${id}»: mapa de ${esperadas} estaciones con el cohete al principio desde la primera vez · ${f.boton.trim()}`);
+    }
+    await ctx.close();
+  }
+  errores.forEach(e => R.fallos.push(`Error en la página: ${e}`));
+}
+
 await navegador.close();
 servidor.close();
 
