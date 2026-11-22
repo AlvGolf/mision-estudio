@@ -85,7 +85,7 @@ function elegirCurso(){
   const de=c=>{const as=[...new Set(JUEGOS.filter(j=>j.curso===c).map(j=>ASIGNATURAS[j.asignatura]?.n).filter(Boolean))];return as.length?as.join(', '):'Pronto, sus juegos'};
   app().innerHTML=`${guia(`¡Hola, ${esc(nombre())}! ¿De qué curso eres?`,{saluda:1})}
     <div class="curso"><button class="c${SUITE.curso} ent" style="--i:1" data-c="${SUITE.curso}">${SUITE.curso}º de primaria<small>${esc(de(SUITE.curso))}</small></button>
-    <p class="sub ent" style="--i:2;text-align:center">La tablet lo recuerda.</p></div>`;
+    <p class="sub ent" style="--i:2;text-align:center">El dispositivo lo recuerda.</p></div>`;
   app().querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{CURSO=+b.dataset.c;try{localStorage.setItem(SUITE.cursoK,String(CURSO))}catch(e){}JUEGO.curso=CURSO;aplicaEstilo();son('tap');pinta()})}
 /* El nombre, justo después del logo animado y antes del menú (el padre, 22-nov): así el menú enseña siempre el progreso de ese niño.
    Es el mismo nombre que usan los juegos de su curso (SUITE.nombre). Si ese nombre ya jugó en esta tablet y lo apartó con «no soy yo»,
@@ -93,7 +93,7 @@ function elegirCurso(){
 const nombre=()=>(lsGet(SUITE.nombre)||'').trim();
 function pideNombre(){
   app().innerHTML=`<div class="box center" style="margin-top:30px">${guia('¡Hola! Soy tu guía de Misión Estudio. ¿Cómo te llamas?',{saluda:1})}<h2 class="ent" style="--i:1">¿Cómo te llamas?</h2>
-    <p class="sub ent" style="--i:2">Así la tablet recuerda tu progreso en cada juego.</p>
+    <p class="sub ent" style="--i:2">Así el dispositivo recuerda tu progreso en cada juego.</p>
     <input class="typ ent" style="--i:3;max-width:320px;text-align:center" id="nm" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu nombre"><br>
     <button class="btn ent" style="--i:4" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
   const go=()=>{const v=document.getElementById('nm').value.trim().slice(0,20);if(!v){document.getElementById('nmfb').textContent='Escribe tu nombre 😉';return}

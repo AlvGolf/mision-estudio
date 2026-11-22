@@ -12,7 +12,7 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const MENUS = [
   /* 5º en pruebas (la beta del menú): cuando el padre lo apruebe, pasa a la raíz (dir '') y la beta vuelve a redirigir */
-  { dir: 'menu-beta', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: '../manifest.webmanifest', icono: '../iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', betas: {} },
+  { dir: 'menu-beta', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: '../manifest.webmanifest', icono: '../iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', betas: { 'mates-u3/': 'mates-u3-beta/' } },
   /* 2º: su propio enlace, su app (el cohete del libro) y su propio nombre en la tablet */
   { dir: 'segundo', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: 'manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', betas: { 'mates-reloj/': 'mates-reloj-beta/' } },
 ];
