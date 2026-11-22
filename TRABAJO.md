@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| mates-u3-beta, motor-beta | Claude Code | 22-nov | Torre del Jefe y mejoras del Cohete (escudo, imán, doble disparo) |

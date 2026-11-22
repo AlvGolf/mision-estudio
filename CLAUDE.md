@@ -106,8 +106,8 @@ Semáforo: 🟢 ≥8 · 🟡 5–7,9 · 🔴 <5 · ⚪ sin jugar. "Hoy toca" pro
 
 ## Arcade
 
-- **Cada juego tiene su propio arcade** (el padre, 22-nov), pensado para su temario. Lo común va en el motor (desbloqueo, XP, monedas, récords, la estrella, «para repasar» y la pantalla de resultado). Los juegos de cada arcade van en `<juego>/arcade/` y se declaran en `JUEGO.arcade.juegos`. Usan Phaser 3 y ZzFX, que están en `vendor/`, con sus licencias. El verificador juega cada uno en modo prueba (`window.ARCADE_PRUEBA`: semilla fija y partida corta).
-- Mates U3 (beta, 22-nov): 🚀 Cohete del Saber (cuatro planetas con su guardián) y, pronto, 🗼 la Torre del Jefe. Lo que se falla en el arcade vuelve a «Hoy toca».
+- **Cada juego tiene su propio arcade** (el padre, 22-nov), pensado para su temario. Lo común va en el motor (desbloqueo, XP, monedas, récords, la estrella, «para repasar» y la pantalla de resultado). Los juegos de cada arcade van en `<juego>/arcade/` y se declaran en `JUEGO.arcade.juegos`. Usan ZzFX y, los de acción, Phaser 3 (los de turnos, como la Torre, van con botones de la página); los dos están en `vendor/`, con sus licencias. El verificador juega cada uno en modo prueba (`window.ARCADE_PRUEBA`: semilla fija y partida corta).
+- Mates U3 (en producción desde el 22-nov): 🚀 Cohete del Saber (cuatro planetas con su guardián; se mueve con la barra y dispara con el botón; caen cápsulas de escudo, imán y doble disparo) y 🗼 la Torre del Jefe (cuatro plantas de duelo por turnos; tres aciertos cargan el golpe fuerte: cociente y resto). Lo que se falla en el arcade vuelve a «Hoy toca».
 - Inglés sigue con los cuatro modos comunes del motor: ⚡ Contrarreloj (60 s, combos ×2/×3/×4) · 🐉 Batalla contra el jefe (3 vidas) · 🎈 Explota globos (velocidad base 0,72, +0,065 por ronda, tope +1,45) · 🚀 Rescate letra a letra.
 - Se desbloquea al haber jugado todos los bloques con nota. Suma XP (1 moneda = 5 XP), no cuenta para la nota.
 - Una sola estrella: vencer a un jefe. Total = misiones × 3 + 1.
@@ -125,4 +125,4 @@ Semáforo: 🟢 ≥8 · 🟡 5–7,9 · 🔴 <5 · ⚪ sin jugar. "Hoy toca" pro
 ## Juegos hechos
 
 - **Inglés Unit 2, 5º** (`ingles-u2/`, examen 20-nov-2026): 5 adverbios de frecuencia, Do you like / Would you like, 20 verbos irregulares (be → feel), 52 palabras (actor → worried). 10 bloques con nota + ruta + arcade (40 estrellas).
-- **Mates Unidad 3, 5º** (`mates-u3/`, examen 27-nov-2026): división por una y dos cifras (en cuadrícula, guiadas y libres), múltiplos, divisores, criterios de divisibilidad, primos y compuestos, una historia (la excursión), una miniinvestigación (el torneo) y problemas con la cuenta montada. 9 bloques con nota, ruta en dos días de unos 20 minutos y examen de 20 preguntas en 30 minutos con borrador.
+- **Mates Unidad 3, 5º** (`mates-u3/`, examen 27-nov-2026): división por una y dos cifras (en cuadrícula, guiadas y libres), múltiplos, divisores, criterios de divisibilidad, primos y compuestos, una historia (la excursión), una miniinvestigación (el torneo) y problemas con la cuenta montada. 9 bloques con nota, ruta en dos días de unos 20 minutos y examen de 20 preguntas en 30 minutos con borrador. Arcade propio: Cohete del Saber y Torre del Jefe.

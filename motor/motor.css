@@ -568,6 +568,12 @@ html[data-fam] #clase .rk.yo .rk-n::after{content:"tú";font:700 12px var(--fb);
 .cuenta .c.arco::before{content:'';position:absolute;top:-1px;left:3px;right:3px;height:8px;border-top:3px solid #3d7bd6;border-radius:50% 50% 0 0}
 .cuenta input{width:calc(var(--celda) - 4px);height:36px;border:2px dashed #9aa9cc;border-radius:6px;background:#fff;text-align:center;font:inherit;font-size:22px;color:#17224a;padding:0}
 .cuenta input.ok{border:2px solid #178a46;color:#178a46} .cuenta input.bad{border:2px solid #c0392b;color:#c0392b}
+.cuenta input:focus,.cuenta input.act{outline:none;border:2px solid #3d7bd6;background:#eef4ff;caret-color:transparent}
+/* Teclado de números de la cuadrícula: dos filas, justo debajo de la cuenta, para que el botón de comprobar quede a la vista */
+.pad-c{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:372px;margin:0 0 8px}
+.pad-c button{font-family:inherit;font-size:22px;font-weight:600;padding:8px 0;min-height:44px;border-radius:12px;border:0;background:var(--card2);color:var(--txt);cursor:pointer;touch-action:manipulation}
+.pad-c button:active{filter:brightness(1.25)}
+.pad-c [data-c="b"]{grid-column:span 2}
 .borr{width:100%;height:200px;background:#f7f3e8;background-image:linear-gradient(#d9e3f5 1px,transparent 1px),linear-gradient(90deg,#d9e3f5 1px,transparent 1px);background-size:34px 34px;border-radius:14px;touch-action:none;display:block;cursor:crosshair}
 .bb{font-size:15px;padding:7px 12px;margin:6px 0 10px}
 .montar{background:var(--sunk);border-radius:14px;padding:10px;margin:8px 0;display:grid;gap:8px}
@@ -578,5 +584,51 @@ html[data-fam] #clase .rk.yo .rk-n::after{content:"tú";font:700 12px var(--fb);
 .opsel button{font-family:inherit;font-size:22px;font-weight:700;width:48px;height:46px;border-radius:12px;border:2px solid var(--line);background:var(--card2);color:var(--txt);cursor:pointer}
 .opsel button[aria-pressed="true"]{background:var(--gold);color:#3a2700;border-color:var(--gold)}
 @media(max-width:600px){.hoja{--celda:30px}.cuenta{font-size:21px}}
+/* La raya entre estaciones no sigue tras la última estación del día (22-nov) */
+.rst:has(+ .rcorte)::after{display:none!important}
 .rcorte{grid-column:1/-1;text-align:center;font-size:14px;font-weight:600;color:var(--gold);border-top:2px dashed var(--gold);padding-top:4px;margin:4px 0}
 .hoyfin{margin:12px 0 4px}
+
+/* ===== MARCA (21-nov) ===== */
+.lgm{display:inline-flex;height:var(--lgh);line-height:0;vertical-align:middle}.lgm img{height:100%;width:auto;display:block}
+.lgm .lg-col{display:none}html[data-fam=D] .lgm .lg-col{display:block}html[data-fam=D] .lgm .lg-neg{display:none}
+header .amenu .lgm{margin-left:2px}
+.portada-m{display:flex;justify-content:center;align-items:center;gap:12px;margin:2px 0 12px}
+.portada-t{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:30px;line-height:1;color:#fff;padding-left:12px;border-left:2px solid currentColor}
+html[data-fam=D] .portada-t{color:#1D3BA8}
+.pie-m{display:flex;justify-content:center;margin-top:12px;opacity:.9}
+.cohete{display:inline-block;width:1em;height:1.5em;vertical-align:middle}
+.routebtn .cohete,.ruta-tit .cohete{transform:rotate(45deg);margin-right:4px}
+.rst{position:relative}
+.rst .ficha-m{position:absolute;left:50%;top:-30px;width:26px;height:26px;margin-left:-13px;display:grid;place-items:center;pointer-events:none;animation:ficha-bota .6s ease-in-out infinite alternate}
+.ficha-m .cohete,.aparcado .cohete{width:16px;height:24px;transform:rotate(90deg)}
+.rmap:has(.ficha-m){padding-top:26px}
+.aparcado{display:inline-flex;align-items:center;gap:6px;margin-left:8px}
+@keyframes ficha-bota{to{transform:translateX(3px)}}
+.despegue{width:130px;height:165px;margin:0 auto -6px;overflow:visible}
+.despegue svg{width:100%;height:100%;overflow:visible}
+.despegue .vuela{animation:despega 1.7s .35s ease-in forwards}
+@keyframes despega{0%{transform:none}8%{transform:translate(-3px,0)}16%{transform:translate(3px,0)}24%{transform:none}100%{transform:translateY(-900px)}}
+.sello-fin{display:flex;justify-content:center;min-height:0;margin:6px 0}
+/* Examen aprobado, S2 (22-nov): todo en columna con el mismo espacio. El hueco del sello de ME está reservado para que nada salte */
+.sello-fin.dos{min-height:150px;margin:16px 0 12px}
+.cf-sello.abajo{height:auto;margin:4px 0 26px}
+.cf-sello.abajo span{position:static;display:inline-block;rotate:-8deg;font-size:20px}
+.entrada-m{--ink:#fff;--brillo:#5f8dff;position:fixed;inset:0;z-index:60;background:#0A1441;display:grid;place-items:center;align-content:center;gap:22px;cursor:pointer;transition:opacity .35s}
+html[data-fam=D] .entrada-m{--ink:#1D3BA8;--brillo:#fff;background:#FAF7F0}
+.entrada-m svg{width:min(84vw,560px);height:auto;overflow:visible}
+.entrada-m span{color:#aab4e6;font:600 14px system-ui,sans-serif;border:1px solid #2a376f;border-radius:999px;padding:4px 12px}
+html[data-fam=D] .entrada-m span{color:#6a6a78;border-color:#c9c9d4}
+/* E3 · versión 2 (ronda 11 del artefacto del logo) */
+.entrada-m .ent-me{fill:var(--ink);fill-opacity:0;stroke:var(--ink);stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;animation:ent-traza .8s ease-in-out forwards,ent-rellena .45s 1.05s ease-out forwards}
+.entrada-m .ent-n{fill:var(--ink);opacity:0;animation:ent-entra .6s .25s ease-out forwards}
+.entrada-m .ent-d{fill:var(--ink);opacity:0;animation:ent-aparece .5s 1.3s ease-out forwards}
+.entrada-m .ent-v{fill:#EE3B4F}
+.entrada-m .ent-vm{stroke-dasharray:1;stroke-dashoffset:1;animation:ent-traza .55s 1.6s cubic-bezier(.5,0,.3,1) forwards}
+.entrada-m .ent-bs{stop-color:var(--brillo)}
+.entrada-m .ent-br{transform:translateX(-140px);animation:ent-brillo .95s 2.3s ease-in-out forwards}
+@keyframes ent-traza{to{stroke-dashoffset:0}}@keyframes ent-rellena{to{fill-opacity:1;stroke-opacity:0}}@keyframes ent-aparece{to{opacity:1}}
+@keyframes ent-entra{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}@keyframes ent-brillo{88%{opacity:1}100%{transform:translateX(480px);opacity:0}}
+.entrada-m.quieto *{animation:none!important}.entrada-m.quieto .ent-me{fill-opacity:1;stroke-opacity:0}.entrada-m.quieto .ent-n,.entrada-m.quieto .ent-d{opacity:1}.entrada-m.quieto .ent-vm{stroke-dashoffset:0}.entrada-m.quieto .ent-br{display:none}
+.entrada-m.sale{opacity:0}
+@media (prefers-reduced-motion:reduce){.rst .ficha-m,.despegue .vuela{animation:none}.despegue .vuela{opacity:0}}

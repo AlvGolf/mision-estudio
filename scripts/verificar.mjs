@@ -279,7 +279,8 @@ for (const juego of juegos) {
   RESUMEN.push(R);
   for (const A of ANCHOS) for (const curso of ['5', '2']) {
     const ctx = await navegador.newContext({ viewport: A.viewport, isMobile: !!A.isMobile });
-    await ctx.addInitScript(c => localStorage.setItem('mision_curso', c), curso);
+    /* Con nombre y entrada ya vistos: el orden logo → nombre → curso lo prueba «Tablet nueva» */
+    await ctx.addInitScript(c => { localStorage.setItem('mision_curso', c); localStorage.setItem('mision_name', 'Prueba'); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, curso);
     const page = await ctx.newPage();
     const errores = [];
     page.on('pageerror', e => errores.push(e.message));
