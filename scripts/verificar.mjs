@@ -573,6 +573,15 @@ function pasosDiv(D, d) {
   return { s, m, P, q: Math.floor(D / d), r: D % d };
 }
 
+/* La resta «hasta» del vídeo del cole (22-nov), igual que en el motor: lo que se escribe por cada cifra del divisor */
+function hastaPasos(cur, q, d) {
+  const ds = String(d), L = ds.length, out = []; let lleva = 0;
+  for (let i = 0; i < L; i++) { const dig = +ds[L - 1 - i], p = q * dig + lleva;
+    if (i < L - 1) { const t = Math.floor(cur / 10 ** i) % 10, X = p <= t ? t : t + 10 * Math.ceil((p - t) / 10); out.push(X - p); lleva = Math.floor(X / 10); }
+    else out.push(Math.floor(cur / 10 ** i) - p); }
+  return out;
+}
+
 async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
   const st = page.locator('#stage');
   const arrastrarOTocar = async (de, a, que) => {
@@ -839,7 +848,45 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
         if (await st.locator('[data-f="q"]').evaluateAll(a => a.map(i => i.value).join('')) !== q) fallo(`[${tag}] «${t}»: el teclado de la cuenta no escribe el cociente ${q} en sus casillas`);
         for (const [k, ch] of [...String(pd.r)].entries()) await st.locator(`[data-f="${pd.P.length}"]`).nth(k).fill(ch);
         await st.locator('#wchk').click();
+        /* 22-nov (vídeo del cole): en las que lo piden, antes de corregir se rodea el resto tocando una de sus cifras */
+        if (S.rodea) {
+          const rr = st.locator('.cuenta input.rr');
+          if (!await rr.count()) { fallo(`[${tag}] «${t}»: la división libre ${S.D} : ${S.d} no pide rodear el resto`); break; }
+          await rr.last().click();
+          if (!await st.locator('.rodea').count()) fallo(`[${tag}] «${t}»: al tocar el resto de ${S.D} : ${S.d} no sale el óvalo que lo rodea`);
+        }
         if (!mal && !/✅ Cociente.*✅ Resto/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: la división libre ${S.D} : ${S.d} bien hecha (${pd.q}, resto ${pd.r}) no sale bien`);
+        break;
+      }
+      /* 22-nov: la división por dos cifras como en el vídeo del cole. «pizarra»: reparto y resta «hasta» cifra a cifra;
+         «resto»: el resto de una vez, con su cero. Si no llega, 0 al cociente; al final se rodea el resto. */
+      if (S.modo === 'pizarra' || S.modo === 'resto') {
+        const L = String(S.d).length;
+        await st.locator(`[data-dg="${mal && pd.m > 1 ? 0 : pd.m - 1}"]`).click();
+        for (const [k, p] of pd.P.entries()) {
+          if (!await espera(/cabe/)) { fallo(`[${tag}] «${t}»: la división ${S.D} : ${S.d} no pregunta cuántas veces cabe (paso ${k + 1})`); return; }
+          if (L > 1 && p.cur >= S.d && !/Reparte: el \d+ para el \d+ y el \d+ para el \d+/.test(await st.locator('.q').innerText())) fallo(`[${tag}] «${t}»: en ${S.D} : ${S.d} no se enseña el reparto (paso ${k + 1})`);
+          await teclea(p.q, `cuántas veces cabe ${S.d} en ${p.cur}`);
+          if (p.q > 0) {
+            if (S.modo === 'pizarra') for (const [i, v] of hastaPasos(p.cur, p.q, S.d).entries()) {
+              if (!await espera(/cuánto va/)) { fallo(`[${tag}] «${t}»: en ${S.D} : ${S.d} no se pregunta la resta «hasta» (paso ${k + 1}, cifra ${i + 1})`); return; }
+              await teclea(v, `la resta «hasta» de ${p.cur} (cifra ${i + 1})`);
+            }
+            else {
+              if (!await espera(/sobra/)) { fallo(`[${tag}] «${t}»: la división ${S.D} : ${S.d} no pregunta cuánto sobra (paso ${k + 1})`); return; }
+              await teclea(String(p.r).padStart(L, '0'), `lo que sobra de ${p.cur}, con su cero`);
+            }
+          }
+          if (k + 1 < pd.P.length) {
+            if (!await espera(/Baja/)) { fallo(`[${tag}] «${t}»: la división ${S.D} : ${S.d} no pide bajar la cifra (paso ${k + 1})`); return; }
+            await st.locator(`[data-dg="${p.e + 1}"]`).click();
+          }
+        }
+        if (!await espera(/Rodea/)) { fallo(`[${tag}] «${t}»: la división ${S.D} : ${S.d} no pide rodear el resto`); return; }
+        await st.locator('.c.rr').first().click();
+        if (!await espera(/Cociente/)) fallo(`[${tag}] «${t}»: la división ${S.D} : ${S.d} no llega al final`);
+        else if (!new RegExp(`Cociente ${pd.q} y resto ${pd.r}`).test(await st.locator('.q').innerText())) fallo(`[${tag}] «${t}»: la división ${S.D} : ${S.d} no da cociente ${pd.q} y resto ${pd.r}`);
+        else if (!await st.locator('.rodea').count()) fallo(`[${tag}] «${t}»: el resto de ${S.D} : ${S.d} no sale rodeado`);
         break;
       }
       /* 21-nov: en la tablet no hay ratón; las cifras que se tocan tienen que verse tocables sin pasar por encima */
