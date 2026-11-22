@@ -7,6 +7,9 @@
    que cumplen la consigna; una roca mala quita una de tres vidas y enseña por qué.
    Dibujos: el cohete de la app (C1), rocas moradas con el número en blanco (A1),
    robot guardián (J1) y un color por planeta (F1). Las monedas compran colores y estelas.
+   Mejoras (22-nov, el padre: «caen en la partida»): de vez en cuando cae una cápsula y, si el cohete la toca,
+   da escudo (para un choque o un láser, no una roca mala: eso es un fallo de mates), imán (cada roca buena da una moneda)
+   o doble disparo, durante unos segundos.
    Necesita Phaser 3 (vendor/phaser.min.js), ZzFX (vendor/zzfx.js) y arcade/numeros.js.
    Lo común (XP, monedas, récords, estrella, «para repasar») lo pone el motor con api.
    Modo prueba (?prueba o window.ARCADE_PRUEBA): partida corta con semilla fija, sin láseres,
@@ -19,6 +22,7 @@ const PLANETAS=[
   {k:'criterios',n:'Planeta de los Criterios',corto:'Criterios',b:'crit',cielo:'#2a5bb8',suelo:'#3dd6ff',jefe:'Guardián de los criterios'},
   {k:'primos',n:'Planeta de los Primos',corto:'Primos',b:'prim',cielo:'#6c3fb5',suelo:'#b48cff',jefe:'Guardián de los primos'}];
 const COLORES=[{k:'rojo',n:'Rojo',c:'#ff5c6c',p:0},{k:'oro',n:'Oro',c:'#ffc83d',p:20},{k:'menta',n:'Menta',c:'#2ecc71',p:30},{k:'galaxia',n:'Galaxia',c:'#8a5cff',p:40}];
+const MEJORAS={escudo:{ic:'🛡️',n:'Escudo',ms:12000,c:0x3dd6ff},iman:{ic:'🧲',n:'Imán',ms:9000,c:0xffc83d},doble:{ic:'✨',n:'Doble disparo',ms:9000,c:0xff5c8a}};
 const ESTELAS=[{k:'nada',n:'Sin estela',p:0},{k:'chispas',n:'Chispas',p:25},{k:'arcoiris',n:'Arcoíris',p:50}];
 /* El campo de juego y, debajo, el panel de mandos: la barra (toda su anchura recorre toda la pantalla) y, aparte, el botón */
 const W=600,H=1000,PANEL=170,NY=H-PANEL-85,BARRA={x0:28,x1:388,y:H-PANEL/2,alto:84},BOTON={x:500,y:H-PANEL/2,r:64},FUENTE='Fredoka, Nunito, system-ui, sans-serif';
@@ -61,7 +65,7 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
   const caja=api.caja,esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   function mapa(){const mon=api.monedas();
     caja.innerHTML=`<div class="box coh"><h2>🚀 Cohete del Saber</h2>
-    <p class="sub">Mueve el cohete con el dedo: dispara solo. Revienta las rocas que cumplen la consigna y no toques las demás. Al final de cada planeta te espera su guardián.</p>
+    <p class="sub">Mueve el cohete con la barra y dispara con el botón rojo. Revienta las rocas que cumplen la consigna y no toques las demás. Coge las cápsulas: escudo, imán y doble disparo. Al final de cada planeta te espera su guardián.</p>
     <div class="planetas">${PLANETAS.map(p=>`<button class="pl" data-p="${p.k}" style="--c:${p.cielo};--s:${p.suelo}">${J.vencidos[p.k]?'<span class="ok" aria-label="conquistado">🏆</span>':''}<b>${esc(p.n)}</b><small>Récord: ${api.mejor(p.k)}</small></button>`).join('')}</div>
     <div class="taller"><h3>🛠️ Taller · tienes 🪙 ${mon}</h3>
       <div class="fila">${COLORES.map(c=>boton('color',c,`<i style="--c:${c.c}"></i>${c.n}`,mon)).join('')}</div>
@@ -77,7 +81,7 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
   function jugar(P){
     caja.innerHTML=`<div class="coh-juego"><div class="coh-barra"><b>🚀 ${esc(P.n)}</b><button class="btn sec" id="cohSalir" style="margin:0;padding:8px 14px">✕ Salir</button></div><div class="coh-caja"><div id="cohLienzo" aria-label="Juego del cohete: mueve el cohete con la barra de abajo y dispara con el botón rojo"></div>
       <div class="coh-empezar" id="cohEmp"><h3>${esc(P.n)}</h3><p>Revienta las rocas que cumplen la consigna de arriba. Si revientas una que no la cumple, pierdes una vida.</p>
-      <div class="ctl"><span>👆 Mueve el cohete con la barra de abajo</span><span>🔥 Dispara con el botón rojo: un toque, un disparo</span></div>
+      <div class="ctl"><span>👆 Mueve el cohete con la barra de abajo</span><span>🔥 Dispara con el botón rojo: un toque, un disparo</span><span>🛡️ 🧲 ✨ Toca las cápsulas con el cohete: escudo, imán y doble disparo</span></div>
       <button class="btn" id="cohGo" disabled>Empezar ▶</button></div></div></div>`;
     const color=(COLORES.find(c=>c.k===J.color)||COLORES[0]).c;let juego=null,acabado=false;
     const cierra=()=>{if(juego){juego.destroy(true);juego=null}window._ARC=null};
@@ -150,16 +154,20 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         if(S.input.keyboard)S.input.keyboard.on('keydown-SPACE',()=>S.dispara());
         /* Marcador */
         S.vidas=3;S.puntos=0;S.racha=0;S.buenas=0;S.fallos=0;S.monedas=0;S.fase='listo';S.cuenta=0;S.lento=1;S.inv=0;
+        /* Mejoras: lo que le queda a cada una (ms), las cápsulas que caen y el aro del escudo */
+        S.mej={escudo:0,iman:0,doble:0};S.caps=[];S.capT=prueba?700:9000;S.nCap=0;S.escudos=0;S.ultimoN=0;
+        S.aro=S.add.circle(S.nave.x,S.nave.y,78).setStrokeStyle(5,0x3dd6ff,.9).setFillStyle(0x3dd6ff,.12).setDepth(6).setVisible(false);
         S.rocas=[];S.balas=[];S.laseres=[];S.tiro=0;S.sale=600;
         const txt=(x,y,t,o)=>S.add.text(x,y,t,{fontFamily:FUENTE,fontSize:'30px',color:'#fff',fontStyle:'700',...o}).setDepth(20);
-        S.tVidas=txt(22,18,'',{color:'#ff5c6c',fontSize:'34px'});S.tPuntos=txt(W-22,18,'0',{fontSize:'32px'}).setOrigin(1,0);
+        S.tVidas=txt(22,18,'',{color:'#ff5c6c',fontSize:'34px'});S.tPuntos=txt(W-22,18,'0',{fontSize:'32px'}).setOrigin(1,0);S.tMej=txt(22,62,'',{fontSize:'24px',color:'#eef1ff'});
         S.cartel=S.add.graphics().setDepth(19);S.tCons=txt(W/2,92,'',{fontSize:'34px',color:'#eef1ff'}).setOrigin(.5);
         S.barra=S.add.graphics().setDepth(19);S.tBarra=txt(W/2,142,'',{fontSize:'20px',color:'#aab4e6',fontStyle:'600'}).setOrigin(.5);
         S.nuevaConsigna();S.pinta();
       }
       empieza(){if(this.fase!=='listo')return;this.fase='rocas';this.aviso('¡Vamos!','Revienta las que cumplen la consigna',1400)}
       dispara(){const S=this;if((S.fase!=='rocas'&&S.fase!=='jefe')||S.tiro>0)return;S.tiro=170;
-        S.balas.push(S.add.image(S.nave.x,S.nave.y-70,'bala').setDepth(4));son('disparo');
+        const xs=S.mej.doble>0?[S.nave.x-24,S.nave.x+24]:[S.nave.x];S.ultimoN=xs.length;
+        xs.forEach(x=>S.balas.push(S.add.image(x,S.nave.y-70,'bala').setDepth(4)));son('disparo');
         if(!quieto)S.tweens.add({targets:S.boton,scale:{from:.86,to:1},duration:140})}
       nuevaConsigna(){const S=this;let c;do c=tema(rnd);while(S.cons&&c.txt===S.cons.txt&&!prueba);S.cons=c;S.cuenta=0;
         S.rocas.forEach(r=>{r.fuera=true;S.tweens.add({targets:r.c,alpha:0,scale:.4,duration:250,onComplete:()=>r.c.destroy()})});S.rocas=[];
@@ -170,8 +178,10 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         const jf=S.fase==='jefe',k=jf?S.jefe.vida/VIDA_JEFE:Math.min(1,S.buenas/META);S.barra.clear();S.barra.fillStyle(0x0c1633,1);S.barra.fillRoundedRect(150,160,300,12,6);
         S.barra.fillStyle(jf?0xee3b4f:0xffc83d,1);if(k>0)S.barra.fillRoundedRect(150,160,300*k,12,6);
         S.tBarra.setText(jf?P.jefe:`Hasta el guardián: ${Math.min(S.buenas,META)} de ${META}`);
+        S.tMej.setText(Object.keys(MEJORAS).filter(k=>S.mej[k]>0).map(k=>MEJORAS[k].ic+' '+Math.ceil(S.mej[k]/1000)).join('   '));
         window._ARC={fase:S.fase,vidas:S.vidas,puntos:S.puntos,buenas:S.buenas,consigna:S.cons.txt,nave:{x:S.nave.x,y:S.nave.y},ancho:W,alto:H,controles:{barra:BARRA,boton:BOTON,margen:44},
-          jefe:S.jefe?{vida:S.jefe.vida,x:S.jefe.c.x}:null,rocas:S.rocas.filter(r=>!r.fuera).map(r=>({n:r.n,bueno:r.bueno,x:r.c.x,y:r.c.y}))}}
+          jefe:S.jefe?{vida:S.jefe.vida,x:S.jefe.c.x}:null,mejora:{...S.mej},escudos:S.escudos,malas:S.malas||0,balasPorDisparo:S.ultimoN,
+          capsulas:S.caps.filter(c=>!c.fuera).map(c=>({k:c.k,x:c.c.x,y:c.c.y})),rocas:S.rocas.filter(r=>!r.fuera).map(r=>({n:r.n,bueno:r.bueno,x:r.c.x,y:r.c.y}))}}
       mult(){return this.racha>=9?3:this.racha>=4?2:1}
       aviso(t,sub,ms,rojo){const S=this;if(S.cajaAviso)S.cajaAviso.destroy();
         const tt=S.add.text(0,0,t,{fontFamily:FUENTE,fontSize:'44px',fontStyle:'700',color:rojo?'#ff9aa8':'#ffc83d',align:'center'}).setOrigin(.5,1);
@@ -183,7 +193,8 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
       roca(x,y,vy,bueno){const S=this,n=S.cons.numero(rnd,bueno),im=S.add.image(0,0,'roca'+Math.floor(rnd()*3)).setScale(.95);
         const t=S.add.text(0,2,String(n),{fontFamily:FUENTE,fontSize:n>99?'34px':'40px',fontStyle:'700',color:'#fff',stroke:'#1d1438',strokeThickness:9}).setOrigin(.5);
         const c=S.add.container(x,y,[im,t]).setDepth(3);S.rocas.push({c,im,n,bueno:S.cons.cumple(n),vy,giro:(rnd()-.5)*1.4})}
-      dano(motivo){const S=this;if(S.inv>0)return;S.vidas--;S.racha=0;S.fallos++;S.inv=1300;son('mal');
+      dano(motivo,fisico){const S=this;if(S.inv>0)return;
+        if(fisico&&S.mej.escudo>0){S.mej.escudo=0;S.escudos++;S.inv=700;son('clang');S.chispas.explode(16,S.nave.x,S.nave.y-40);S.flota(S.nave.x,S.nave.y-110,'¡El escudo te salva!','#3dd6ff');return}S.vidas--;S.racha=0;S.fallos++;S.inv=1300;son('mal');
         if(!quieto)S.cameras.main.shake(220,.012);S.cameras.main.flash(160,238,59,79);
         S.tweens.add({targets:S.nave,alpha:.3,duration:120,yoyo:true,repeat:4,onComplete:()=>S.nave.setAlpha(1)});
         if(S.vidas<=0){S.fase='fin';S.pinta();S.aviso('¡Sin vidas!',motivo||'',2000,true);
@@ -193,6 +204,15 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         S.est.tilePositionY-=40*dt;
         if(S.teclas){if(S.teclas.left.isDown)S.nave.x=Math.max(44,S.nave.x-520*dt);if(S.teclas.right.isDown)S.nave.x=Math.min(W-44,S.nave.x+520*dt)}
         S.tiro=Math.max(0,S.tiro-dtReal);
+        for(const k in S.mej)S.mej[k]=Math.max(0,S.mej[k]-dtReal);
+        S.aro.setPosition(S.nave.x,S.nave.y-10).setVisible(S.mej.escudo>0);
+        /* Cápsulas: una cada poco (en la prueba, enseguida y por orden: escudo, doble e imán) */
+        S.capT-=dtReal;if(S.capT<=0&&!S.caps.some(c=>!c.fuera)){const ks=Object.keys(MEJORAS).filter(k=>!S.mej[k]);
+          S.capT=prueba?700:13000+Math.random()*5000;if(ks.length){const k=prueba?['escudo','doble','iman'][S.nCap%3]:ks[Math.floor(Math.random()*ks.length)];S.nCap++;S.capsula(k)}}
+        for(const c of S.caps){if(c.fuera)continue;c.t+=dt;c.c.y+=150*dt;c.c.x=c.x0+Math.sin(c.t*2.2)*(prueba?0:40);
+          if(c.c.y>H-PANEL+40){c.fuera=true;c.c.destroy();continue}
+          if(Math.abs(c.c.x-S.nave.x)<62&&Math.abs(c.c.y-S.nave.y)<75){c.fuera=true;S.coge(c)}}
+        S.caps=S.caps.filter(c=>!c.fuera);
         S.balas.forEach(b=>b.y-=1000*dt);
         /* Rocas: llegan de arriba (o las lanza el guardián) */
         S.sale-=dtReal*S.lento;const hay=S.rocas.filter(r=>!r.fuera).length;
@@ -202,26 +222,32 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         for(const r of S.rocas){if(r.fuera)continue;r.c.y+=r.vy*dt;r.im.rotation+=r.giro*dt;
           if(r.c.y>H-PANEL+40){r.fuera=true;r.c.destroy();if(r.bueno){S.racha=0;S.flota(r.c.x,H-PANEL-30,'se escapó','#aab4e6')}continue}
           if(Math.abs(r.c.x-S.nave.x)<62&&Math.abs(r.c.y-S.nave.y)<70){r.fuera=true;S.boom.explode(10,r.c.x,r.c.y);r.c.destroy();
-            if(r.bueno){S.racha=0;S.flota(S.nave.x,S.nave.y-90,'¡choque!','#ff9aa8')}S.dano('Te ha dado una roca. Muévete para esquivarlas.');continue}
+            if(r.bueno){S.racha=0;S.flota(S.nave.x,S.nave.y-90,'¡choque!','#ff9aa8')}S.dano('Te ha dado una roca. Muévete para esquivarlas.',true);continue}
           for(const b of S.balas){if(b.active&&Math.abs(b.x-r.c.x)<46&&Math.abs(b.y-r.c.y)<50){b.destroy();S.golpe(r);break}}}
         S.rocas=S.rocas.filter(r=>!r.fuera);S.balas=S.balas.filter(b=>{if(b.active&&b.y<-40)b.destroy();return b.active});
         /* El guardián */
         if(S.fase==='jefe'&&S.jefe.listo){const j=S.jefe;j.t+=dt;j.c.x=W/2+Math.sin(j.t*.9)*(W/2-120);
           for(const b of S.balas){if(b.active&&Math.abs(b.x-j.c.x)<90&&Math.abs(b.y-j.c.y)<80){b.destroy();S.chispas.explode(5,b.x,j.c.y+60);if(j.clang<=0){son('clang');j.clang=400;if(!j.dicho){j.dicho=1;S.flota(j.c.x,j.c.y+120,'¡Escudo! Revienta sus rocas buenas','#3dd6ff')}}}}
           j.clang-=dtReal;if(!prueba){j.dispara-=dtReal;if(j.dispara<=0){j.dispara=2300-Math.min(900,(VIDA_JEFE-j.vida)*90);son('laser');S.laseres.push(S.add.image(j.c.x,j.c.y+70,'laser').setDepth(4))}}}
-        S.laseres.forEach(l=>{l.y+=380*dt;if(l.active&&Math.abs(l.x-S.nave.x)<34&&Math.abs(l.y-S.nave.y)<70){l.destroy();S.dano('Te ha dado un láser del guardián.')}});
+        S.laseres.forEach(l=>{l.y+=380*dt;if(l.active&&Math.abs(l.x-S.nave.x)<34&&Math.abs(l.y-S.nave.y)<70){l.destroy();S.dano('Te ha dado un láser del guardián.',true)}});
         S.laseres=S.laseres.filter(l=>{if(l.active&&l.y>H-PANEL+30)l.destroy();return l.active});
         S.pinta()}
+      capsula(k){const S=this,M=MEJORAS[k],x0=prueba?W/2:90+Math.random()*(W-180);
+        const bola=S.add.circle(0,0,34,0x151d45,1).setStrokeStyle(5,M.c,1),ic=S.add.text(0,2,M.ic,{fontSize:'34px'}).setOrigin(.5);
+        const c=S.add.container(x0,-50,[bola,ic]).setDepth(3);if(!quieto)S.tweens.add({targets:bola,scale:{from:1,to:1.15},duration:420,yoyo:true,repeat:-1});
+        S.caps.push({k,c,x0,t:0})}
+      coge(cap){const S=this,M=MEJORAS[cap.k];S.mej[cap.k]=prueba?60000:M.ms;son('moneda');S.chispas.explode(14,cap.c.x,cap.c.y);cap.c.destroy();
+        S.flota(S.nave.x,S.nave.y-120,M.ic+' '+M.n+'!','#eef1ff')}
       flota(x,y,t,col){const S=this,f=S.add.text(x,y,t,{fontFamily:FUENTE,fontSize:'26px',fontStyle:'700',color:col||'#ffc83d',stroke:'#0b1230',strokeThickness:6}).setOrigin(.5).setDepth(25);
         S.tweens.add({targets:f,y:y-60,alpha:0,duration:quieto?700:900,onComplete:()=>f.destroy()})}
       golpe(r){const S=this;r.fuera=true;
         if(r.bueno){S.racha++;const p=10*S.mult();S.puntos+=p;S.buenas++;son('roca');S.boom.explode(quieto?8:18,r.c.x,r.c.y);S.flota(r.c.x,r.c.y-40,'+'+p);r.c.destroy();
-          if(S.buenas%3===0){S.monedas++;son('moneda');S.flota(r.c.x,r.c.y-80,'+1 🪙','#ffc83d')}
+          if(S.mej.iman>0||S.buenas%3===0){S.monedas++;son('moneda');S.flota(r.c.x,r.c.y-80,'+1 🪙','#ffc83d')}
           if(S.fase==='rocas'){S.cuenta++;if(S.buenas>=META)return S.llegaJefe();if(S.cuenta>=CAMBIO)S.time.delayedCall(350,()=>{if(S.fase==='rocas')S.nuevaConsigna()})}
           else if(S.fase==='jefe')S.pegaJefe();return}
         /* Roca mala: pierde una vida y ve por qué */
         S.tweens.add({targets:r.c,alpha:0,scale:1.4,duration:300,onComplete:()=>r.c.destroy()});r.im.setTint(0xee3b4f);S.lento=.3;
-        api.repasa(P.b);S.aviso('¡Esa no!',S.cons.explica(r.n),2600,true);S.dano()}
+        S.malas=(S.malas||0)+1;api.repasa(P.b);S.aviso('¡Esa no!',S.cons.explica(r.n),2600,true);S.dano()}
       llegaJefe(){const S=this;S.fase='espera';S.rocas.forEach(r=>{r.fuera=true;S.tweens.add({targets:r.c,alpha:0,duration:250,onComplete:()=>r.c.destroy()})});S.rocas=[];son('jefe');
         S.aviso('¡Llega el guardián!','Rompe su escudo reventando las rocas buenas que lanza',1800);
         const im=S.add.image(0,0,'robot').setScale(.85),pecho=S.add.text(0,40,S.cons.corto,{fontFamily:FUENTE,fontSize:'30px',fontStyle:'700',color:'#3dd6ff'}).setOrigin(.5);
@@ -230,7 +256,7 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
       pegaJefe(){const S=this,j=S.jefe;j.vida--;j.im.setTint(0xff7a8a);S.time.delayedCall(140,()=>j.im.clearTint());S.chispas.explode(12,j.c.x,j.c.y+40);if(!quieto)S.cameras.main.shake(120,.006);
         if(j.vida>0){if(j.vida%4===0)S.time.delayedCall(300,()=>{if(S.fase==='jefe')S.nuevaConsigna()});return}
         S.fase='gana';S.monedas+=10;S.puntos+=100;S.pinta();son('gana');S.boom.explode(40,j.c.x,j.c.y);S.tweens.add({targets:j.c,alpha:0,scale:1.6,angle:20,duration:700});
-        S.laseres.forEach(l=>l.destroy());S.rocas.forEach(r=>r.c.destroy());S.rocas=[];
+        S.laseres.forEach(l=>l.destroy());S.rocas.forEach(r=>r.c.destroy());S.rocas=[];S.caps.forEach(c=>c.c.destroy());S.caps=[];
         S.aviso('¡Guardián vencido!',`+100 puntos · +10 🪙`,1400);fin({gana:true,puntos:S.puntos,aciertos:S.buenas,fallos:S.fallos,monedas:S.monedas})}
     }}
 

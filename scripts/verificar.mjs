@@ -411,12 +411,54 @@ async function jugarCohete(page) {
     if (Math.abs(trasBoton - der) > 1) return { error: 'pulsar el botón de disparo mueve el cohete' };
   }
   let fallado = false, vidas = 3, jefe = false, disparos = 0, ultimo = 0;
+  /* Reventar una roca mala tiene que quitar una vida, con escudo o sin él (el escudo solo para choques y láseres) */
+  let malas = 0, malaSinVida = false;
+  const mira = A => { if (A.malas > malas) { if (A.vidas >= vidas) malaSinVida = true; malas = A.malas; fallado = true; } vidas = A.vidas; };
+  const dispara = async A => { await toca(A.controles.boton.x, A.controles.boton.y); disparos++; ultimo = Date.now(); };
+  /* Mejoras (22-nov): en la prueba caen por orden escudo, doble disparo e imán. Se coge cada cápsula; mientras, se revientan
+     las rocas que bajan por su columna (si una es mala, cuenta como el fallo a propósito). */
+  const coge = async k => {
+    const t = Date.now();
+    while (Date.now() - t < 12000) {
+      const A = await page.evaluate(() => window._ARC);
+      if (!A) return false;
+      if (A.mejora[k] > 0) return true;
+      mira(A);
+      const c = A.capsulas.find(c => c.k === k), r = A.rocas.find(r => Math.abs(r.x - A.nave.x) < 70 && r.y < A.nave.y - 120);
+      if (r && Date.now() - ultimo > 400) await dispara(A);
+      else if (c && Math.abs(A.nave.x - c.x) > 14) await mover(A, c.x);
+      await page.waitForTimeout(80);
+    }
+    return false;
+  };
+  if (!await coge('escudo')) return { error: 'no cae la cápsula del escudo o el cohete no la coge al tocarla' };
+  /* El escudo para un choque: se deja caer una roca encima sin disparar. Sin escudo, ese choque quitaría una vida. */
+  {
+    const t = Date.now(), v0 = (await page.evaluate(() => window._ARC)).vidas;
+    let A;
+    while (Date.now() - t < 12000) {
+      A = await page.evaluate(() => window._ARC);
+      if (!A) return { error: 'con el escudo puesto, los choques acaban la partida: el escudo no para nada' };
+      if (A.escudos > 0) break;
+      const r = A.rocas.sort((a, b) => b.y - a.y)[0];
+      if (r && Math.abs(A.nave.x - r.x) > 10) await mover(A, r.x);
+      await page.waitForTimeout(80);
+    }
+    if (!A.escudos) return { error: 'con el escudo puesto, una roca no choca con el cohete o el escudo no la para' };
+    if (A.vidas !== v0) return { error: 'con el escudo puesto, chocar con una roca quita una vida' };
+    if (A.mejora.escudo > 0) return { error: 'el escudo sigue puesto después de parar un choque' };
+    vidas = A.vidas;
+  }
+  if (!await coge('doble')) return { error: 'no cae la cápsula del doble disparo o el cohete no la coge' };
+  { const A = await page.evaluate(() => window._ARC); await page.waitForTimeout(200); await dispara(A);
+    if ((await page.evaluate(() => window._ARC.balasPorDisparo)) !== 2) return { error: 'con el doble disparo, el botón no lanza dos balas' }; }
+  if (!await coge('iman')) return { error: 'no cae la cápsula del imán o el cohete no la coge' };
   const t0 = Date.now();
   while (Date.now() - t0 < 80000) {
     const A = await page.evaluate(() => window._ARC);
     if (!A) break;
     if (A.fase === 'jefe') jefe = true;
-    if (A.vidas < vidas) { vidas = A.vidas; fallado = true; }
+    mira(A);
     const r = A.rocas.filter(r => r.y < A.nave.y - 120).sort((a, b) => b.y - a.y)[0];
     if (r) {
       const apunta = r.bueno || !fallado, x = apunta ? r.x : (r.x > 300 ? 80 : 520);
@@ -429,13 +471,14 @@ async function jugarCohete(page) {
   const fin = await page.locator('#app').innerText().catch(() => '');
   const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
   if (!disparos) return { error: 'el botón de disparo no se ha podido pulsar' };
-  if (!fallado) return { error: 'chocar con una roca mala no quita ninguna vida' };
+  if (!fallado) return { error: 'no se ha podido reventar una roca mala a propósito' };
+  if (malaSinVida) return { error: 'reventar una roca mala no quita ninguna vida' };
   if (!Object.keys(est.arc.repasar || {}).length) return { error: 'la roca mala no queda apuntada para repasar' };
   if (!jefe) return { error: 'no llega el guardián al reventar las rocas buenas' };
   if (!/Planeta conquistado/.test(fin)) return { error: `no se puede vencer al guardián (pantalla final: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
   if (est.estrella !== 1) return { error: 'vencer al guardián no da la estrella del arcade' };
   if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('cohete:'))) return { error: 'no se guarda el récord' };
-  return { nota: `espera a «Empezar»; la barra lleva el cohete de borde a borde y el botón no lo mueve; se mueve con la barra y dispara con el botón (${disparos} disparos); una roca mala quita una vida y queda para repasar; se vence al guardián, da la estrella y guarda el récord` };
+  return { nota: `espera a «Empezar»; la barra lleva el cohete de borde a borde y el botón no lo mueve; coge las tres cápsulas, el escudo para un choque sin quitar vida y el doble disparo lanza dos balas; se mueve con la barra y dispara con el botón (${disparos} disparos); una roca mala quita una vida y queda para repasar; se vence al guardián, da la estrella y guarda el récord` };
 }
 
 async function arrastrar(page, de, a) {
