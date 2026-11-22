@@ -75,6 +75,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
+- **Probar el cohete como premio** en https://alvgolf.github.io/mision-estudio/mates-reloj-beta/ (ronda 13 del artefacto del logo, elegidos A y B el 22-nov): despega al terminar cada día de la ruta y con el primer 10 de cada misión, en lugar del confeti; como mucho cinco al día. Ahora sube hasta perderse por arriba (antes se quedaba parado a media pantalla en las tablets altas). Con su visto bueno, el motor beta pasa al normal y llega a todos los juegos.
 - **Más adelante: «Reloj nivel 2»** (de cinco en cinco), juego aparte con su ruta, cuando en clase lleguen.
 - **22-nov: todo lo de las betas está en producción** (motor, menú en la portada con la ruta y el nombre, logo y entrada, icono del ME, divisiones, arcade de Mates). `menu-beta/` y `mates-u3-beta/` redirigen a la normal. Al abrir la app en la tablet, el icono nuevo puede tardar en salir: si no cambia, quitar la app y volver a instalarla.
 - Mates Unidad 3 ya está en el menú (21-nov): el lunes 24 y el martes 25, la ruta; el miércoles 26, el examen. Contar cómo va, y después del examen del 27, la nota real.

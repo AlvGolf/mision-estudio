@@ -266,16 +266,35 @@ function examRun(qs){
       celebra(app().querySelector('.box'),p,g,{sello:5000,confeti:5500});if(p>=.5)setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(150)},escQuieto()?0:1900);}
   };
 }
+/* ===== El cohete como premio (22-nov, ronda 13 del logo: A y B) =====
+   Despega al terminar cada día de la ruta y al final de la ruta (grande), y con el primer 10 de cada misión (mediano,
+   en lugar del confeti). Como mucho COHETE_TOPE despegues al día: pasado el tope, el 10 vuelve a tener su confeti. */
+const COHETE_TOPE=5;
+/* El libro y el cohete en dos dibujos encima uno del otro: así el cohete sube por la pantalla de verdad
+   (dentro de un solo SVG, sus píxeles encogen con el dibujo y se quedaba parado a media pantalla) */
+const DESPEGUE_HTML=(()=>{const [a,b]=DESPEGUE_SVG.split('<g class="vuela">'),i=a.indexOf('>')+1,cab=a.slice(0,i);
+  return a+'</svg>'+cab.replace('<svg ','<svg class="cv" ')+'<g>'+b})();
+const coheteK=()=>(JUEGO.claves&&JUEGO.claves.estado||JUEGO.id)+'_cohete';
+function coheteEstado(){let c=null;try{c=JSON.parse(localStorage.getItem(coheteK())||'null')}catch(e){}c=c||{};const hoy=new Date().toISOString().slice(0,10);
+  if(c.dia!==hoy){c.dia=hoy;c.n=0}c.diez=c.diez||[];return c}
+function coheteApunta(c){try{localStorage.setItem(coheteK(),JSON.stringify(c))}catch(e){}}
+/* ¿Este 10 se celebra con el cohete? Si la estación cierra el día o la ruta, ya despega el grande y este no se gasta */
+function coheteDiez(key,p){if(p<1||!MAP[key])return false;const c=coheteEstado();if(c.diez.includes(key)||c.n>=COHETE_TOPE)return false;
+  if(typeof ROUTE!=='undefined'&&ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==key&&(ROUTE.i==ROUTE_ST.length-1||ROUTE_ST[ROUTE.i].corte))return false;
+  c.diez.push(key);c.n++;coheteApunta(c);return true}
+/* El grande (fin de día o de ruta) cuenta para el tope pero sale siempre */
+function coheteGrande(){const c=coheteEstado();c.n++;coheteApunta(c);if(!escQuieto())setTimeout(()=>son('despegue'),350);return `<div class="despegue">${DESPEGUE_HTML}</div>`}
+
 /* ===== Motores genéricos ===== */
 function endScreen(icon,ok,tot,key,again,extra=''){
-  const p=tot?ok/tot:0;setBest(key,p);const g=MAP[key]?grade(key,p*10):null,s=starsFor(p);
+  const p=tot?ok/tot:0;setBest(key,p);const g=MAP[key]?grade(key,p*10):null,s=starsFor(p),cohete=coheteDiez(key,p);
   const sello=p<.5?'':g!=null?'¡'+label(g).toUpperCase()+'!':p>=.9?'¡GENIAL!':'¡MUY BIEN!';
   app().innerHTML=`<div class="box center celebra"><div class="big">${icon}</div><h2>${ok} de ${tot} a la primera</h2>
   ${g!=null?`<p style="font-size:22px">Nota: <b data-cuenta="${g}">${fmt(g)}</b> <span class="cf-lab">· ${label(g)} ${sem(g)}</span></p>`:''}
   <div class="cf-estr" aria-label="${s} de 3 estrellas">${[0,1,2].map(k=>`<span class="${k<s?'si':'no'}">${k<s?'★':'☆'}</span>`).join('')}</div>
-  ${sello?`<div class="cf-sello"><span>${sello}</span></div>`:''}${guiaFin(p)}${extra}
+  ${sello?`<div class="cf-sello"><span>${sello}</span></div>`:''}${cohete?`<div class="despegue m">${DESPEGUE_HTML}</div>`:''}${guiaFin(p)}${extra}
   <button class="btn" id="again">🔁 Repetir</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
-  $('#again').onclick=again;celebra(app().querySelector('.box'),p,g);
+  $('#again').onclick=again;celebra(app().querySelector('.box'),p,g,{cohete});
 }
 /* Celebración en secuencia (el padre, 20-nov): sube la nota y salen las estrellas; luego el guía habla, levanta los brazos y salta;
    después el sello y por último el confeti. Los botones funcionan desde el principio: no hace esperar. */
@@ -286,7 +305,8 @@ function celebra(box,p,g,o={}){const q=escQuieto(),T=(ms,f)=>setTimeout(()=>{if(
     gd.querySelector('.bocadillo').classList.remove('oculto');
     if(p>=.7){gd.querySelector('svg').innerHTML=escPersona(guiaP({celebra:1}));gd.classList.remove('salta');void gd.offsetWidth;gd.classList.add('salta')}});
   T(o.sello||2600,()=>{const s=box.querySelector('.cf-sello');if(s){s.classList.add('ve');setTimeout(()=>son('sello'),q?0:300)}});
-  if(p>=.7)T(o.confeti||3150,()=>{confetti();son('fanfarria')})}
+  /* El cohete del 10 despega donde iba el confeti, cuando ya han salido la nota, las estrellas y el sello */
+  if(o.cohete){if(!q)T(3050,()=>son('despegue'))}else if(p>=.7)T(o.confeti||3150,()=>{confetti();son('fanfarria')})}
 /* Cuenta un número de «desde» a «hasta» (nota con coma o puntos enteros) */
 function cuentaNum(el,desde,hasta,dur,espera=0,entero){const f=v=>entero?String(Math.round(v)):fmt(Math.round(v*10)/10);
   if(!dur||escQuieto()){el.textContent=f(hasta);return}el.textContent=f(desde);
@@ -1377,14 +1397,14 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){
     ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;ROUTE.fin=Date.now();saveRoute();confetti();setTimeout(confetti,600);
-    box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="despegue">${DESPEGUE_SVG}</div><div class="sello-fin" id="sfin"></div><h2>¡Ruta completada!</h2>
+    box.insertAdjacentHTML('beforeend',`<div class="routeend">${coheteGrande()}<div class="sello-fin" id="sfin"></div><h2>¡Ruta completada!</h2>
       <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
       ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
       <button class="btn destaca" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
     box.querySelector('#again').remove();setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(170)},escQuieto()?0:2000);return}
   saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ROUTE.i-1];
   /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere */
-  if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
+  if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${coheteGrande()}${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
   box.querySelector('#again').outerHTML=`<button class="btn ${hecha.corte?'sec':''}" id="rnext">▶ ${hecha.corte?'Seguir hoy de todas formas':'Siguiente estación'}: ${nx.ic} ${nx.n}</button>`;
   box.insertAdjacentHTML('beforeend',`<div style="margin-top:14px">${routeMap()}</div><p class="center" style="color:var(--gold)">+20 XP por estación completada</p>`);
   $('#rnext').onclick=startStation;

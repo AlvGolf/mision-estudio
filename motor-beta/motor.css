@@ -611,8 +611,10 @@ html[data-fam=D] .portada-t{color:#1D3BA8}
 @keyframes ficha-bota{to{transform:translateX(3px)}}
 .despegue{width:130px;height:165px;margin:0 auto -6px;overflow:visible}
 .despegue svg{width:100%;height:100%;overflow:visible}
-.despegue .vuela{animation:despega 1.7s .35s ease-in forwards}
-@keyframes despega{0%{transform:none}8%{transform:translate(-3px,0)}16%{transform:translate(3px,0)}24%{transform:none}100%{transform:translateY(-900px)}}
+.despegue{position:relative}.despegue svg{position:absolute;inset:0}.despegue .cv{z-index:5;pointer-events:none;animation:despega 1.7s .35s ease-in forwards}
+@keyframes despega{0%{transform:none}8%{transform:translate(-3px,0)}16%{transform:translate(3px,0)}24%{transform:none}90%{opacity:1}100%{transform:translateY(calc(-100vh - 100%));opacity:0}}
+.despegue.m{width:84px;height:106px;margin:4px auto 0}.despegue.m .cv{animation-delay:2.7s}
+.hoyfin .despegue{margin-top:10px}
 .sello-fin{display:flex;justify-content:center;min-height:0;margin:6px 0}
 /* Examen aprobado, S2 (22-nov): todo en columna con el mismo espacio. El hueco del sello de ME está reservado para que nada salte */
 .sello-fin.dos{min-height:150px;margin:16px 0 12px}
@@ -635,7 +637,7 @@ html[data-fam=D] .entrada-m span{color:#6a6a78;border-color:#c9c9d4}
 @keyframes ent-entra{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}@keyframes ent-brillo{88%{opacity:1}100%{transform:translateX(480px);opacity:0}}
 .entrada-m.quieto *{animation:none!important}.entrada-m.quieto .ent-me{fill-opacity:1;stroke-opacity:0}.entrada-m.quieto .ent-n,.entrada-m.quieto .ent-d{opacity:1}.entrada-m.quieto .ent-vm{stroke-dashoffset:0}.entrada-m.quieto .ent-br{display:none}
 .entrada-m.sale{opacity:0}
-@media (prefers-reduced-motion:reduce){.rst .ficha-m,.despegue .vuela{animation:none}.despegue .vuela{opacity:0}}
+@media (prefers-reduced-motion:reduce){.rst .ficha-m,.despegue .cv{animation:none}.despegue .cv{opacity:0}}
 
 /* ===== Reloj de agujas (22-nov, «Las horas del reloj», 2º) ===== */
 .rlj{width:min(250px,66vw);height:auto;display:block;margin:6px auto;touch-action:none;user-select:none;-webkit-user-select:none}

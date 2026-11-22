@@ -175,6 +175,9 @@ for (const juego of juegos) {
           if (/~\d+ min|tú: \d+ min/.test(mapa)) { if (!/tú: 4 min/.test(mapa)) fallo(`[${tag}] El mapa de la ruta no apunta lo que tardó la primera estación (debía decir «tú: 4 min»)`); }
           else aviso(`[${tag}] El mapa de la ruta no enseña los minutos de cada estación (motor antiguo)`);
         }
+        /* El cohete como premio (22-nov): al terminar cada día de la ruta despega el grande */
+        const cierraDia = await page.evaluate(() => typeof ROUTE !== 'undefined' && ROUTE && ROUTE_ST[ROUTE.i - 1] && !!ROUTE_ST[ROUTE.i - 1].corte && typeof coheteGrande === 'function');
+        if (cierraDia && !(await page.locator('.hoyfin .despegue .cv').count())) fallo(`[${tag}] Al terminar el día de la ruta no despega el cohete`);
         await page.click('#rnext'); estaciones++; continue;
       }
       const t = await titulo();
@@ -203,6 +206,28 @@ for (const juego of juegos) {
     if (acabada) {
       R.notas.push(`[${tag}] Ruta completa: ${estaciones} estaciones, ${pasos} ejercicios, ${Math.round((Date.now() - t0) / 1000)} s`);
       await revisarPantalla('ruta completada');
+      /* El cohete del final tiene que perderse por encima de la pantalla, no quedarse parado a mitad (el padre, 22-nov) */
+      const cv = page.locator('.routeend .despegue .cv');
+      if (await cv.count()) {
+        await page.locator('.routeend .despegue').scrollIntoViewIfNeeded(); await page.waitForTimeout(2400);
+        const fin = await cv.evaluate(x => { const r = x.getBoundingClientRect(); return { abajo: Math.round(r.bottom), op: getComputedStyle(x).opacity } });
+        if (fin.abajo > 0 && fin.op !== '0') fallo(`[${tag}] El cohete del final de la ruta se queda a la vista (su parte de abajo, a ${fin.abajo} px del borde de arriba): tiene que perderse por encima`);
+        /* El primer 10 de cada misión: cohete mediano una sola vez por misión, y nada pasado el tope del día */
+        const p2 = await page.context().newPage(); await p2.goto(page.url()); await p2.waitForTimeout(400);
+        const diez = await p2.evaluate(() => {
+          if (typeof coheteDiez !== 'function') return null;
+          localStorage.removeItem(coheteK()); const ks = ROUTE_ST.map(x => x.k).filter(k => MAP[k]);
+          const prueba = k => { endScreen('🧪', 6, 6, k, () => {}); return !!document.querySelector('.box .despegue.m .cv') };
+          const r = { primero: prueba(ks[0]), segundo: prueba(ks[0]), nueve: (endScreen('🧪', 5, 6, ks[1], () => {}), !!document.querySelector('.despegue.m')) };
+          const c = coheteEstado(); c.n = COHETE_TOPE; coheteApunta(c); r.tope = prueba(ks[1]); localStorage.removeItem(coheteK()); return r });
+        await p2.close();
+        if (diez) {
+          if (!diez.primero) fallo(`[${tag}] El primer 10 de una misión no trae el cohete`);
+          if (diez.segundo) fallo(`[${tag}] El cohete del 10 sale otra vez en la misma misión (solo la primera vez)`);
+          if (diez.nueve) fallo(`[${tag}] Sale el cohete sin sacar un 10`);
+          if (diez.tope) fallo(`[${tag}] Pasado el tope del día, el 10 sigue trayendo el cohete`);
+        }
+      }
       await page.screenshot({ path: path.join(dirCapturas, `${A.n}-ruta-completada.png`) });
     } else fallo(`[${tag}] La ruta no se completa (iba por la estación ${estaciones}, ${pasos} ejercicios)`);
 
