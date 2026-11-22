@@ -86,7 +86,7 @@ function home(){
    if(!escQuieto())[...app().querySelector('.box').children].forEach((el,i)=>{el.style.setProperty('--i',i);el.classList.add('ent')});
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
   app().innerHTML=`${JUEGO.marca?`<div class="portada-m" role="img" aria-label="Misión Estudio · ${esc(JUEGO.marca)}">${logoMarca('simbolo','',44)}<span class="portada-t">${esc(JUEGO.marca)}</span></div>`:''}${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">${COHETE_SVG} Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button>
-  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(finalNota().miss?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(finalNota().miss?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ¡Desbloqueado!</div>`):''}</button>`).join('')}</div>
+  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(arcadeCerrado()?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(arcadeCerrado()?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ${finalNota().miss?'Abierto en la beta':'¡Desbloqueado!'}</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
   ${fame()}<div id="instalar"></div>`;
@@ -339,11 +339,13 @@ function chooser(title,sub,parts,run){
   document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>run(parts[+b.dataset.k]));
 }
 
+/* En las betas el arcade está siempre abierto, para poder probarlo (el padre, 22-nov). En la versión normal se abre al tener nota en todos los bloques. */
+function arcadeCerrado(){return !/-beta\//.test(location.pathname)&&finalNota().miss>0}
 /* El arcade bloqueado y el examen final, comunes a todos los juegos */
 Object.assign(R,{
  arcade(){
    const f=finalNota();
-   if(f.miss){app().innerHTML=`<div class="box center"><div class="big">🔒</div><h2>El arcade está bloqueado</h2>
+   if(arcadeCerrado()){app().innerHTML=`<div class="box center"><div class="big">🔒</div><h2>El arcade está bloqueado</h2>
      <p style="font-size:19px">Se desbloquea cuando juegues <b>todos los bloques</b> una vez y el boletín te dé tu nota.</p>
      <p class="sub">Te falta${f.miss>1?'n':''} <b>${f.miss}</b> bloque${f.miss>1?'s':''}: ${BLOCKS.filter(b=>nota(b.k)==null).map(b=>b.n).join(', ')}.</p>
      ${hoyToca()?`<button class="btn" id="hoy2">🎯 Ir a: ${hoyToca().b.n}</button> `:''}<button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
