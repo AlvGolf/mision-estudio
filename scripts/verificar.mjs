@@ -288,7 +288,7 @@ for (const ruta of ['/', '/menu-beta/']) {
   const errores = [];
   for (const curso of ['5', '2']) {
     const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
-    await ctx.addInitScript(c => { localStorage.setItem('mision_curso', c); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, curso);
+    await ctx.addInitScript(c => { localStorage.setItem('mision_curso', c); localStorage.setItem('mision_name', 'Prueba'); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, curso);
     const page = await ctx.newPage();
     page.on('pageerror', e => errores.push(e.message));
     await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
@@ -308,6 +308,38 @@ for (const ruta of ['/', '/menu-beta/']) {
       else R.notas.push(`[${curso}º] «${id}»: mapa de ${esperadas} estaciones con el cohete al principio desde la primera vez · ${f.boton.trim()}`);
     }
     await ctx.close();
+  }
+  /* 22-nov: el nombre se pide después del logo y antes del menú, y el mapa enseña por dónde va la ruta guardada por el juego
+     (también la jugada antes de esta versión), no la primera estación */
+  if (fs.readFileSync(html, 'utf8').includes('function pideNombre')) {
+    const hoy = new Date().toISOString().slice(0, 10);
+    let ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
+    await ctx.addInitScript(h => localStorage.setItem('mision_entrada', h), hoy);
+    let page = await ctx.newPage();
+    page.on('pageerror', e => errores.push(e.message));
+    await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
+    if (!await page.locator('#nm').count() || await page.locator('.tarj, .curso').count()) R.fallos.push('En una tablet nueva, el menú no pide el nombre antes del curso y de los juegos');
+    else { await page.fill('#nm', 'Prueba'); await page.click('#nmok'); await page.waitForSelector('.curso', { timeout: 4000 }).catch(() => {});
+      if (await page.evaluate(() => localStorage.getItem('mision_name')) !== 'Prueba' || !await page.locator('.curso').count()) R.fallos.push('Al escribir el nombre en el menú no se guarda o no pasa a elegir el curso');
+      else R.notas.push('Tablet nueva: logo, nombre, curso y menú, en ese orden'); }
+    await ctx.close();
+    const pj = await navegador.newPage(); await pj.goto(BASE + ruta, { waitUntil: 'domcontentloaded' });
+    const j = await pj.evaluate(() => { const x = JUEGOS.find(x => x.curso === 5); return { id: x.id, href: ir(x.carpeta) }; }); await pj.close();
+    const fuente = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, j.href)), 'index.html'), 'utf8');
+    const clave = (fuente.match(/claves:\{[^}]*ruta:'([^']+)'/) || [])[1];
+    if (clave) {
+      ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
+      await ctx.addInitScript(([h, k]) => { localStorage.setItem('mision_entrada', h); localStorage.setItem('mision_curso', '5'); localStorage.setItem('mision_name', 'Prueba'); localStorage.setItem(k, JSON.stringify({ i: 2, part: 0, on: false })); }, [hoy, clave]);
+      page = await ctx.newPage();
+      page.on('pageerror', e => errores.push(e.message));
+      await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
+      await page.click(`.tarj[data-id="${j.id}"]`);
+      await page.waitForSelector('.ficha-r', { timeout: 4000 }).catch(() => {});
+      const now = await page.evaluate(() => [...document.querySelectorAll('.ficha-r .rst')].findIndex(e => e.classList.contains('now')));
+      if (now !== 2) R.fallos.push(`Con la ruta de «${j.id}» guardada en la estación 3, el mapa del menú pone el cohete en la ${now + 1}`);
+      else R.notas.push(`Con la ruta de «${j.id}» empezada, el mapa del menú pone el cohete donde va (estación 3)`);
+      await ctx.close();
+    }
   }
   errores.forEach(e => R.fallos.push(`Error en la página: ${e}`));
 }
@@ -617,7 +649,12 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       const espera = async re => page.waitForFunction(r => new RegExp(r).test(document.querySelector('#stage .q')?.textContent || ''), re.source, { timeout: 4000 }).then(() => true, () => false);
       if (S.modo === 'libre') {
         const q = String(mal ? pd.q + 1 : pd.q);
-        for (const [k, ch] of [...q].entries()) await st.locator('[data-f="q"]').nth(k).fill(ch);
+        /* 22-nov: las casillas no abren el teclado de la tablet (tapaba el botón de comprobar); se escribe con el teclado de la cuenta */
+        const sinTeclado = await st.locator('.cuenta input').evaluateAll(a => a.every(i => i.getAttribute('inputmode') === 'none'));
+        if (!sinTeclado || !await st.locator('.pad-c').count()) fallo(`[${tag}] «${t}»: las casillas de la división libre abren el teclado de la tablet o falta el teclado de la cuenta`);
+        await st.locator('[data-f="q"]').first().click();
+        for (const ch of q) await st.locator(`.pad-c [data-c="${ch}"]`).click();
+        if (await st.locator('[data-f="q"]').evaluateAll(a => a.map(i => i.value).join('')) !== q) fallo(`[${tag}] «${t}»: el teclado de la cuenta no escribe el cociente ${q} en sus casillas`);
         for (const [k, ch] of [...String(pd.r)].entries()) await st.locator(`[data-f="${pd.P.length}"]`).nth(k).fill(ch);
         await st.locator('#wchk').click();
         if (!mal && !/✅ Cociente.*✅ Resto/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: la división libre ${S.D} : ${S.d} bien hecha (${pd.q}, resto ${pd.r}) no sale bien`);

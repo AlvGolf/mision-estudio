@@ -568,6 +568,12 @@ html[data-fam] #clase .rk.yo .rk-n::after{content:"tú";font:700 12px var(--fb);
 .cuenta .c.arco::before{content:'';position:absolute;top:-1px;left:3px;right:3px;height:8px;border-top:3px solid #3d7bd6;border-radius:50% 50% 0 0}
 .cuenta input{width:calc(var(--celda) - 4px);height:36px;border:2px dashed #9aa9cc;border-radius:6px;background:#fff;text-align:center;font:inherit;font-size:22px;color:#17224a;padding:0}
 .cuenta input.ok{border:2px solid #178a46;color:#178a46} .cuenta input.bad{border:2px solid #c0392b;color:#c0392b}
+.cuenta input:focus,.cuenta input.act{outline:none;border:2px solid #3d7bd6;background:#eef4ff;caret-color:transparent}
+/* Teclado de números de la cuadrícula: dos filas, justo debajo de la cuenta, para que el botón de comprobar quede a la vista */
+.pad-c{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:372px;margin:0 0 8px}
+.pad-c button{font-family:inherit;font-size:22px;font-weight:600;padding:8px 0;min-height:44px;border-radius:12px;border:0;background:var(--card2);color:var(--txt);cursor:pointer;touch-action:manipulation}
+.pad-c button:active{filter:brightness(1.25)}
+.pad-c [data-c="b"]{grid-column:span 2}
 .borr{width:100%;height:200px;background:#f7f3e8;background-image:linear-gradient(#d9e3f5 1px,transparent 1px),linear-gradient(90deg,#d9e3f5 1px,transparent 1px);background-size:34px 34px;border-radius:14px;touch-action:none;display:block;cursor:crosshair}
 .bb{font-size:15px;padding:7px 12px;margin:6px 0 10px}
 .montar{background:var(--sunk);border-radius:14px;padding:10px;margin:8px 0;display:grid;gap:8px}

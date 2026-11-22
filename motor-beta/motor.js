@@ -776,12 +776,22 @@ function hojaHTML(C,filas,cel,{div,lin}={}){let h='';
   for(let f=0;f<filas;f++)for(let c=0;c<C;c++){const x=(cel[f]&&cel[f][c])||{};
     h+=`<div class="c ${c===div?'div':''} ${lin&&lin(f,c)?'lin':''} ${x.cls||''}" ${x.attr||''}>${x.t??''}</div>`}
   return `<div class="hoja"><div class="cuenta" style="grid-template-columns:repeat(${C},var(--celda))">${h}</div></div>`}
-const casilla=a=>`<input inputmode="numeric" maxlength="1" ${NOAUTO} ${a}>`;
+/* Casillas de la cuadrícula (22-nov, el padre: el teclado de la tablet tapaba la cuenta y el botón de comprobar): no abren el teclado
+   del sistema (inputmode="none"); debajo de la cuenta va un teclado de números pequeño, como el de la división guiada.
+   En el ordenador también vale el teclado de verdad. */
+const casilla=a=>`<input inputmode="none" maxlength="1" ${NOAUTO} ${a}>`;
 /* Las casillas saltan solas a la de la derecha al escribir */
-function casillas(box){const ins=[...box.querySelectorAll('.cuenta input')];
-  ins.forEach((i,k)=>{i.oninput=()=>{i.value=i.value.replace(/\D/g,'').slice(-1);i.classList.remove('ok','bad');
-    const nx=ins[k+1];if(i.value&&nx&&nx.dataset.f===i.dataset.f)nx.focus({preventScroll:true})};
+function casillas(box){const ins=[...box.querySelectorAll('.cuenta input')];let act=null;
+  const salta=(i,k)=>{const nx=ins[k+1];if(i.value&&nx&&nx.dataset.f===i.dataset.f)nx.focus({preventScroll:true})};
+  ins.forEach((i,k)=>{i.onfocus=()=>{act=i;ins.forEach(x=>x.classList.toggle('act',x===i))};
+    i.oninput=()=>{i.value=i.value.replace(/\D/g,'').slice(-1);i.classList.remove('ok','bad');salta(i,k)};
     i.onkeydown=e=>{if(e.key=='Backspace'&&!i.value&&ins[k-1]&&ins[k-1].dataset.f===i.dataset.f){ins[k-1].focus();ins[k-1].value='';e.preventDefault()}}});
+  box.insertAdjacentHTML('beforeend',`<div class="pad-c" role="group" aria-label="Teclado de números">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button type="button" data-c="${n}">${n}</button>`).join('')}<button type="button" data-c="b" aria-label="Borrar">⌫</button></div>`);
+  box.querySelectorAll('.pad-c button').forEach(b=>{b.onpointerdown=e=>e.preventDefault();
+    b.onclick=()=>{const i=act||ins[0];if(!i||i.disabled)return;const k=ins.indexOf(i);sfxTap();
+      if(b.dataset.c=='b'){if(i.value){i.value='';i.classList.remove('ok','bad');i.focus({preventScroll:true})}
+        else if(ins[k-1]&&ins[k-1].dataset.f===i.dataset.f){ins[k-1].value='';ins[k-1].focus({preventScroll:true})}return}
+      i.value=b.dataset.c;i.classList.remove('ok','bad');i.focus({preventScroll:true});salta(i,k)}});
   return ins}
 const filaNum=(box,f)=>[...box.querySelectorAll(`.cuenta input[data-f="${f}"]`)].map(i=>i.value).join('');
 /* División libre en cuadrícula: devuelve {comprobar()} con el cociente y el resto que escribió */
@@ -794,7 +804,7 @@ function divLibre(box,D,d){
   const ins=casillas(box);ins.find(i=>i.dataset.f=='q').focus({preventScroll:true});
   return {comprobar(){const qv=filaNum(box,'q');let rv='';for(let f=R-1;f>=1;f--){const v=filaNum(box,f);if(v){rv=v;break}}
     if(!qv||!rv)return null;const bq=+qv===q,br=+rv===r;
-    box.querySelectorAll('[data-f="q"]').forEach(i=>i.classList.add(bq?'ok':'bad'));ins.forEach(i=>i.disabled=true);return{bq,br,q,r}}}
+    box.querySelectorAll('[data-f="q"]').forEach(i=>i.classList.add(bq?'ok':'bad'));ins.forEach(i=>i.disabled=true);const pc=box.querySelector('.pad-c');if(pc)pc.remove();return{bq,br,q,r}}}
 }
 /* Suma, resta o multiplicación montada en columna: el niño rellena las casillas; devuelve {comprobar()} con la última fila */
 function cuentaColumna(box,a,op,b){
@@ -827,8 +837,8 @@ Object.assign(STEP,{
   divi(st,s,done){
     const {s:ds,m,P,q,r}=pasosDiv(s.D,s.d),n=ds.length,dv=String(s.d);
     if(s.modo=='libre'){
-      st.innerHTML=`<div class="q">${esc(s.q||`Haz la división ${fmtN(s.D)} : ${s.d}`)}</div><div id="dh"></div>
-      <div class="hint">Escribe los restos debajo y el cociente debajo del ${s.d}. Se corrigen el cociente y el resto.</div>
+      st.innerHTML=`<div class="q">${esc(s.q||`Haz la división ${fmtN(s.D)} : ${s.d}`)}</div>
+      <div class="hint">Escribe los restos debajo y el cociente debajo del ${s.d}. Se corrigen el cociente y el resto.</div><div id="dh"></div>
       <button class="btn" id="wchk" style="margin-top:6px">Comprobar ✔</button>`;
       const L=divLibre($('#dh'),s.D,s.d);
       $('#wchk').onclick=()=>{const c=L.comprobar();if(!c){$('#fb').textContent='Escribe el cociente y el resto 😉';return}
