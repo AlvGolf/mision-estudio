@@ -821,6 +821,77 @@ function cuentaColumna(box,a,op,b){
   return {comprobar(){const v=filaNum(box,R-1);if(!v)return null;const ok=+v===res;
     box.querySelectorAll(`[data-f="${R-1}"]`).forEach(i=>i.classList.add(ok?'ok':'bad'));return{ok,res}}}
 }
+/* ===== División por dos cifras como en el vídeo del cole (22-nov, ronda 6 del artefacto de modalidades, V3) =====
+   La profesora reparte (la última cifra para las unidades del divisor y lo demás para las decenas), busca en la tabla
+   de las decenas un número cerca sin pasarse y resta «hasta» empezando por las unidades, llevándose lo que toque.
+   Solo se escribe lo que sobra, con sus ceros (08, 02); si no llega, 0 al cociente; al final se rodea el resto. */
+function hastaPasos(cur,q,d){const ds=String(d),L=ds.length,out=[];let lleva=0;
+  for(let i=0;i<L;i++){const dig=+ds[L-1-i],p=q*dig+lleva;
+    if(i<L-1){const t=Math.floor(cur/10**i)%10,X=p<=t?t:t+10*Math.ceil((p-t)/10);out.push({dig,p,prod:q*dig,lleva0:lleva,arriba:X,res:X-p});lleva=Math.floor(X/10)}
+    else{const top=Math.floor(cur/10**i);out.push({dig,p,prod:q*dig,lleva0:lleva,arriba:top,res:top-p})}}
+  return out}
+function reparto(cur,d){const ds=String(d),du=+ds.slice(-1),dt=+ds.slice(0,-1)||1,u=cur%10,resto=Math.floor(cur/10);return {du,dt,u,resto,est:Math.min(9,Math.floor(resto/dt))}}
+function pistaReparte(cur,d){const R=reparto(cur,d),tabla=[];for(let k=Math.max(1,R.est-1);k<=Math.min(9,R.est+1);k++)tabla.push(`${R.dt} × ${k} = ${R.dt*k}`);
+  let e=R.est,t=`Reparte: el ${R.u} para el ${R.du} y el ${R.resto} para el ${R.dt}. En la tabla del ${R.dt} (${tabla.join(' · ')}), cerca de ${R.resto} sin pasarse: el ${e}.`;
+  while(e>0&&e*d>cur){t+=` Pero ${d} × ${e} = ${d*e} se pasa de ${cur}: uno menos.`;e--}
+  return t+(e!==R.est?` Va el ${e}.`:'')}
+/* Un óvalo rojo alrededor de unas celdas de la cuenta (el resto rodeado) */
+function rodea(box,celdas){const cu=box.querySelector('.cuenta');celdas=celdas.filter(Boolean);if(!cu||!celdas.length)return;cu.style.position='relative';
+  const a=celdas[0],b=celdas[celdas.length-1],o=document.createElement('div');o.className='rodea';
+  o.style.cssText=`left:${a.offsetLeft-5}px;top:${a.offsetTop+1}px;width:${b.offsetLeft+b.offsetWidth-a.offsetLeft+10}px;height:${a.offsetHeight-2}px`;cu.appendChild(o)}
+/* modo 'pizarra': reparto, tabla y resta «hasta» cifra a cifra · modo 'resto': el resto de una vez, con sus ceros */
+function divPizarra(st,s,done){
+  const {s:ds,m,P}=pasosDiv(s.D,s.d),n=ds.length,dv=String(s.d),L=dv.length,d=s.d,C=n+Math.max(L,P.length+1);
+  const R=Math.max(2,P.filter(p=>p.q>0).length+1),cel=[[]],coc=[];
+  [...ds].forEach((ch,c)=>cel[0][c]={t:ch,attr:`data-dg="${c}" role="button" tabindex="0"`});[...dv].forEach((ch,j)=>cel[0][n+j]={t:ch});
+  let fase='coge',k=0,fila=0,ok=0,tot=0,iH=0,HP=null,circ=null;
+  const curCols=p=>[p.e-String(p.cur).length+1,p.e];
+  const celda=(f,c)=>st.querySelectorAll('.cuenta .c')[f*C+c];
+  const pinta=(preg,extra='',marca=[])=>{const c2=cel.map(f=>(f||[]).map(x=>x&&{...x}));c2[1]=c2[1]||[];coc.forEach((x,j)=>c2[1][n+j]={t:x.t,cls:x.cls});
+    marca.forEach(([f,c,cls])=>{c2[f]=c2[f]||[];const x=c2[f][c]||{};c2[f][c]={...x,cls:(x.cls||'')+' '+cls}});
+    st.innerHTML=`<div id="dh">${hojaHTML(C,R,c2,{div:n,lin:(f,c)=>f==0&&c>=n})}</div><div class="q" style="font-size:20px">${preg}</div>${extra}<div id="tk"></div>`;
+    if(circ)rodea($('#dh'),circ.cs.map(c=>celda(circ.f,c)))};
+  const nota=(b,txt)=>{tot++;if(b){ok++;win(5)}else lose();$('#fb').innerHTML=(b?'✅ ':'❌ ')+txt};
+  const sigue=(b,f)=>setTimeout(()=>{if(st.isConnected)f()},b?650:1900);
+  const tocar=f=>st.querySelectorAll('[data-dg]').forEach(x=>{x.onclick=()=>f(+x.dataset.dg,x);x.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();f(+x.dataset.dg,x)}}});
+  function paso(){
+    if(fase=='coge'){pinta(`¿Hasta qué cifra coges? Toca en amarillo la última cifra que coges.`,'',[...ds].map((_,c)=>[0,c,'toc']));
+      tocar(c=>{if(fase!='coge')return;const b=c==m-1;nota(b,b?`Coges ${ds.slice(0,m)}: ya cabe el ${d}. Se marca con un arco.`:`Hay que coger ${ds.slice(0,m)}: con menos cifras no cabe el ${d}.`);
+        for(let j=0;j<m;j++)cel[0][j].cls='arco';fase='q';sigue(b,paso)});return}
+    const p=P[k],[c0,c1]=curCols(p),cur=[];for(let c=c0;c<=c1;c++)cur.push([fila,c,'now']);
+    if(fase=='q'){const Rp=p.cur>=d&&L>1?reparto(p.cur,d):null,mk=Rp?[...cur.map(([f,c])=>[f,c,c==c1?'rep1':'rep2']),[0,n+L-1,'rep1'],[0,n,'rep2']]:cur;
+      pinta(Rp?`Reparte: el <span class="t1">${Rp.u}</span> para el <span class="t1">${Rp.du}</span> y el <span class="t2">${Rp.resto}</span> para el <span class="t2">${Rp.dt}</span>. ¿Cuántas veces cabe ${d} en ${p.cur}?`:`¿Cuántas veces cabe ${d} en ${p.cur}?`,
+        `<button class="btn sec" id="ay" style="font-size:15px;padding:7px 12px;margin-top:0">💡 Pista</button> <span class="hint" id="ayt"></span>`,mk);
+      $('#ay').onclick=()=>{$('#ayt').textContent=p.cur<d?`${p.cur} es más pequeño que ${d}: ¿cabe alguna vez?`:L>1?pistaReparte(p.cur,d):[...Array(10).keys()].slice(Math.max(1,p.q-1),Math.min(10,p.q+2)).map(x=>`${d} × ${x} = ${d*x}`).join(' · ')};
+      teclado($('#tk'),v=>{const b=+numES(v)===p.q;coc.push({t:p.q,cls:b?'ok':'bad'});
+        if(p.q==0){nota(b,`${p.cur} no llega a ${d}: se pone un 0 en el cociente.`);fase=k+1<P.length?'baja':'rodea'}
+        else{const Rq=L>1?reparto(p.cur,d):null,sobra=!b&&Rq&&+numES(v)===Rq.est&&Rq.est>p.q;
+          nota(b,b?`Cabe ${p.q}.`:sobra?`En la tabla del ${Rq.dt} sale ${Rq.est}, pero ${d} × ${Rq.est} = ${d*Rq.est} se pasa de ${p.cur}: va uno menos, ${p.q}.`:`Cabe ${p.q}: ${d} × ${p.q} = ${d*p.q}${p.q<9?` y ${d} × ${p.q+1} = ${d*(p.q+1)} ya se pasa`:''}.`);
+          if(s.modo=='pizarra'){fase='hasta';iH=0;HP=hastaPasos(p.cur,p.q,d)}else fase='resto'}
+        sigue(b,paso);return b});return}
+    if(fase=='hasta'){const h=HP[iH],col=p.e-iH,ult=iH==L-1,mk=[...cur,[0,n+L-1-iH,'rep1']];for(let c=ult?c0:col;c<=col;c++)mk.push([fila,c,'rep1']);
+      pinta(`${h.dig} por ${p.q}, ${h.prod}${h.lleva0?`, y ${h.lleva0} que me llevo, ${h.p}`:''}. Al ${h.arriba}, ¿cuánto va?`,`<div class="hint">«Al ${h.arriba}»: de ${h.p} hasta ${h.arriba}${!ult&&h.arriba>=10?`, y me llevo ${Math.floor(h.arriba/10)}`:''}.</div>`,mk);
+      teclado($('#tk'),v=>{const b=+numES(v)===h.res;(cel[fila+1]=cel[fila+1]||[])[col]={t:h.res,cls:b?'ok':'bad'};const lleva=!ult?Math.floor(h.arriba/10):0;
+        nota(b,(b?`Se escribe ${h.res}`:`Va ${h.res}: ${h.p} + ${h.res} = ${h.arriba}. Se escribe ${h.res}`)+(lleva?` y me llevo ${lleva}.`:'.'));
+        iH++;if(iH==L){fila++;fase=k+1<P.length?'baja':'rodea'}sigue(b,paso);return b});return}
+    if(fase=='resto'){const rs=String(p.r).padStart(L,'0');
+      pinta(`¿Cuánto sobra? Escríbelo con ${L} cifras: si empieza por cero, también el cero.`,'',cur);
+      teclado($('#tk'),v=>{const b=String(v).replace(/\D/g,'')===rs;[...rs].forEach((ch,j)=>(cel[fila+1]=cel[fila+1]||[])[p.e-L+1+j]={t:ch,cls:b?'ok':'bad'});
+        nota(b,b?`Sobran ${p.r}: se escribe ${rs}.`:`Se escribe ${rs}: ${p.cur} − ${d*p.q} = ${p.r}${rs[0]=='0'?', con el cero delante':''}.`);
+        fila++;fase=k+1<P.length?'baja':'rodea';sigue(b,paso);return b});return}
+    if(fase=='baja'){const sig=p.e+1;pinta(`Baja la siguiente cifra: toca la cifra en amarillo.`,'',[[0,sig,'toc']]);
+      tocar((c,x)=>{if(fase!='baja')return;if(c!==sig){x.classList.remove('shake');void x.offsetWidth;x.classList.add('shake');$('#fb').textContent='Esa no: baja la primera cifra que aún no has usado.';return}
+        sfxTap();(cel[fila]=cel[fila]||[])[sig]={t:ds[sig]};k++;fase='q';$('#fb').textContent='';paso()});return}
+    if(fase=='rodea'){const fl=cel[fila]||[],cs=[];for(let c=0;c<=p.e;c++)if(fl[c])cs.push(c);
+      pinta(`¡Ya no quedan cifras! Rodea el resto: toca una de sus cifras en amarillo.`,'',cs.map(c=>[fila,c,'toc rr']));
+      cs.forEach(c=>{const x=celda(fila,c);x.setAttribute('role','button');x.tabIndex=0;const go=()=>{if(fase!='rodea')return;sfxTap();circ={f:fila,cs};fase='fin';paso()};
+        x.onclick=go;x.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();go()}}});return}
+    const qv=+coc.map(x=>x.t).join(''),r=P[P.length-1].r;
+    pinta(`Cociente <b>${qv}</b> y resto <b>${r}</b>: la división es ${r?'entera':'exacta'}. La prueba: ${d} × ${qv} + ${r} = ${s.D}.`);
+    done(ok,tot,ok==tot?'✅ ¡Todos los pasos a la primera!':`👍 ${ok} de ${tot} pasos a la primera.`);
+  }
+  paso();
+}
 /* Borrador para escribir con el dedo, como en papel (no se corrige) */
 function borrador(box){
   box.innerHTML=`<canvas class="borr" aria-label="Borrador: escribe con el dedo"></canvas><button class="btn sec bb" type="button">🧽 Borrar el borrador</button>`;
@@ -839,13 +910,24 @@ Object.assign(STEP,{
      Guiada: qué cifras coge, cuántas veces cabe, cuánto sobra y bajar la cifra; cuenta cada paso.
      Libre: como en la hoja; cuentan el cociente y el resto */
   divi(st,s,done){
+    if(s.modo=='pizarra'||s.modo=='resto')return divPizarra(st,s,done);
     const {s:ds,m,P,q,r}=pasosDiv(s.D,s.d),n=ds.length,dv=String(s.d);
     if(s.modo=='libre'){
       st.innerHTML=`<div class="q">${esc(s.q||`Haz la división ${fmtN(s.D)} : ${s.d}`)}</div>
-      <div class="hint">Escribe los restos debajo y el cociente debajo del ${s.d}. Se corrigen el cociente y el resto.</div><div id="dh"></div>
+      <div class="hint">Escribe los restos debajo${s.rodea?', con sus ceros,':''} y el cociente debajo del ${s.d}.${s.rodea?' Al acabar, rodea el resto.':''} Se corrigen el cociente y el resto.</div><div id="dh"></div>
       <button class="btn" id="wchk" style="margin-top:6px">Comprobar ✔</button>`;
       const L=divLibre($('#dh'),s.D,s.d);
-      $('#wchk').onclick=()=>{const c=L.comprobar();if(!c){$('#fb').textContent='Escribe el cociente y el resto 😉';return}
+      /* 22-nov (vídeo del cole): en las que lo piden, antes de corregir se rodea el resto, tocando una de sus cifras */
+      let rodeado=!s.rodea;
+      const filaDe=i=>i&&i.dataset.f&&i.dataset.f!=='q'?i.dataset.f:null;
+      $('#wchk').onclick=()=>{if(!rodeado){const hay=[...$('#dh').querySelectorAll('.cuenta input')].some(i=>filaDe(i)&&i.value);
+          if(!hay||!$('#dh').querySelector('[data-f="q"]').value){$('#fb').textContent='Escribe el cociente y el resto 😉';return}
+          $('#fb').textContent='Ahora rodea el resto: toca una de sus cifras en amarillo.';$('#wchk').disabled=true;
+          const pc=$('#dh').querySelector('.pad-c');if(pc)pc.hidden=true;
+          $('#dh').querySelectorAll('.cuenta input').forEach(i=>{if(!filaDe(i)||!i.value)return;i.classList.add('rr');i.readOnly=true;
+            i.onclick=()=>{const f=i.dataset.f,cs=[...$('#dh').querySelectorAll(`.cuenta input[data-f="${f}"]`)].filter(x=>x.value).map(x=>x.parentElement);
+              rodea($('#dh'),cs);$('#dh').querySelectorAll('.cuenta input').forEach(x=>{x.classList.remove('rr');x.onclick=null});rodeado=true;$('#wchk').disabled=false;$('#fb').textContent='';$('#wchk').click()}});return}
+        const c=L.comprobar();if(!c){$('#fb').textContent='Escribe el cociente y el resto 😉';return}
         $('#wchk').remove();c.bq&&c.br?win(15):lose();
         done((c.bq?1:0)+(c.br?1:0),2,`${c.bq?'✅':'❌'} Cociente <b>${q}</b> · ${c.br?'✅':'❌'} Resto <b>${r}</b>: es ${r?'entera':'exacta'}.`)};
       return}
