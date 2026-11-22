@@ -15,8 +15,9 @@ const FONDO = `<defs><radialGradient id="f" cx="50%" cy="20%" r="100%"><stop off
 /* El logo en negativo: [0] el ME, [1] el visto rojo, [2] «Misión Estudio» (medidos con getBBox) */
 const P = [...fs.readFileSync(path.join(RAIZ, 'marca', 'descriptor-negativo.svg'), 'utf8').matchAll(/<path d="([^"]+)"/g)].map(m => m[1]);
 const ME = { x: 18, y: 16, w: 134, h: 97 }, NOM = { x: -48, y: 132, w: 265, h: 28 };
-function me(anchoME, anchoNom, hueco) {
-  const s1 = anchoME / ME.w, s2 = anchoNom / NOM.w, alto = ME.h * s1 + hueco + NOM.h * s2, y0 = (512 - alto) / 2;
+/* sube: cuánto se sube el conjunto sobre el centro (el visto rojo sube por encima de las letras y, centrado, el ME parecía bajo) */
+function me(anchoME, anchoNom, hueco, sube) {
+  const s1 = anchoME / ME.w, s2 = anchoNom / NOM.w, alto = ME.h * s1 + hueco + NOM.h * s2, y0 = (512 - alto) / 2 - sube;
   const g1 = `translate(${(512 - anchoME) / 2 - ME.x * s1} ${y0 - ME.y * s1}) scale(${s1})`;
   const g2 = `translate(${(512 - anchoNom) / 2 - NOM.x * s2} ${y0 + ME.h * s1 + hueco - NOM.y * s2}) scale(${s2})`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">${FONDO}
@@ -33,7 +34,7 @@ function cohete(escala) {
 }
 
 const ICONOS = {
-  '': { any: me(290, 370, 34), mask: me(232, 300, 26) },
+  '': { any: me(330, 370, 30, 16), mask: me(256, 300, 22, 10) },
   'cohete': { any: cohete(1.2), mask: cohete(1.08) },
 };
 
