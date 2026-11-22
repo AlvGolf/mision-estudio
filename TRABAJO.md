@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| motor-beta, mates-u3-beta | Claude Code | 21-nov | Cifras de las divisiones que se ven tocables y sin sonido al tocar |

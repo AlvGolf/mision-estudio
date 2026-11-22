@@ -840,13 +840,13 @@ Object.assign(STEP,{
     const pinta=(preg,extra='')=>{const c2=cel.map(f=>f.map(x=>x&&{...x}));c2[1]=c2[1]||[];
       coc.forEach((x,j)=>c2[1][n+j]={t:x.t,cls:x.cls});
       if(fase=='q'||fase=='r'){const p=P[k],f=k,ini=p.e-String(p.cur).length+1;for(let c=ini;c<=p.e;c++)if(c2[f]&&c2[f][c])c2[f][c].cls=(c2[f][c].cls||'')+' now'}
-      if(fase=='coge'||fase=='baja')for(let c=0;c<n;c++)c2[0][c].cls=(c2[0][c].cls||'')+' toc';
+      if(fase=='coge'||fase=='baja')for(let c=fase=='baja'?P[k].e+1:0;c<n;c++)c2[0][c].cls=(c2[0][c].cls||'')+' toc';
       st.innerHTML=`<div id="dh">${hojaHTML(C,R,c2,{div:n,lin:(f,c)=>f==0&&c>=n})}</div><div class="q" style="font-size:20px">${preg}</div>${extra}<div id="tk"></div>`};
     const nota=(b,txt)=>{tot++;if(b){ok++;win(5)}else lose();$('#fb').innerHTML=(b?'✅ ':'❌ ')+txt};
     const sigue=(b,f)=>setTimeout(()=>{if(st.isConnected)f()},b?650:1700);
     const tocar=(f)=>st.querySelectorAll('[data-dg]').forEach(x=>{x.onclick=()=>f(+x.dataset.dg,x);x.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();f(+x.dataset.dg,x)}}});
     function paso(){const p=P[k];
-      if(fase=='coge'){pinta(`¿Hasta qué cifra coges? Toca la última cifra que coges.`);
+      if(fase=='coge'){pinta(`¿Hasta qué cifra coges? Toca en amarillo la última cifra que coges.`);
         tocar(c=>{if(fase!='coge')return;const b=c==m-1;nota(b,b?`Coges ${ds.slice(0,m)}: ya cabe el ${s.d}.`:`Hay que coger ${ds.slice(0,m)}: con menos cifras no cabe el ${s.d}.`);
           for(let j=0;j<m;j++)cel[0][j].cls='arco';fase='q';sigue(b,paso)});return}
       if(fase=='q'){pinta(`¿Cuántas veces cabe ${s.d} en ${p.cur}?`,`<button class="btn sec" id="ay" style="font-size:15px;padding:7px 12px;margin-top:0">💡 Ayuda</button> <span class="hint" id="ayt"></span>`);
@@ -855,7 +855,7 @@ Object.assign(STEP,{
       if(fase=='r'){pinta(`¿Cuánto sobra? (${p.cur} menos ${p.q} × ${s.d})`);
         teclado($('#tk'),v=>{const b=+numES(v)===p.r,t=String(p.r);cel[k+1]=cel[k+1]||[];[...t].forEach((ch,j)=>cel[k+1][p.e-t.length+1+j]={t:ch,cls:b?'ok':'bad'});
           nota(b,b?`Sobran ${p.r}.`:`Sobran ${p.r}: ${p.cur} − ${s.d*p.q} = ${p.r}.`);fase=k+1<P.length?'baja':'fin';sigue(b,paso);return b});return}
-      if(fase=='baja'){const sig=p.e+1;pinta(`Baja la siguiente cifra: tócala.`);
+      if(fase=='baja'){const sig=p.e+1;pinta(`Baja la siguiente cifra: toca una de las cifras en amarillo.`);
         tocar((c,x)=>{if(fase!='baja')return;if(c!==sig){x.classList.remove('shake');void x.offsetWidth;x.classList.add('shake');$('#fb').textContent='Esa no: baja la primera cifra que aún no has usado.';return}
           sfxTap();cel[k+1][sig]={t:ds[sig]};k++;fase='q';$('#fb').textContent='';paso()});return}
       const qv=coc.map(x=>x.t).join('');pinta(`Cociente <b>${+qv}</b> y resto <b>${P[P.length-1].r}</b>: la división es ${P[P.length-1].r?'entera':'exacta'}.`);

@@ -94,7 +94,7 @@ function son(t,k=0){if(!SONIDO)return;try{const A=window._ac||(window._ac=new (w
     g.gain.setValueAtTime(v,n0);g.gain.exponentialRampToValueAtTime(.0001,n0+d);s.connect(fl);fl.connect(g);g.connect(A.destination);s.start(n0);s.stop(n0+d)};
   ({ok:()=>{nota(660,0,.1);nota(990,.08,.16)},
     bad:()=>nota(330,0,.2,'sine',.07,220),
-    tap:()=>nota(520,0,.07,'sine',.04),
+    tap:()=>{}, /* 21-nov, el padre: sin sonido al tocar teclas y fichas; se quedan los de acertar, recompensa y fin de bloque */
     estrella:()=>nota([784,988,1175][k]||1175,0,.16,'triangle',.06),
     sello:()=>{ruido(.12,.12,500,180,.8);nota(120,0,.16,'sine',.14,70)},
     fanfarria:()=>[523,659,784,1047].forEach((f,i)=>nota(f,i*.09,i==3?.32:.15,'triangle',.05)),
