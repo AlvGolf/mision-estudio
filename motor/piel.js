@@ -132,7 +132,8 @@ function son(t,k=0){if(!SONIDO)return;try{const A=window._ac||(window._ac=new (w
     cuenta:()=>nota(523,0,.12,'square',.03),
     ya:()=>{nota(784,0,.1,'square',.03);nota(1047,.08,.26,'square',.035)},
     asoma:()=>{nota(880,0,.06,'sine',.05);nota(1320,.05,.09,'sine',.05)},
-    pasa:()=>ruido(.38,.05,350,2200,1.2)})[t]()}catch(e){}}
+    pasa:()=>ruido(.38,.05,350,2200,1.2),
+    despegue:()=>{ruido(1.3,.07,160,1800,.7);nota(70,0,.6,'sine',.06,45)}})[t]()}catch(e){}}
 function botonSonido(){const h=document.querySelector('header .hud');if(!h||document.getElementById('sonido'))return;
   const b=document.createElement('button');b.id='sonido';b.className='pill sonido';b.type='button';
   const pon=()=>{b.textContent=SONIDO?'🔊':'🔇';b.setAttribute('aria-label',SONIDO?'Quitar el sonido':'Poner el sonido');b.setAttribute('aria-pressed',String(!SONIDO))};
