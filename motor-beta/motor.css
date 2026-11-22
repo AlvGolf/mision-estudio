@@ -578,6 +578,8 @@ html[data-fam] #clase .rk.yo .rk-n::after{content:"tú";font:700 12px var(--fb);
 .opsel button{font-family:inherit;font-size:22px;font-weight:700;width:48px;height:46px;border-radius:12px;border:2px solid var(--line);background:var(--card2);color:var(--txt);cursor:pointer}
 .opsel button[aria-pressed="true"]{background:var(--gold);color:#3a2700;border-color:var(--gold)}
 @media(max-width:600px){.hoja{--celda:30px}.cuenta{font-size:21px}}
+/* La raya entre estaciones no sigue tras la última estación del día (22-nov) */
+.rst:has(+ .rcorte)::after{display:none!important}
 .rcorte{grid-column:1/-1;text-align:center;font-size:14px;font-weight:600;color:var(--gold);border-top:2px dashed var(--gold);padding-top:4px;margin:4px 0}
 .hoyfin{margin:12px 0 4px}
 
@@ -602,6 +604,10 @@ html[data-fam=D] .portada-t{color:#1D3BA8}
 .despegue .vuela{animation:despega 1.7s .35s ease-in forwards}
 @keyframes despega{0%{transform:none}8%{transform:translate(-3px,0)}16%{transform:translate(3px,0)}24%{transform:none}100%{transform:translateY(-900px)}}
 .sello-fin{display:flex;justify-content:center;min-height:0;margin:6px 0}
+/* Examen aprobado, S2 (22-nov): todo en columna con el mismo espacio. El hueco del sello de ME está reservado para que nada salte */
+.sello-fin.dos{min-height:150px;margin:16px 0 12px}
+.cf-sello.abajo{height:auto;margin:4px 0 26px}
+.cf-sello.abajo span{position:static;display:inline-block;rotate:-8deg;font-size:20px}
 .entrada-m{--ink:#fff;--brillo:#5f8dff;position:fixed;inset:0;z-index:60;background:#0A1441;display:grid;place-items:center;align-content:center;gap:22px;cursor:pointer;transition:opacity .35s}
 html[data-fam=D] .entrada-m{--ink:#1D3BA8;--brillo:#fff;background:#FAF7F0}
 .entrada-m svg{width:min(84vw,560px);height:auto;overflow:visible}

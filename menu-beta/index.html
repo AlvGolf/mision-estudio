@@ -7,7 +7,7 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="apple-touch-icon" href="../iconos/apple-touch-icon.png">
 <link rel="icon" href="../marca/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=19">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=20">
 <style>
 /* Menú de la suite (ronda 6 del rediseño, 21-nov): S1 «estanterías por asignatura» con la pantalla de curso de la S2 al empezar. */
 header h1{display:flex;align-items:center;gap:8px;cursor:default}
@@ -35,6 +35,21 @@ header h1 img{display:block}
 @media (hover:hover){.tarj:hover,.prox:hover{transform:translateY(-2px)}.tarj,.prox{transition:transform .15s}}
 @media (max-width:600px){.tarj{width:168px}.prox b{font-size:20px}.curso button{font-size:23px;padding:18px 14px}}
 @media (min-width:601px){.fila{flex-wrap:wrap;overflow:visible}}
+/* La ruta en el menú (22-nov, ronda 12 del logo, M2): al tocar una tarjeta, se marca y a su derecha sale la ficha con el mapa
+   y dos botones. Siempre se pasa por la ficha para entrar en el juego. En el móvil, la ficha va debajo. */
+.tarj.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,200,61,.35),var(--sh)}
+.estante.abre .cuerpo{display:grid;gap:12px}
+@media (min-width:601px){.estante.abre .cuerpo{grid-template-columns:auto 1fr;align-items:start}.estante.abre .fila{flex-direction:column;flex-wrap:nowrap}}
+.ficha-r{background:var(--card);border:var(--bw) solid var(--cline);box-shadow:var(--sh);border-radius:18px;padding:14px 14px 16px;display:grid;gap:12px;min-width:0;animation:ficha-entra .35s ease-out}
+.ficha-r .tt{display:flex;align-items:center;gap:8px;font:700 18px var(--ft);margin:0}
+.ficha-r .tt .cohete{width:18px;height:27px;transform:rotate(45deg);flex:none}
+.ficha-r .rmap{margin-top:30px}
+.ficha-r .sub{margin:0;color:var(--mut);font-size:14px}
+.ficha-r .bts{display:grid;gap:10px;justify-items:start}
+.ficha-r .bts .btn{margin:0;text-decoration:none;display:inline-block}
+@keyframes ficha-entra{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@media (max-width:600px){@keyframes ficha-entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.ficha-r .bts{justify-items:stretch}.ficha-r .bts .btn{text-align:center}}
+@media (prefers-reduced-motion:reduce){.ficha-r{animation:none}}
 </style>
 </head>
 <body>
@@ -49,7 +64,7 @@ let CURSO=null;try{CURSO=+localStorage.getItem('mision_curso')||null}catch(e){}
 const JUEGO={id:'menu',estilo:0,curso:CURSO||5};
 </script>
 <script src="../juegos.js"></script>
-<script src="../motor-beta/piel.js?v=19"></script>
+<script src="../motor-beta/piel.js?v=20"></script>
 <script>
 const app=()=>document.getElementById('app');
 const RAIZ='../';
@@ -76,21 +91,42 @@ function pinta(){
   const A=j=>ASIGNATURAS[j.asignatura]||{n:j.asignatura,ic:'📘',col:'#3dd6ff'};
   let i=0;const ent=()=>`ent" style="--i:${i++}`;
   const saludo=prox?`¡Hola! Hoy toca ${A(prox).n}: el examen es ${cuando(prox.d)}.`:js.length?'¡Hola! Elige tu misión. Los exámenes pasados sirven para repasar.':'¡Hola! Los juegos de tu curso llegarán muy pronto.';
-  const tarjeta=j=>`<a class="tarj ${j.d<0?'pasado ':''}${ent()};--asig:${A(j).col}" href="${ir(j.carpeta)}"><b>${esc(j.titulo)}</b><small>${esc(j.temas||'')}</small>
+  const tarjeta=j=>`<a class="tarj ${j.d<0?'pasado ':''}${ent()};--asig:${A(j).col}" href="${ir(j.carpeta)}" data-id="${j.id}" aria-expanded="false"><b>${esc(j.titulo)}</b><small>${esc(j.temas||'')}</small>
     <small>Examen ${fecha(j.examen)}${j.d<0?' · para repasar':' · '+cuando(j.d)}</small><span class="sem">${semaforo(j.r)}</span></a>`;
   // asignaturas ordenadas por su próximo examen; las que solo tienen exámenes pasados, al final
   const orden=a=>{const f=js.filter(j=>j.asignatura===a&&j.d>=0).map(j=>j.d);return f.length?Math.min(...f):1e6};
   const asigs=[...new Set(js.map(j=>j.asignatura))].sort((a,b)=>orden(a)-orden(b));
   app().innerHTML=`${guia(esc(saludo),{saluda:1})}
-    ${prox?`<a class="prox ${ent()}" href="${ir(prox.carpeta)}"><small>Próximo examen · ${cuando(prox.d)}</small><b>${A(prox).ic} ${esc(A(prox).n)} · ${esc(prox.titulo)}</b>
+    ${prox?`<a class="prox ${ent()}" href="${ir(prox.carpeta)}" data-id="${prox.id}"><small>Próximo examen · ${cuando(prox.d)}</small><b>${A(prox).ic} ${esc(A(prox).n)} · ${esc(prox.titulo)}</b>
       <span>${prox.r&&prox.r.nota!=null?'Tu nota ahora: '+semaforo(prox.r).slice(3)+' · sigue la ruta de hoy':'Empieza por la 🧭 ruta de estudio'}</span></a>`:''}
-    ${asigs.map(a=>`<section class="estante"><h2 class="${ent()}">${ASIGNATURAS[a]?.ic||'📘'} ${esc(ASIGNATURAS[a]?.n||a)}</h2><div class="fila">${js.filter(j=>j.asignatura===a).sort((x,y)=>(x.d<0)-(y.d<0)||(x.d<0?y.d-x.d:x.d-y.d)).map(tarjeta).join('')}</div></section>`).join('')
+    ${asigs.map(a=>`<section class="estante"><h2 class="${ent()}">${ASIGNATURAS[a]?.ic||'📘'} ${esc(ASIGNATURAS[a]?.n||a)}</h2><div class="cuerpo"><div class="fila">${js.filter(j=>j.asignatura===a).sort((x,y)=>(x.d<0)-(y.d<0)||(x.d<0?y.d-x.d:x.d-y.d)).map(tarjeta).join('')}</div></div></section>`).join('')
       ||`<div class="vacio ${ent()}">Todavía no hay juegos de ${CURSO}º. En cuanto llegue el temario, aparecerán aquí.</div>`}
     <button class="cambia" id="cambia">↺ Cambiar de curso (ahora: ${CURSO}º)</button>
     <div id="instalar"></div>`;
   document.getElementById('cambia').onclick=()=>{CURSO=null;try{localStorage.removeItem('mision_curso')}catch(e){}son('tap');pinta()};
   app().querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>son('tap')));
+  app().querySelectorAll('.tarj[data-id],.prox[data-id]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();abreFicha(js.find(j=>j.id===a.dataset.id),a.classList.contains('prox'))}));
   pintaInstalar()}
+/* La ficha de la ruta: el mapa con el cohete en la estación que toca (lo apunta el juego en «mision_suite») y dos botones.
+   Un juego que aún no se ha abierto en esta tablet no tiene mapa: sale «Empezar la ruta». Con la ruta terminada, el examen. */
+function fichaRuta(j){const ru=j.r&&j.r.ruta,url=ir(j.carpeta),N=ru?ru.est.length:0;
+  const mapa=ru?(()=>{const ap=ru.i>0&&!ru.fin&&ru.cortes.some(c=>c[0]===ru.i-1),fin=ru.fin;
+    return `<div class="rmap">${ru.est.map((x,n)=>{const st=fin||n<ru.i?'done':n===ru.i?'now':'',c=ru.cortes.find(c=>c[0]===n);
+      return `<div class="rst ${st}" style="--i:${n}">${st==='now'&&!ap?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st==='done'?'✓':x[0]}</div><div class="rname">${esc(x[1])}</div></div>${c&&n<N-1?`<div class="rcorte">🌙 ${esc(c[1])}${ap&&n===ru.i-1?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>`})():'';
+  const tit=!ru?'Ruta de estudio':ru.fin?'¡Ruta completada!':`Ruta de estudio · estación ${ru.i+1} de ${N}`;
+  const sig=ru&&!ru.fin?ru.est[ru.i]:null;
+  const bts=ru&&ru.fin?`<a class="btn destaca" href="${url}?examen=1">👑 Hacer el examen final</a><a class="btn sec" href="${url}?ruta=1">🔁 Repetir la ruta</a>`
+    :`<a class="btn" href="${url}?ruta=1">▶ ${sig?(ru.i>0?'Seguir':'Empezar la ruta')+': '+sig[0]+' '+esc(sig[1]):'Empezar la ruta'}</a>`;
+  return `<div class="ficha-r" role="region" aria-label="Ruta de estudio de ${esc(j.titulo)}"><h3 class="tt">${COHETE_SVG} ${tit}</h3>
+    ${mapa||'<p class="sub">Todas las misiones seguidas, de una en una, con su mapa. El mapa sale aquí en cuanto empiezas.</p>'}
+    <div class="bts">${bts}<a class="btn sec" href="${url}">▶ Misiones sueltas y examen</a></div></div>`}
+function abreFicha(j,desdeAviso){if(!j)return;
+  app().querySelectorAll('.ficha-r').forEach(f=>f.remove());app().querySelectorAll('.estante.abre').forEach(e=>e.classList.remove('abre'));
+  app().querySelectorAll('.tarj').forEach(t=>{const on=t.dataset.id===j.id;t.classList.toggle('on',on);t.setAttribute('aria-expanded',on)});
+  const t=app().querySelector(`.tarj[data-id="${j.id}"]`);if(!t)return;const e=t.closest('.estante');e.classList.add('abre');
+  e.querySelector('.cuerpo').insertAdjacentHTML('beforeend',fichaRuta(j));
+  app().querySelectorAll('.ficha-r a').forEach(a=>a.addEventListener('click',()=>son('tap')));
+  const f=e.querySelector('.ficha-r');if(desdeAviso||innerWidth<=600)f.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'})}
 entradaMarca();
 pinta();
 </script>

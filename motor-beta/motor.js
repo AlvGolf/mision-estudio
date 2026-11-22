@@ -93,6 +93,7 @@ function home(){
   const ht=$('#hoy');if(ht)ht.onclick=()=>R[ht.dataset.k]();
   /* Recargar: si no, la XP y las notas que hay en memoria pasarían al siguiente niño */
   const cn=$('#chn');if(cn)cn.onclick=()=>{apartaPerfil();location.reload()};
+  if(irDirecto())return;
   entrada();
 }
 
@@ -201,7 +202,7 @@ function fame(){
 }
 /* Resumen para el menú de la suite (21-nov): nota de dominio y XP de este juego en este dispositivo.
    El menú lo lee de «mision_suite» para enseñar el semáforo en cada tarjeta. */
-function resumenSuite(){try{const t=JSON.parse(lsGet('mision_suite')||'{}');const f=finalNota();t[JUEGO.id]={nota:f.miss?null:f.n,falta:f.miss,xp:XP,visto:Date.now()};localStorage.setItem('mision_suite',JSON.stringify(t))}catch(e){}}
+function resumenSuite(){try{const t=JSON.parse(lsGet('mision_suite')||'{}');const f=finalNota();t[JUEGO.id]={...t[JUEGO.id],nota:f.miss?null:f.n,falta:f.miss,xp:XP,visto:Date.now()};localStorage.setItem('mision_suite',JSON.stringify(t))}catch(e){}}
 /* Perfiles: cada niño guarda su progreso aparte en el mismo dispositivo.
    El progreso activo sigue en las claves de siempre. «No soy yo» lo aparta con su nombre;
    al escribir un nombre que ya jugó aquí, se recupera el suyo. */
@@ -250,11 +251,11 @@ function examRun(qs){
       app().innerHTML=`<div class="box center celebra"><div class="big">${g>=9?'🏆':g>=7?'🥈':g>=5?'👍':'💪'}</div>
       <h2>${timeout?'⏰ ¡Tiempo! ':''}${ok} de ${qs.length}</h2><p style="font-size:26px;margin:4px">Nota: <b data-cuenta="${g}">${fmt(g)}</b> <span class="cf-lab">· ${label(g)} ${sem(g)}</span></p>
       <div class="cf-estr" aria-label="${s} de 3 estrellas">${[0,1,2].map(k=>`<span class="${k<s?'si':'no'}">${k<s?'★':'☆'}</span>`).join('')}</div>
-      ${p>=.5?`<div class="cf-sello"><span>¡${label(g).toUpperCase()}!</span></div>`:''}
-      <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p>${guiaFin(p)}${p>=.5?'<div class="sello-fin" id="sfin"></div>':''}</div>
+      ${p>=.5?`<div class="sello-fin dos" id="sfin"></div><div class="cf-sello abajo"><span>¡${label(g).toUpperCase()}!</span></div>`:''}
+      <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p>${guiaFin(p)}</div>
       ${wrong.length?`<div class="box"><h2>📌 Repasa estas</h2><table class="rules">${wrong.map(w=>`<tr><td>${esc(w.q)}<br><span style="color:var(--no)">Tú: ${esc(w.yo)}</span> · <span style="color:var(--yes)">Bien: ${esc(w.a)}</span></td></tr>`).join('')}</table></div>`:''}
       <div class="center"><button class="btn" onclick="R.exam()">🔁 Otro examen</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
-      celebra(app().querySelector('.box'),p,g);if(p>=.5)setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(150)},escQuieto()?0:3600);}
+      celebra(app().querySelector('.box'),p,g,{sello:5000,confeti:5500});if(p>=.5)setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(150)},escQuieto()?0:1900);}
   };
 }
 /* ===== Motores genéricos ===== */
@@ -270,14 +271,14 @@ function endScreen(icon,ok,tot,key,again,extra=''){
 }
 /* Celebración en secuencia (el padre, 20-nov): sube la nota y salen las estrellas; luego el guía habla, levanta los brazos y salta;
    después el sello y por último el confeti. Los botones funcionan desde el principio: no hace esperar. */
-function celebra(box,p,g){const q=escQuieto(),T=(ms,f)=>setTimeout(()=>{if(box.isConnected)f()},q?0:ms);
+function celebra(box,p,g,o={}){const q=escQuieto(),T=(ms,f)=>setTimeout(()=>{if(box.isConnected)f()},q?0:ms);
   box.classList.add('cf');const n=box.querySelector('[data-cuenta]');if(n)cuentaNum(n,0,g,q?0:900,250);
   box.querySelectorAll('.cf-estr span').forEach((e,k)=>T(1150+k*250,()=>{e.classList.add('ve');if(e.classList.contains('si'))son('estrella',k)}));
   T(1950,()=>{const l=box.querySelector('.cf-lab');if(l)l.classList.add('ve');const gd=box.querySelector('.guia');if(!gd)return;
     gd.querySelector('.bocadillo').classList.remove('oculto');
     if(p>=.7){gd.querySelector('svg').innerHTML=escPersona(guiaP({celebra:1}));gd.classList.remove('salta');void gd.offsetWidth;gd.classList.add('salta')}});
-  T(2600,()=>{const s=box.querySelector('.cf-sello');if(s){s.classList.add('ve');setTimeout(()=>son('sello'),q?0:300)}});
-  if(p>=.7)T(3150,()=>{confetti();son('fanfarria')})}
+  T(o.sello||2600,()=>{const s=box.querySelector('.cf-sello');if(s){s.classList.add('ve');setTimeout(()=>son('sello'),q?0:300)}});
+  if(p>=.7)T(o.confeti||3150,()=>{confetti();son('fanfarria')})}
 /* Cuenta un número de «desde» a «hasta» (nota con coma o puntos enteros) */
 function cuentaNum(el,desde,hasta,dur,espera=0,entero){const f=v=>entero?String(Math.round(v)):fmt(Math.round(v*10)/10);
   if(!dur||escQuieto()){el.textContent=f(hasta);return}el.textContent=f(desde);
@@ -1125,7 +1126,20 @@ const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n)
    ===================================================================== */
 let ROUTE=null;
 try{ROUTE=JSON.parse(localStorage.getItem(JUEGO.claves.ruta)||'null')}catch(e){}
-function saveRoute(){try{ROUTE?localStorage.setItem(JUEGO.claves.ruta,JSON.stringify(ROUTE)):localStorage.removeItem(JUEGO.claves.ruta)}catch(e){}}
+function saveRoute(){try{ROUTE?localStorage.setItem(JUEGO.claves.ruta,JSON.stringify(ROUTE)):localStorage.removeItem(JUEGO.claves.ruta)}catch(e){}rutaSuite()}
+/* La ruta en el menú de la suite (22-nov, ronda 12 del logo, M2): el menú enseña el mapa con el cohete en la estación que toca.
+   Se guarda en «mision_suite» con la nota: estaciones [icono, nombre], la que toca, dónde acaba cada día [estación, texto] y si ya se terminó. */
+function rutaSuite(){try{if(typeof ROUTE_ST=='undefined'||!ROUTE_ST.length)return;const t=JSON.parse(lsGet('mision_suite')||'{}');
+  t[JUEGO.id]={...t[JUEGO.id],ruta:{est:ROUTE_ST.map(x=>[x.ic,x.n]),i:ROUTE?ROUTE.i:0,cortes:ROUTE_ST.map((x,n)=>x.corte?[n,x.corte]:null).filter(Boolean),fin:!!(ROUTE&&ROUTE.fin)}};
+  localStorage.setItem('mision_suite',JSON.stringify(t))}catch(e){}}
+rutaSuite();
+/* Desde el menú de la suite (22-nov): «?ruta=1» entra directo en la estación que toca; «?examen=1», al examen final.
+   Se usa una sola vez (se quita de la dirección) y solo cuando el niño ya ha dicho su nombre. */
+function irDirecto(){const q=new URLSearchParams(location.search),ruta=q.has('ruta'),ex=q.has('examen');if(!ruta&&!ex)return false;
+  try{history.replaceState(null,'',location.pathname)}catch(e){}
+  if(ex){R.exam();return true}
+  if(typeof ROUTE_ST=='undefined'||!ROUTE_ST.length)return false;
+  if(!ROUTE)ROUTE={i:0,part:0,on:false};ROUTE.on=true;startStation();return true}
 function routePart(){const P=JUEGO.ruta.partes;if(!P||!P.length)return null;const n=(ROUTE&&ROUTE.part)||0;return P[n%P.length]}
 function routeTag(){return ROUTE&&ROUTE.on?`<span class="pill" style="font-size:13px">🧭 ${ROUTE.i+1}/${ROUTE_ST.length}</span>`:''}
 /* Tiempo real de cada estación (20-nov): se guardan las 5 últimas veces de cada una (en segundos), con el progreso del niño.
@@ -1136,7 +1150,7 @@ function apuntaTiempo(s){if(!ROUTE.t0)return;const seg=Math.round((Date.now()-RO
   if(seg<20||seg>Math.max(1800,s.min*60*5))return;
   const tm=ROUTE.tm=ROUTE.tm||{};(tm[s.k]=tm[s.k]||[]).push(seg);if(tm[s.k].length>5)tm[s.k].shift()}
 function startStation(){
-  const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();saveRoute();
+  const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();if(ROUTE.i===0)ROUTE.fin=null;saveRoute();
   if(ROUTE_ST.length>=4){if(ROUTE.i===Math.floor(ROUTE_ST.length/2))asoma('¡Ya vas por la mitad! 💪');else if(ROUTE.i===ROUTE_ST.length-1)asoma('¡Última estación! Ya casi está.')}
   const part=routePart();
   if(JUEGO.ruta.estacion&&JUEGO.ruta.estacion(s.k,part))return;
@@ -1156,7 +1170,7 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   apuntaTiempo(ROUTE_ST[ROUTE.i]);ROUTE.i++;XP+=20;hud();save();
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){
-    ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;saveRoute();confetti();setTimeout(confetti,600);
+    ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;ROUTE.fin=Date.now();saveRoute();confetti();setTimeout(confetti,600);
     box.insertAdjacentHTML('beforeend',`<div class="routeend"><div class="despegue">${DESPEGUE_SVG}</div><div class="sello-fin" id="sfin"></div><h2>¡Ruta completada!</h2>
       <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
       ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>

@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| menu-beta, motor-beta | Claude Code | 22-nov | La ruta en el menú (M2) y los dos sellos del examen (S2) |
