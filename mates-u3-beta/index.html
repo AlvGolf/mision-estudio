@@ -16,13 +16,14 @@
 
 <script>
 /* Mates Unidad 3 (5º): divisiones, múltiplos, divisores, criterios de divisibilidad, primos y problemas.
-   Todo se hace en la tablet, como en la hoja (el padre, 21-nov): divisiones en cuadrícula, guiadas al
-   principio y libres después, y problemas con la cuenta montada. Ningún ejercicio es copia del libro.
+   Todo se hace en la tablet, como en la hoja (el padre, 21-nov): divisiones en cuadrícula, todas sin
+   guía desde el 22-nov, y problemas con la cuenta montada. Ningún ejercicio es copia del libro.
    Ruta de lo más fácil a lo más difícil, en dos días de unos 20 minutos; el tercer día, el examen. */
 
 /* ================== DATOS ================== */
 /* A · División por una cifra (repaso): exacta, entera, cero en el cociente y la prueba */
-const DIV1=[{D:856,d:4,modo:'guiada'},{D:3624,d:6,modo:'guiada'},{D:5183,d:7,modo:'libre'},{D:9265,d:8,modo:'libre'},{D:4836,d:3,modo:'libre'}];
+/* Sin guía (el padre, 22-nov): todas como en la hoja, el niño escribe los restos y el cociente */
+const DIV1=[{D:856,d:4,modo:'libre'},{D:3624,d:6,modo:'libre'},{D:5183,d:7,modo:'libre'},{D:9265,d:8,modo:'libre'},{D:4836,d:3,modo:'libre'}];
 const DIV1_MC=[
  {q:'La división 1.725 : 5, ¿es exacta o entera?',opts:['Exacta','Entera'],a:'Exacta',ex:'1.725 : 5 = 345 y el resto es 0.'},
  {q:'La división 2.341 : 4, ¿es exacta o entera?',opts:['Exacta','Entera'],a:'Entera',ex:'2.341 : 4 = 585 y sobra 1.'},
@@ -83,7 +84,8 @@ const PRIM_NUM=[{q:'¿Cuántos divisores tiene el 23?',a:2,ex:'Solo el 1 y el 23
 /* F · División por dos cifras */
 /* Como en el vídeo del cole (22-nov, ronda 6, V3): la primera con toda la ayuda (reparto, tabla y resta «hasta»), la segunda
    con el resto de una vez y con su cero, y las demás libres, rodeando el resto */
-const DIV2=[{D:952,d:34,modo:'pizarra'},{D:5916,d:27,modo:'resto'},{D:8745,d:35,modo:'libre',rodea:true},{D:6390,d:18,modo:'libre',rodea:true},{D:9827,d:46,modo:'libre',rodea:true}];
+/* Sin guía (el padre, 22-nov): ni la pizarra del vídeo ni la del resto con su cero; todas como en la hoja y con el resto rodeado */
+const DIV2=[{D:952,d:34,modo:'libre',rodea:true},{D:5916,d:27,modo:'libre',rodea:true},{D:8745,d:35,modo:'libre',rodea:true},{D:6390,d:18,modo:'libre',rodea:true},{D:9827,d:46,modo:'libre',rodea:true}];
 const PUERTAS=[
  {q:'🚪 El código de la puerta es el dividendo. Divisor 36, cociente 125 y resto 11. ¿Cuál es el código?',a:4511,ex:'125 × 36 + 11 = 4.511.'},
  {q:'🚪 El código de la puerta es el dividendo. Divisor 52, cociente 40 y resto 7. ¿Cuál es el código?',a:2087,ex:'40 × 52 + 7 = 2.087.'}];
@@ -141,7 +143,7 @@ const MIC=[['div1','➗'],['mult','✖️'],['divs','🧩'],['hist','🎢'],['cr
 /* ================== MISIONES ================== */
 const S=(t,x,sub)=>({t,...x,sub});
 const R={
- div1(){runSteps('➗ División por una cifra',[...DIV1.map(x=>S('divi',x,x.modo=='guiada'?'Paso a paso':'Como en la hoja: escribe los restos y el cociente')),
+ div1(){runSteps('➗ División por una cifra',[...DIV1.map(x=>S('divi',x,'Como en la hoja: escribe los restos y el cociente')),
    ...pick(DIV1_MC,2).map(x=>S('mc',x,'Exacta o entera')),...pick(PRUEBA,1).map(x=>S('num',x,'La prueba de la división'))],'div1',R.div1,'➗')},
  mult(){runSteps('✖️ Múltiplos',[...pick(MULT_TAB,1).map(x=>S('tabla',x,'Multiplica y escribe')),S('bins',MULT_BINS,'Si la división entre 8 es exacta, es múltiplo'),
    ...pick(MULT_MC,3).map(x=>S('mc',x,'¿Es múltiplo?')),...pick(MULT_NUM,1).map(x=>S('num',x,'Con el teclado'))],'mult',R.mult,'✖️')},
@@ -152,7 +154,7 @@ const R={
    ...pick(CRIT_MC,3).map(x=>S('mc',x,'Razona')),...CRIT_NUM.map(x=>S('num',x,'Suma las cifras'))],'crit',R.crit,'🔍')},
  prim(){runSteps('💎 Primos y compuestos',[S('bins',PRIM_BINS,'Primo: solo dos divisores'),...PRIM_MARCA.map(x=>S('marcar',x,'Toca solo los primos')),
    ...pick(PRIM_MC,2).map(x=>S('mc',x,'Primos')),...pick(PRIM_NUM,1).map(x=>S('num',x,'Cuenta sus divisores'))],'prim',R.prim,'💎')},
- div2(){runSteps('🧮 División por dos cifras',[...DIV2.map(x=>S('divi',x,x.modo=='pizarra'?'Paso a paso, como en clase':x.modo=='resto'?'Con menos ayuda: escribe el resto con su cero':'Como en la hoja: escribe los restos y el cociente, y rodea el resto')),
+ div2(){runSteps('🧮 División por dos cifras',[...DIV2.map(x=>S('divi',x,'Como en la hoja: escribe los restos y el cociente, y rodea el resto')),
    ...pick(PUERTAS,1).map(x=>S('num',x,'Usa la prueba de la división'))],'div2',R.div2,'🧮')},
  torneo(){runSteps('🏆 El torneo',TORNEO.map(x=>S('probe',x,'Mira la ficha y la agenda antes de decidir')),'torneo',R.torneo,'🏆')},
  prob(){runSteps('📝 Problemas',pick(PROBS,5).map(x=>S('prob',x,'Monta la cuenta, hazla y escribe la respuesta')),'prob',R.prob,'📝')},
@@ -183,7 +185,7 @@ const JUEGO={
    ['#','📅 Segundo día'],
    ['crit','🔍','Criterios','Divisible por 2, 3 y 5'],
    ['prim','💎','Primos','Primos y compuestos'],
-   ['div2','🧮','Por dos cifras','Paso a paso y como en la hoja'],
+   ['div2','🧮','Por dos cifras','Como en la hoja, y rodea el resto'],
    ['torneo','🏆','El torneo','Organiza el torneo del colegio'],
    ['prob','📝','Problemas','Monta la cuenta y resuélvelo'],
    ['#','👑 Examen'],
