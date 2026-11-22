@@ -261,7 +261,7 @@ for (const juego of juegos) {
     for (const k of propios) {
       await page.evaluate(() => { BLOCKS.forEach(b => { GR[b.k] = [8]; }); save(); R.arcade(); });
       await page.click(`[data-j="${k}"]`);
-      const jugador = { cohete: jugarCohete }[k];
+      const jugador = { cohete: jugarCohete, torre: jugarTorre }[k];
       if (!jugador) { aviso(`El juego del arcade «${k}» no tiene jugador en el verificador`); continue; }
       const r = await jugador(page);
       await page.screenshot({ path: path.join(dirCapturas, `arcade-${k}.png`) });
@@ -387,6 +387,69 @@ process.exit(hayFallos ? 1 : 0);
 /* =====================================================================
    Jugadores de cada formato
    ===================================================================== */
+/* 🗼 La Torre del Jefe (22-nov): se juega en un móvil (390 px) tocando los botones. Falla a propósito, carga el golpe fuerte,
+   lo escribe mal una vez (no quita vida) y bien otra (media vida al guardián), se queda sin vidas en la planta 2 (se repite
+   esa planta) y sube hasta arriba: da la estrella (se quita antes la del Cohete) y guarda el récord. */
+async function jugarTorre(page) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  try {
+    await page.evaluate(() => { BEST.arcade = 0; save(); });
+    if (!await page.waitForSelector('#trSube', { timeout: 8000 }).then(() => true, () => false)) return { error: 'no sale el botón para subir a la torre' };
+    await page.click('#trSube');
+    await page.waitForSelector('#trGo', { timeout: 5000 });
+    await page.waitForTimeout(500);
+    const T = () => page.evaluate(() => window._TORRE);
+    if ((await T()).fase !== 'empezar') return { error: 'la planta arranca sola, sin esperar a «Empezar»' };
+    const ancho = async donde => { const w = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth); return w > 1 ? `a 390 px, ${donde} se sale ${w} px por la derecha` : null; };
+    /* Espera a una pregunta; si sale la pantalla de «Empezar», la pulsa */
+    const pregunta = async () => { for (let i = 0; i < 80; i++) { const A = await T(); if (!A) return null;
+      if (A.fase === 'pregunta') return A; if (A.fase === 'empezar' && await page.$('#trGo')) await page.click('#trGo'); await page.waitForTimeout(100); } return 'atascada'; };
+    const escribe = async (id, n) => { await page.click('#' + id); for (const c of String(n)) await page.click(`.pad-c [data-c="${c}"]`); };
+    let n = 0, fuertesMal = 0, fuertesBien = 0, sinVidas = false, fallado = false, desborde = null;
+    while (n++ < 120) {
+      const A = await pregunta();
+      if (A === null) break;
+      if (A === 'atascada') return { error: `la torre se queda parada (planta ${(await T()).planta + 1})` };
+      desborde = desborde || await ancho('la pregunta');
+      /* El golpe fuerte, en cuanto está cargado: la primera vez mal, después bien */
+      if (A.cargado) {
+        await page.click('#trFuerte'); await page.waitForTimeout(150);
+        const B = await T(); if (B.fase !== 'fuerte' || !B.fuerte) return { error: 'con el golpe fuerte cargado, el botón no abre la cuenta' };
+        desborde = desborde || await ancho('el golpe fuerte');
+        const bien = fuertesMal > 0, f = B.fuerte;
+        await escribe('trQ', bien ? f.q : f.q + 1); await escribe('trR', f.res); await page.click('#trOk'); await page.waitForTimeout(120);
+        const C = await T();
+        if (bien) { if (C.vida !== Math.max(0, B.vida - Math.ceil(5 / 2))) return { error: `un golpe fuerte bien escrito no le quita media vida al guardián (${B.vida} → ${C.vida})` }; fuertesBien++; }
+        else { if (C.vida !== B.vida || C.vidas !== B.vidas) return { error: 'un golpe fuerte mal escrito le quita vida a alguien' }; if (C.cargado) return { error: 'el golpe fuerte mal escrito no se gasta' }; fuertesMal++; }
+        continue;
+      }
+      /* Fallos a propósito: uno en la planta 1 y, en la planta 2, hasta quedarse sin vidas */
+      const falla = (A.planta === 0 && !fallado) || (A.planta === 1 && !sinVidas);
+      const i = falla ? (A.pregunta.buena + 1) % 3 : A.pregunta.buena;
+      await page.click(`[data-o="${i}"]`); await page.waitForTimeout(80);
+      const B = await T();
+      if (falla) {
+        if (B.vidas !== A.vidas - 1) return { error: 'fallar una pregunta no quita una vida' };
+        fallado = true;
+        if (B.vidas === 0) { await page.waitForTimeout(900); const C = await T();
+          if (C.fase !== 'empezar' || C.planta !== 1 || C.vidas !== 3) return { error: 'sin vidas, no se repite la planta con las tres vidas' }; sinVidas = true; }
+      } else if (B.vida !== A.vida - 1) return { error: 'acertar no le quita una vida al guardián' };
+      else if (A.racha === 2 && !B.cargado) return { error: 'tres aciertos seguidos no cargan el golpe fuerte' };
+    }
+    await page.waitForTimeout(1500);
+    const fin = await page.locator('#app').innerText().catch(() => '');
+    const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
+    if (desborde) return { error: desborde };
+    if (!fuertesMal || !fuertesBien) return { error: 'no se ha podido usar el golpe fuerte (mal y bien)' };
+    if (!sinVidas) return { error: 'no se ha podido probar a quedarse sin vidas' };
+    if (!Object.keys(est.arc.repasar || {}).length) return { error: 'lo que se falla no queda apuntado para repasar' };
+    if (!/Torre conquistada/.test(fin)) return { error: `no se llega arriba de la torre (pantalla: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
+    if (est.estrella !== 1) return { error: 'vencer al guardián de arriba no da la estrella del arcade' };
+    if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('torre:'))) return { error: 'no se guarda el récord de la torre' };
+    return { nota: `a 390 px y sin desbordes: espera a «Empezar»; fallar quita una vida y queda para repasar; tres aciertos cargan el golpe fuerte; mal escrito no quita vida y se gasta, bien escrito quita media vida; sin vidas se repite la planta; sube las 4 plantas, da la estrella y guarda el récord (${n} turnos)` };
+  } finally { await page.setViewportSize({ width: 820, height: 1180 }); }
+}
+
 /* 🚀 Cohete del Saber: arrastra el cohete bajo la roca buena más baja y lejos de las malas. Antes de ganar, choca a propósito
    con una mala para comprobar que quita una vida y queda para repasar. Tiene que vencer al guardián y dar la estrella. */
 async function jugarCohete(page) {
