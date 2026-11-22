@@ -2,7 +2,8 @@
    Misión Estudio · arcade de Mates · 🚀 COHETE DEL SABER (22-nov)
    Elegido por el padre en el artefacto «Arcade de Misión Estudio» (A1, rondas 2 y 3):
    cuatro planetas (múltiplos, divisores, criterios y primos), cada uno con su jefe.
-   El cohete se mueve arrastrando el dedo y dispara solo. Hay que reventar las rocas
+   Antes de cada planeta, la pantalla de «Empezar». El cohete se mueve con la barra de abajo y dispara con el botón
+   rojo: un toque, un disparo (ronda 4, D1, 22-nov; el disparo continuo reventaba rocas sin querer). Hay que reventar las rocas
    que cumplen la consigna; una roca mala quita una de tres vidas y enseña por qué.
    Dibujos: el cohete de la app (C1), rocas moradas con el número en blanco (A1),
    robot guardián (J1) y un color por planeta (F1). Las monedas compran colores y estelas.
@@ -19,7 +20,8 @@ const PLANETAS=[
   {k:'primos',n:'Planeta de los Primos',corto:'Primos',b:'prim',cielo:'#6c3fb5',suelo:'#b48cff',jefe:'Guardián de los primos'}];
 const COLORES=[{k:'rojo',n:'Rojo',c:'#ff5c6c',p:0},{k:'oro',n:'Oro',c:'#ffc83d',p:20},{k:'menta',n:'Menta',c:'#2ecc71',p:30},{k:'galaxia',n:'Galaxia',c:'#8a5cff',p:40}];
 const ESTELAS=[{k:'nada',n:'Sin estela',p:0},{k:'chispas',n:'Chispas',p:25},{k:'arcoiris',n:'Arcoíris',p:50}];
-const W=600,H=1000,FUENTE='Fredoka, Nunito, system-ui, sans-serif';
+/* El campo de juego y, debajo, el panel de mandos: la barra (toda su anchura recorre toda la pantalla) y, aparte, el botón */
+const W=600,H=1000,PANEL=170,NY=H-PANEL-85,BARRA={x0:28,x1:388,y:H-PANEL/2,alto:84},BOTON={x:500,y:H-PANEL/2,r:64},FUENTE='Fredoka, Nunito, system-ui, sans-serif';
 
 /* Dibujos en SVG (los mismos del artefacto) */
 const cohSVG=c=>`<svg xmlns="http://www.w3.org/2000/svg" width="232" height="350" viewBox="140 56 232 350"><path d="M224 352 q32 -30 64 0 q-8 30 -32 46 q-24 -16 -32 -46z" fill="#ffb02e" stroke="#1d2033" stroke-width="12" stroke-linejoin="round"/><path d="M240 352 q16 -14 32 0 q-4 16 -16 26 q-12 -10 -16 -26z" fill="#fff3c4"/><path d="M256 70 q70 60 62 196 h-124 q-8 -136 62 -196z" fill="#fff" stroke="#1d2033" stroke-width="12" stroke-linejoin="round"/><path d="M194 210 q-48 26 -46 92 l52 -26z M318 210 q48 26 46 92 l-52 -26z" fill="${c}" stroke="#1d2033" stroke-width="12" stroke-linejoin="round"/><path d="M206 266 h100 l-10 46 h-80z" fill="${c}" stroke="#1d2033" stroke-width="12" stroke-linejoin="round"/><circle cx="256" cy="168" r="34" fill="#7fd3ff" stroke="#1d2033" stroke-width="12"/><circle cx="246" cy="158" r="9" fill="#fff" opacity=".8"/></svg>`;
@@ -45,6 +47,11 @@ function estilos(){if(CSS)return;CSS=true;const s=document.createElement('style'
 .coh .it i{width:16px;height:16px;border-radius:50%;background:var(--c);display:inline-block;border:2px solid #1d2033}
 .coh .it[aria-pressed="true"]{border-color:var(--gold)}.coh .it:disabled{opacity:.45;cursor:default}
 .coh-juego{display:grid;gap:8px}
+.coh-caja{position:relative;min-width:0;overflow:hidden;border-radius:16px}
+.coh-empezar{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);align-content:center;gap:12px;text-align:center;padding:20px;background:rgba(7,11,36,.82);border-radius:16px;color:#fff}
+.coh-empezar h3{margin:0;font-family:var(--ft);font-size:26px}.coh-empezar p{margin:0 auto;max-width:34ch;font-size:16px;line-height:1.45}
+.coh-empezar .ctl{display:grid;gap:6px;justify-items:center;font-size:15px;color:#cfe2ff}
+.coh-empezar .btn{justify-self:center;font-size:22px;padding:14px 30px}
 .coh-barra{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .coh-barra b{font-family:var(--ft);font-size:17px}
 #cohLienzo{width:100%;height:min(calc(100dvh - 150px),1000px);min-height:420px;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:16px;overflow:hidden;background:#0a1030}
@@ -68,7 +75,10 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
     return `<button class="it" data-t="${t}" data-k="${it.k}" aria-pressed="${puesto}" ${!tiene&&mon<it.p?'disabled':''}>${txt}${tiene?'':` · 🪙 ${it.p}`}</button>`}
 
   function jugar(P){
-    caja.innerHTML=`<div class="coh-juego"><div class="coh-barra"><b>🚀 ${esc(P.n)}</b><button class="btn sec" id="cohSalir" style="margin:0;padding:8px 14px">✕ Salir</button></div><div id="cohLienzo" aria-label="Juego del cohete: arrastra el dedo para moverlo"></div></div>`;
+    caja.innerHTML=`<div class="coh-juego"><div class="coh-barra"><b>🚀 ${esc(P.n)}</b><button class="btn sec" id="cohSalir" style="margin:0;padding:8px 14px">✕ Salir</button></div><div class="coh-caja"><div id="cohLienzo" aria-label="Juego del cohete: mueve el cohete con la barra de abajo y dispara con el botón rojo"></div>
+      <div class="coh-empezar" id="cohEmp"><h3>${esc(P.n)}</h3><p>Revienta las rocas que cumplen la consigna de arriba. Si revientas una que no la cumple, pierdes una vida.</p>
+      <div class="ctl"><span>👆 Mueve el cohete con la barra de abajo</span><span>🔥 Dispara con el botón rojo: un toque, un disparo</span></div>
+      <button class="btn" id="cohGo" disabled>Empezar ▶</button></div></div></div>`;
     const color=(COLORES.find(c=>c.k===J.color)||COLORES[0]).c;let juego=null,acabado=false;
     const cierra=()=>{if(juego){juego.destroy(true);juego=null}window._ARC=null};
     api.alSalir(cierra);
@@ -76,7 +86,9 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
     Promise.all([imagen(cohSVG(color)),imagen(ROBOT),document.fonts?document.fonts.ready:null]).then(([iCoh,iRob])=>{
       if(!document.getElementById('cohLienzo'))return;
       juego=new Phaser.Game({type:Phaser.AUTO,parent:'cohLienzo',width:W,height:H,backgroundColor:'#0a1030',banner:false,audio:{noAudio:true},
-        scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},scene:[escena(P,iCoh,iRob,fin)]})});
+        scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},input:{activePointers:3},scene:[escena(P,iCoh,iRob,fin)]});
+      const go=caja.querySelector('#cohGo');go.disabled=false;go.focus();
+      go.onclick=()=>{const S=juego&&juego.scene.getScene('cohete');if(!S||!S.empieza)return;caja.querySelector('#cohEmp').remove();S.empieza()}});
     function fin(o){if(acabado)return;acabado=true;
       if(o.gana){J.vencidos[P.k]=1;api.guarda()}const estrella=o.gana&&api.estrella();
       setTimeout(()=>{cierra();api.fin({ic:o.gana?'🏆':'💥',titulo:o.gana?'¡Planeta conquistado!':'¡Fin de la partida!',gana:o.gana,
@@ -95,8 +107,8 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
       create(){const S=this;
         /* Fondo F1: cielo del color del planeta, estrellas que bajan y el planeta grande abajo */
         const cv=S.textures.createCanvas('cielo',W,H),c=cv.getContext(),g=c.createLinearGradient(0,0,0,H);
-        g.addColorStop(0,'#070b24');g.addColorStop(.55,'#0f1640');g.addColorStop(1,P.cielo);c.fillStyle=g;c.fillRect(0,0,W,H);
-        c.fillStyle=P.suelo;c.beginPath();c.ellipse(W/2,H+250,W*.95,330,0,0,Math.PI*2);c.fill();
+        g.addColorStop(0,'#070b24');g.addColorStop(.5,'#0f1640');g.addColorStop((H-PANEL)/H,P.cielo);g.addColorStop(1,P.cielo);c.fillStyle=g;c.fillRect(0,0,W,H);
+        c.fillStyle=P.suelo;c.beginPath();c.ellipse(W/2,H-PANEL+265,W*.95,330,0,0,Math.PI*2);c.fill();
         c.strokeStyle='rgba(255,255,255,.3)';c.lineWidth=4;c.stroke();cv.refresh();
         S.add.image(0,0,'cielo').setOrigin(0);
         const ev=S.textures.createCanvas('estrellas',W,H),e=ev.getContext();
@@ -114,25 +126,41 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         S.boom=S.add.particles(0,0,'chispa',{speed:{min:120,max:340},lifespan:550,scale:{start:1.1,end:0},tint:[0xb48cff,0xffc83d,0xffffff],emitting:false,blendMode:'ADD'});
         S.chispas=S.add.particles(0,0,'chispa',{speed:{min:60,max:200},lifespan:300,scale:{start:.7,end:0},tint:0x3dd6ff,emitting:false});
         /* Nave */
-        S.nave=S.add.image(W/2,H-150,'cohete').setScale(.42).setDepth(5);
+        S.nave=S.add.image(W/2,NY,'cohete').setScale(.42).setDepth(5);
         if(J.estela!=='nada'){const arco=J.estela==='arcoiris';
           S.estela=S.add.particles(0,0,'chispa',{speed:{min:30,max:90},angle:{min:80,max:100},lifespan:arco?520:380,scale:{start:arco?.9:.7,end:0},frequency:28,
             tint:arco?[0xff5c6c,0xffc83d,0x2ecc71,0x3dd6ff,0x8a5cff]:[0xffc83d,0xffe9a0],blendMode:'ADD'}).setDepth(4);
           S.estela.startFollow(S.nave,0,70)}
         /* Mover: arrastrando (el dedo no tapa el cohete) o con las flechas en el ordenador */
-        let ult=null;S.input.on('pointerdown',p=>{ult=p.x});S.input.on('pointerup',()=>{ult=null});
-        S.input.on('pointermove',p=>{if(ult==null||!p.isDown)return;S.nave.x=Phaser.Math.Clamp(S.nave.x+(p.x-ult)*1.15,44,W-44);ult=p.x});
+        /* Panel de mandos: barra de movimiento a la izquierda y botón de disparo a la derecha, separados.
+           La barra es como un deslizador: su punto más a la derecha lleva el cohete al borde derecho. Se puede mover y disparar a la vez. */
+        const pan=S.add.graphics().setDepth(18);pan.fillStyle(0x0b1230,1);pan.fillRect(0,H-PANEL,W,PANEL);pan.lineStyle(3,0x2a376f,1);pan.lineBetween(0,H-PANEL,W,H-PANEL);
+        pan.fillStyle(0x151d45,1);pan.fillRoundedRect(BARRA.x0,BARRA.y-BARRA.alto/2,BARRA.x1-BARRA.x0,BARRA.alto,BARRA.alto/2);pan.lineStyle(3,0x3d4f8f,1);pan.strokeRoundedRect(BARRA.x0,BARRA.y-BARRA.alto/2,BARRA.x1-BARRA.x0,BARRA.alto,BARRA.alto/2);
+        S.add.text(BARRA.x0+30,BARRA.y,'◀',{fontFamily:FUENTE,fontSize:'28px',color:'#5d6fae'}).setOrigin(.5).setDepth(19);S.add.text(BARRA.x1-30,BARRA.y,'▶',{fontFamily:FUENTE,fontSize:'28px',color:'#5d6fae'}).setOrigin(.5).setDepth(19);
+        S.mando=S.add.circle(0,BARRA.y,32,0x3dd6ff,1).setStrokeStyle(4,0xffffff).setDepth(19);
+        S.boton=S.add.circle(BOTON.x,BOTON.y,BOTON.r,0xee3b4f,1).setStrokeStyle(5,0xffffff).setDepth(19);
+        S.add.text(BOTON.x,BOTON.y-6,'🔥',{fontSize:'40px'}).setOrigin(.5).setDepth(20);S.add.text(BOTON.x,BOTON.y+40,'DISPARA',{fontFamily:FUENTE,fontSize:'15px',fontStyle:'700',color:'#fff'}).setOrigin(.5).setDepth(20);
+        const aX=px=>44+Phaser.Math.Clamp((px-BARRA.x0-32)/(BARRA.x1-BARRA.x0-64),0,1)*(W-88);
+        S.dedo=null;
+        S.input.on('pointerdown',p=>{if(Math.hypot(p.x-BOTON.x,p.y-BOTON.y)<BOTON.r+18)return S.dispara();
+          if(p.y>H-PANEL&&p.x<BARRA.x1+30){S.dedo=p.id;S.nave.x=aX(p.x)}});
+        S.input.on('pointermove',p=>{if(p.id===S.dedo&&p.isDown)S.nave.x=aX(p.x)});
+        S.input.on('pointerup',p=>{if(p.id===S.dedo)S.dedo=null});
         S.teclas=S.input.keyboard?S.input.keyboard.createCursorKeys():null;
+        if(S.input.keyboard)S.input.keyboard.on('keydown-SPACE',()=>S.dispara());
         /* Marcador */
-        S.vidas=3;S.puntos=0;S.racha=0;S.buenas=0;S.fallos=0;S.monedas=0;S.fase='rocas';S.cuenta=0;S.lento=1;S.inv=0;
+        S.vidas=3;S.puntos=0;S.racha=0;S.buenas=0;S.fallos=0;S.monedas=0;S.fase='listo';S.cuenta=0;S.lento=1;S.inv=0;
         S.rocas=[];S.balas=[];S.laseres=[];S.tiro=0;S.sale=600;
         const txt=(x,y,t,o)=>S.add.text(x,y,t,{fontFamily:FUENTE,fontSize:'30px',color:'#fff',fontStyle:'700',...o}).setDepth(20);
         S.tVidas=txt(22,18,'',{color:'#ff5c6c',fontSize:'34px'});S.tPuntos=txt(W-22,18,'0',{fontSize:'32px'}).setOrigin(1,0);
         S.cartel=S.add.graphics().setDepth(19);S.tCons=txt(W/2,92,'',{fontSize:'34px',color:'#eef1ff'}).setOrigin(.5);
         S.barra=S.add.graphics().setDepth(19);S.tBarra=txt(W/2,142,'',{fontSize:'20px',color:'#aab4e6',fontStyle:'600'}).setOrigin(.5);
         S.nuevaConsigna();S.pinta();
-        S.aviso('¡Vamos!','Revienta las que cumplen la consigna',1400);
       }
+      empieza(){if(this.fase!=='listo')return;this.fase='rocas';this.aviso('¡Vamos!','Revienta las que cumplen la consigna',1400)}
+      dispara(){const S=this;if((S.fase!=='rocas'&&S.fase!=='jefe')||S.tiro>0)return;S.tiro=170;
+        S.balas.push(S.add.image(S.nave.x,S.nave.y-70,'bala').setDepth(4));son('disparo');
+        if(!quieto)S.tweens.add({targets:S.boton,scale:{from:.86,to:1},duration:140})}
       nuevaConsigna(){const S=this;let c;do c=tema(rnd);while(S.cons&&c.txt===S.cons.txt&&!prueba);S.cons=c;S.cuenta=0;
         S.rocas.forEach(r=>{r.fuera=true;S.tweens.add({targets:r.c,alpha:0,scale:.4,duration:250,onComplete:()=>r.c.destroy()})});S.rocas=[];
         S.tCons.setText(c.txt);const w=Math.max(260,S.tCons.width+60);S.cartel.clear();S.cartel.fillStyle(0x151d45,.92);S.cartel.fillRoundedRect(W/2-w/2,66,w,54,27);S.cartel.lineStyle(3,0x3dd6ff,1);S.cartel.strokeRoundedRect(W/2-w/2,66,w,54,27);
@@ -142,7 +170,7 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         const jf=S.fase==='jefe',k=jf?S.jefe.vida/VIDA_JEFE:Math.min(1,S.buenas/META);S.barra.clear();S.barra.fillStyle(0x0c1633,1);S.barra.fillRoundedRect(150,160,300,12,6);
         S.barra.fillStyle(jf?0xee3b4f:0xffc83d,1);if(k>0)S.barra.fillRoundedRect(150,160,300*k,12,6);
         S.tBarra.setText(jf?P.jefe:`Hasta el guardián: ${Math.min(S.buenas,META)} de ${META}`);
-        window._ARC={fase:S.fase,vidas:S.vidas,puntos:S.puntos,buenas:S.buenas,consigna:S.cons.txt,nave:{x:S.nave.x,y:S.nave.y},ancho:W,alto:H,
+        window._ARC={fase:S.fase,vidas:S.vidas,puntos:S.puntos,buenas:S.buenas,consigna:S.cons.txt,nave:{x:S.nave.x,y:S.nave.y},ancho:W,alto:H,controles:{barra:BARRA,boton:BOTON,margen:44},
           jefe:S.jefe?{vida:S.jefe.vida,x:S.jefe.c.x}:null,rocas:S.rocas.filter(r=>!r.fuera).map(r=>({n:r.n,bueno:r.bueno,x:r.c.x,y:r.c.y}))}}
       mult(){return this.racha>=9?3:this.racha>=4?2:1}
       aviso(t,sub,ms,rojo){const S=this;if(S.cajaAviso)S.cajaAviso.destroy();
@@ -160,12 +188,11 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         S.tweens.add({targets:S.nave,alpha:.3,duration:120,yoyo:true,repeat:4,onComplete:()=>S.nave.setAlpha(1)});
         if(S.vidas<=0){S.fase='fin';S.pinta();S.aviso('¡Sin vidas!',motivo||'',2000,true);
           fin({gana:false,puntos:S.puntos,aciertos:S.buenas,fallos:S.fallos,monedas:S.monedas})}}
-      update(_,dtReal){const S=this;if(S.fase==='fin'||S.fase==='gana')return;
+      update(_,dtReal){const S=this;S.mando.x=BARRA.x0+32+(S.nave.x-44)/(W-88)*(BARRA.x1-BARRA.x0-64);if(S.fase==='fin'||S.fase==='gana'||S.fase==='listo'){S.pinta();return}
         if(S.lento<1)S.lento=Math.min(1,S.lento+dtReal/1600);const dt=dtReal*S.lento/1000;S.inv=Math.max(0,S.inv-dtReal);
         S.est.tilePositionY-=40*dt;
         if(S.teclas){if(S.teclas.left.isDown)S.nave.x=Math.max(44,S.nave.x-520*dt);if(S.teclas.right.isDown)S.nave.x=Math.min(W-44,S.nave.x+520*dt)}
-        /* Disparo automático */
-        S.tiro-=dtReal;if(S.tiro<=0){S.tiro=290;S.balas.push(S.add.image(S.nave.x,S.nave.y-70,'bala').setDepth(4));son('disparo')}
+        S.tiro=Math.max(0,S.tiro-dtReal);
         S.balas.forEach(b=>b.y-=1000*dt);
         /* Rocas: llegan de arriba (o las lanza el guardián) */
         S.sale-=dtReal*S.lento;const hay=S.rocas.filter(r=>!r.fuera).length;
@@ -173,7 +200,7 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
           if(S.fase==='rocas'){S.sale=prueba?500:Math.max(620,1050-S.buenas*22);const bueno=rnd()<.5;S.roca(60+rnd()*(W-120),-50,prueba?150:150+S.buenas*5+rnd()*50,bueno)}
           else if(S.fase==='jefe'){S.sale=prueba?500:1100;const bueno=rnd()<.55;S.roca(Phaser.Math.Clamp(S.jefe.c.x+(rnd()-.5)*160,60,W-60),S.jefe.c.y+90,prueba?160:190,bueno)}}
         for(const r of S.rocas){if(r.fuera)continue;r.c.y+=r.vy*dt;r.im.rotation+=r.giro*dt;
-          if(r.c.y>H+60){r.fuera=true;r.c.destroy();if(r.bueno){S.racha=0;S.flota(r.c.x,H-60,'se escapó','#aab4e6')}continue}
+          if(r.c.y>H-PANEL+40){r.fuera=true;r.c.destroy();if(r.bueno){S.racha=0;S.flota(r.c.x,H-PANEL-30,'se escapó','#aab4e6')}continue}
           if(Math.abs(r.c.x-S.nave.x)<62&&Math.abs(r.c.y-S.nave.y)<70){r.fuera=true;S.boom.explode(10,r.c.x,r.c.y);r.c.destroy();
             if(r.bueno){S.racha=0;S.flota(S.nave.x,S.nave.y-90,'¡choque!','#ff9aa8')}S.dano('Te ha dado una roca. Muévete para esquivarlas.');continue}
           for(const b of S.balas){if(b.active&&Math.abs(b.x-r.c.x)<46&&Math.abs(b.y-r.c.y)<50){b.destroy();S.golpe(r);break}}}
@@ -183,7 +210,7 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
           for(const b of S.balas){if(b.active&&Math.abs(b.x-j.c.x)<90&&Math.abs(b.y-j.c.y)<80){b.destroy();S.chispas.explode(5,b.x,j.c.y+60);if(j.clang<=0){son('clang');j.clang=400;if(!j.dicho){j.dicho=1;S.flota(j.c.x,j.c.y+120,'¡Escudo! Revienta sus rocas buenas','#3dd6ff')}}}}
           j.clang-=dtReal;if(!prueba){j.dispara-=dtReal;if(j.dispara<=0){j.dispara=2300-Math.min(900,(VIDA_JEFE-j.vida)*90);son('laser');S.laseres.push(S.add.image(j.c.x,j.c.y+70,'laser').setDepth(4))}}}
         S.laseres.forEach(l=>{l.y+=380*dt;if(l.active&&Math.abs(l.x-S.nave.x)<34&&Math.abs(l.y-S.nave.y)<70){l.destroy();S.dano('Te ha dado un láser del guardián.')}});
-        S.laseres=S.laseres.filter(l=>{if(l.active&&l.y>H+40)l.destroy();return l.active});
+        S.laseres=S.laseres.filter(l=>{if(l.active&&l.y>H-PANEL+30)l.destroy();return l.active});
         S.pinta()}
       flota(x,y,t,col){const S=this,f=S.add.text(x,y,t,{fontFamily:FUENTE,fontSize:'26px',fontStyle:'700',color:col||'#ffc83d',stroke:'#0b1230',strokeThickness:6}).setOrigin(.5).setDepth(25);
         S.tweens.add({targets:f,y:y-60,alpha:0,duration:quieto?700:900,onComplete:()=>f.destroy()})}

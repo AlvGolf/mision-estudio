@@ -63,7 +63,11 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
   - Técnica: Phaser 3.90 y ZzFX en `vendor/`; el generador de consignas, en `arcade/numeros.js`.
   - Verificador: juega el Cohete en modo prueba, choca a propósito con una roca mala, vence al guardián y comprueba la estrella y el récord.
   - La Torre sale como «Muy pronto». Los cuatro modos de Inglés ya no salen en Mates.
-  - Falta: que el padre lo pruebe en la tablet; después, la Torre del Jefe. Es extra.
+  - **Ronda 4 (22-nov, al probarlo):** pantalla de «Empezar» antes de cada planeta, y disparo con botón (D1): un toque, un disparo; el disparo continuo reventaba rocas sin querer. El matiz del padre: el botón no puede estorbar a la barra de movimiento, y el cohete tiene que llegar al borde derecho.
+    - Debajo del campo, un panel con la barra a la izquierda y el botón rojo a la derecha, separados. La barra recorre la pantalla de borde a borde y se puede mover y disparar a la vez; en el ordenador, flechas y espacio.
+    - El verificador comprueba que espera a «Empezar», que la barra llega a los dos bordes y que el botón no mueve el cohete (control positivo: con la barra recortada da FALLO).
+  - En las betas el arcade está siempre abierto, para poder probarlo; en la versión normal se sigue abriendo con todas las notas.
+  - Falta: que el padre lo vuelva a probar en la tablet; después, la Torre del Jefe. Es extra.
 
 ## Pendiente del padre
 

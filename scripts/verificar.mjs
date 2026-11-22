@@ -392,35 +392,50 @@ process.exit(hayFallos ? 1 : 0);
 async function jugarCohete(page) {
   await page.waitForSelector('[data-p]', { timeout: 8000 });
   await page.click('[data-p]');
-  if (!await page.waitForFunction(() => window._ARC, null, { timeout: 15000 }).then(() => true, () => false)) return { error: 'la partida no arranca (no aparece el juego)' };
+  if (!await page.waitForSelector('#cohGo:not([disabled])', { timeout: 15000 }).then(() => true, () => false)) return { error: 'no sale el botón «Empezar» al elegir un planeta' };
+  await page.waitForTimeout(800);
+  if (await page.evaluate(() => window._ARC && window._ARC.fase) !== 'listo') return { error: 'la partida arranca sola, sin esperar a «Empezar»' };
+  await page.click('#cohGo');
   const lienzo = await page.$('#cohLienzo canvas');
-  const mover = async x => {
-    const b = await lienzo.boundingBox(), A = await page.evaluate(() => window._ARC && window._ARC.nave.x);
-    if (A == null) return;
-    const k = b.width / 600, y = b.y + b.height * .8, x0 = b.x + b.width / 2;
-    await page.mouse.move(x0, y); await page.mouse.down(); await page.mouse.move(x0 + (x - A) * k / 1.15, y, { steps: 4 }); await page.mouse.up();
-  };
-  let fallado = false, vidas = 3, jefe = false;
+  /* De coordenadas del juego a la pantalla: el lienzo se escala entero (Phaser FIT) */
+  const toca = async (x, y) => { const b = await lienzo.boundingBox(), k = b.width / 600; await page.mouse.click(b.x + x * k, b.y + y * k); await page.waitForTimeout(90); };
+  const mover = async (A, x) => { const B = A.controles.barra, m = A.controles.margen; await toca(B.x0 + 32 + (x - m) / (A.ancho - 2 * m) * (B.x1 - B.x0 - 64), B.y); };
+  /* La barra lleva el cohete de borde a borde, y el botón dispara sin mover el cohete (el padre, 22-nov) */
+  {
+    const A = await page.evaluate(() => window._ARC), B = A.controles.barra;
+    await toca(B.x1 - 4, B.y); const der = await page.evaluate(() => window._ARC.nave.x);
+    await toca(A.controles.boton.x, A.controles.boton.y); const trasBoton = await page.evaluate(() => window._ARC.nave.x);
+    await toca(B.x0 + 4, B.y); const izq = await page.evaluate(() => window._ARC.nave.x);
+    if (der < A.ancho - 60) return { error: `con la barra, el cohete no llega al borde derecho (se queda en ${Math.round(der)} de ${A.ancho})` };
+    if (izq > 60) return { error: 'con la barra, el cohete no llega al borde izquierdo' };
+    if (Math.abs(trasBoton - der) > 1) return { error: 'pulsar el botón de disparo mueve el cohete' };
+  }
+  let fallado = false, vidas = 3, jefe = false, disparos = 0, ultimo = 0;
   const t0 = Date.now();
-  while (Date.now() - t0 < 70000) {
+  while (Date.now() - t0 < 80000) {
     const A = await page.evaluate(() => window._ARC);
     if (!A) break;
     if (A.fase === 'jefe') jefe = true;
     if (A.vidas < vidas) { vidas = A.vidas; fallado = true; }
-    const r = A.rocas.sort((a, b) => b.y - a.y)[0];
-    if (r) { const x = (r.bueno || !fallado) ? r.x : (r.x > 300 ? 80 : 520); if (Math.abs(A.nave.x - x) > 20) await mover(x); }
-    await page.waitForTimeout(100);
+    const r = A.rocas.filter(r => r.y < A.nave.y - 120).sort((a, b) => b.y - a.y)[0];
+    if (r) {
+      const apunta = r.bueno || !fallado, x = apunta ? r.x : (r.x > 300 ? 80 : 520);
+      if (Math.abs(A.nave.x - x) > 14) await mover(A, x);
+      else if (apunta && Date.now() - ultimo > 400) { await toca(A.controles.boton.x, A.controles.boton.y); disparos++; ultimo = Date.now(); }
+    }
+    await page.waitForTimeout(80);
   }
   await page.waitForTimeout(2500);
   const fin = await page.locator('#app').innerText().catch(() => '');
   const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
+  if (!disparos) return { error: 'el botón de disparo no se ha podido pulsar' };
   if (!fallado) return { error: 'chocar con una roca mala no quita ninguna vida' };
   if (!Object.keys(est.arc.repasar || {}).length) return { error: 'la roca mala no queda apuntada para repasar' };
   if (!jefe) return { error: 'no llega el guardián al reventar las rocas buenas' };
   if (!/Planeta conquistado/.test(fin)) return { error: `no se puede vencer al guardián (pantalla final: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
   if (est.estrella !== 1) return { error: 'vencer al guardián no da la estrella del arcade' };
   if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('cohete:'))) return { error: 'no se guarda el récord' };
-  return { nota: 'una roca mala quita una vida y queda para repasar; llega el guardián, se le vence, da la estrella y guarda el récord' };
+  return { nota: `espera a «Empezar»; la barra lleva el cohete de borde a borde y el botón no lo mueve; se mueve con la barra y dispara con el botón (${disparos} disparos); una roca mala quita una vida y queda para repasar; se vence al guardián, da la estrella y guarda el récord` };
 }
 
 async function arrastrar(page, de, a) {
