@@ -40,12 +40,16 @@ La guía paso a paso es la skill `juego-nuevo` (`.claude/skills/juego-nuevo/SKIL
 
 ## Estructura
 
-- `index.html` — menú de la suite (lo que abre la app): pregunta el curso y enseña los juegos de `juegos.js` por asignatura, con el próximo examen y la nota de cada uno.
+- **Un enlace por curso** (el padre, 22-nov): los de 5º solo ven 5º y los de 2º solo 2º.
+  - `index.html` — el menú de 5º (el enlace de siempre); `segundo/index.html` — el de 2º, con su app (`segundo/manifest.webmanifest`, icono del cohete del libro en `iconos/cohete/`). Bajo el icono: «Misión Estudio 5» y «Misión Estudio 2».
+  - Cada menú: logo, nombre, la pantalla del curso solo con el suyo y los juegos de `juegos.js` por asignatura, con el próximo examen y la nota. Sin «cambiar de curso».
+  - Los dos salen de una plantilla, `scripts/menu.html`: se cambia la plantilla y `npm run menus` (nunca a mano; el verificador lo comprueba). Los iconos se dibujan con `node scripts/iconos.mjs`.
+  - Los juegos de 2º guardan el nombre en `mision_name_2` (los de 5º, en `mision_name`) y su botón de volver lleva a `segundo/`.
 - `motor/` y `motor-beta/` — motor común (`motor.js`, `motor.css`): formatos, notas, boletín, ruta, ranking, examen y arcade. Sin nada de ninguna asignatura. `piel.js` (estilo por hora, app, guía y sonidos) es común con el menú de la suite y se carga antes que `motor.js`.
 - `juegos.js` — la lista de juegos del menú (una fila por juego) y las asignaturas con su icono y color.
 - `<juego>/index.html` — cada juego: sus datos, sus misiones (`R`), `BLOCKS`, `MIC`, `ROUTE_ST` y la configuración `JUEGO` (textos, claves de guardado, examen, ruta y preguntas del arcade). El juego se carga antes que la piel y el motor.
 - `apps-script/Code.gs` — copia de referencia del script del ranking. El que funciona está en Google Apps Script; si cambias este, avisa al padre para que lo pegue y redespliegue.
-- Web: https://alvgolf.github.io/mision-estudio/ (GitHub Pages, rama `main`, raíz).
+- Web: https://alvgolf.github.io/mision-estudio/ (5º) y https://alvgolf.github.io/mision-estudio/segundo/ (2º) (GitHub Pages, rama `main`, raíz).
 
 ## Ranking compartido
 
@@ -125,5 +129,5 @@ Semáforo: 🟢 ≥8 · 🟡 5–7,9 · 🔴 <5 · ⚪ sin jugar. "Hoy toca" pro
 ## Juegos hechos
 
 - **Inglés Unit 2, 5º** (`ingles-u2/`, examen 20-nov-2026): 5 adverbios de frecuencia, Do you like / Would you like, 20 verbos irregulares (be → feel), 52 palabras (actor → worried). 10 bloques con nota + ruta + arcade (40 estrellas).
-- **Mates Unidad 3, 5º** (`mates-u3/`, examen 27-nov-2026): división por una y dos cifras (en cuadrícula, guiadas y libres), múltiplos, divisores, criterios de divisibilidad, primos y compuestos, una historia (la excursión), una miniinvestigación (el torneo) y problemas con la cuenta montada. 9 bloques con nota, ruta en dos días de unos 20 minutos y examen de 20 preguntas en 30 minutos con borrador. Arcade propio: Cohete del Saber y Torre del Jefe.
+- **Mates Unidad 3, 5º** (`mates-u3/`, examen 27-nov-2026): división por una y dos cifras (en cuadrícula, sin guía desde el 22-nov), múltiplos, divisores, criterios de divisibilidad, primos y compuestos, una historia (la excursión), una miniinvestigación (el torneo) y problemas con la cuenta montada. 9 bloques con nota, ruta en dos días de unos 20 minutos y examen de 20 preguntas en 30 minutos con borrador. Arcade propio: Cohete del Saber y Torre del Jefe.
 - **Las horas del reloj, 2º** (`mates-reloj/`, sin examen del cole): un día con Lía en casa, el cole y el parque, de cuarto en cuarto (en punto, y cuarto, y media y menos cuarto). 6 bloques: leer, poner (doble), ordenar el día, ¿qué reloj es?, poner la hora de la tarde (doble) y ¿cuánto dura?; ruta en dos días y examen de 10 relojes sin tiempo. Lo de cinco en cinco irá en «Reloj nivel 2», juego aparte.

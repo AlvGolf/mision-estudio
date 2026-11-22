@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| menú (index.html, menu-beta, segundo), motor-beta, mates-reloj-beta | Claude Code | 22-nov | Un enlace por curso: 5º en el de siempre y 2º en segundo/, con el icono del cohete |

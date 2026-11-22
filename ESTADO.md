@@ -8,7 +8,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 | Pieza | Estado | Nota |
 |---|---|---|
-| Menú de la suite (lo que abre la app) | ✅ en producción | 21-nov: pregunta el curso, estanterías por asignatura con el próximo examen y la nota; los juegos salen de `juegos.js`. La app se instala con el icono del cohete y funciona sin conexión |
+| Menú de la suite (lo que abre la app) | ✅ en producción | 21-nov: pregunta el curso, estanterías por asignatura con el próximo examen y la nota; los juegos salen de `juegos.js`. La app se instala con el icono del cohete y funciona sin conexión · **22-nov: un enlace por curso** (aprobado por el padre): 5º en el de siempre y 2º en `segundo/`, cada uno solo con su curso, su app (icono del ME sobre azul y del cohete del libro; «Misión Estudio 5» y «Misión Estudio 2») y su nombre guardado aparte; los dos menús salen de `scripts/menu.html` (`npm run menus`). Mates de 5º: todas las divisiones sin guía. «El dispositivo lo recuerda» (no la tablet). |
 | Inglés Unit 2 (5º) | ✅ en producción | Examen el 20-nov-2026. El 19-nov pasaron a la normal los arreglos del verificador (gramática también escrita, tarjeta en el móvil, letra, corrector) |
 | Ranking compartido de la clase | ✅ hecho | Apps Script; copia en `apps-script/Code.gs` |
 | Pruebas automáticas (`npm run verificar`) | ✅ hecho | Ruta entera a 390/820/1440 px, cobertura y examen |
@@ -76,8 +76,6 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
-- **Probar un enlace por curso** (el padre, 22-nov): 5º en https://alvgolf.github.io/mision-estudio/menu-beta/ (al aprobarlo pasa al enlace de siempre) y 2º en https://alvgolf.github.io/mision-estudio/segundo/ (nuevo, con el icono del cohete del libro). Cada uno: logo, nombre, la pantalla del curso solo con el suyo y sus juegos; sin «Cambiar de curso». Bajo el icono, «Misión Estudio 5» y «Misión Estudio 2» (en iPhone puede salir cortado). Los de 2º guardan su nombre aparte (`mision_name_2`) y el botón de volver de sus juegos lleva a `segundo/`. Los menús salen de `scripts/menu.html` con `npm run menus`. Al aprobarlo: la raíz con 5º, `menu-beta` a redirigir, el motor beta al normal, `mates-reloj` con su nombre aparte y el manifiesto de la raíz con «Misión Estudio 5». Quien tenga instalada la app de siempre para un niño de 2º tendrá que instalar la nueva.
-- **Probar Mates de 5º en beta** (https://alvgolf.github.io/mision-estudio/mates-u3-beta/, el padre, 22-nov): todas las divisiones sin guía (por una y por dos cifras, las cinco como en la hoja; las de dos cifras con el resto rodeado). Examen el 27-nov.
 - **Más adelante: «Reloj nivel 2»** (de cinco en cinco), juego aparte con su ruta, cuando en clase lleguen.
 - **22-nov: todo lo de las betas está en producción** (motor, menú en la portada con la ruta y el nombre, logo y entrada, icono del ME, divisiones, arcade de Mates). `menu-beta/` y `mates-u3-beta/` redirigen a la normal. Al abrir la app en la tablet, el icono nuevo puede tardar en salir: si no cambia, quitar la app y volver a instalarla.
 - Mates Unidad 3 ya está en el menú (21-nov): el lunes 24 y el martes 25, la ruta; el miércoles 26, el examen. Contar cómo va, y después del examen del 27, la nota real.

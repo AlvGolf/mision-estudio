@@ -6,8 +6,9 @@
 <title>Misión Estudio</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Misión Estudio 5">
 <link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="motor/motor.css?v=27">
+<link rel="stylesheet" href="motor/motor.css?v=30">
 <style>
 /* Menú de la suite (ronda 6 del rediseño, 21-nov): S1 «estanterías por asignatura» con la pantalla de curso de la S2 al empezar. */
 header h1{display:flex;align-items:center;gap:8px;cursor:default}
@@ -59,12 +60,15 @@ header h1 img{display:block}
 </header>
 <main id="app"></main>
 <script>
+/* Un enlace por curso (el padre, 22-nov): los de 5º solo ven 5º y los de 2º solo 2º. Este menú sale de la plantilla
+   scripts/menu.html (npm run menus): no se edita a mano. SUITE dice su curso y dónde guarda el nombre y el curso elegido. */
+const SUITE={'curso':5,'nombre':'mision_name','cursoK':'mision_curso'};
+let CURSO=null;try{CURSO=+localStorage.getItem(SUITE.cursoK)===SUITE.curso?SUITE.curso:null}catch(e){}
 /* El menú no es un juego: este JUEGO mínimo solo dice a la piel qué grupo de estilos y qué curso usar. */
-let CURSO=null;try{CURSO=+localStorage.getItem('mision_curso')||null}catch(e){}
-const JUEGO={id:'menu',estilo:0,curso:CURSO||5};
+const JUEGO={id:'menu',estilo:0,curso:SUITE.curso};
 </script>
 <script src="juegos.js"></script>
-<script src="motor/piel.js?v=27"></script>
+<script src="motor/piel.js?v=30"></script>
 <script>
 const app=()=>document.getElementById('app');
 const RAIZ='';
@@ -80,17 +84,16 @@ function semaforo(r){if(!r)return'⚪ sin jugar';if(r.nota!=null){const n=r.nota
 function elegirCurso(){
   const de=c=>{const as=[...new Set(JUEGOS.filter(j=>j.curso===c).map(j=>ASIGNATURAS[j.asignatura]?.n).filter(Boolean))];return as.length?as.join(', '):'Pronto, sus juegos'};
   app().innerHTML=`${guia(`¡Hola, ${esc(nombre())}! ¿De qué curso eres?`,{saluda:1})}
-    <div class="curso"><button class="c5 ent" style="--i:1" data-c="5">5º de primaria<small>${esc(de(5))}</small></button>
-    <button class="c2 ent" style="--i:2" data-c="2">2º de primaria<small>${esc(de(2))}</small></button>
-    <p class="sub ent" style="--i:3;text-align:center">La tablet lo recuerda. Se cambia abajo del todo.</p></div>`;
-  app().querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{CURSO=+b.dataset.c;try{localStorage.setItem('mision_curso',String(CURSO))}catch(e){}JUEGO.curso=CURSO;aplicaEstilo();son('tap');pinta()})}
+    <div class="curso"><button class="c${SUITE.curso} ent" style="--i:1" data-c="${SUITE.curso}">${SUITE.curso}º de primaria<small>${esc(de(SUITE.curso))}</small></button>
+    <p class="sub ent" style="--i:2;text-align:center">El dispositivo lo recuerda.</p></div>`;
+  app().querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{CURSO=+b.dataset.c;try{localStorage.setItem(SUITE.cursoK,String(CURSO))}catch(e){}JUEGO.curso=CURSO;aplicaEstilo();son('tap');pinta()})}
 /* El nombre, justo después del logo animado y antes del menú (el padre, 22-nov): así el menú enseña siempre el progreso de ese niño.
-   Es el mismo nombre que usan los juegos («mision_name»). Si ese nombre ya jugó en esta tablet y lo apartó con «no soy yo»,
+   Es el mismo nombre que usan los juegos de su curso (SUITE.nombre). Si ese nombre ya jugó en esta tablet y lo apartó con «no soy yo»,
    se le devuelve su progreso en cada juego, como hace el propio juego. */
-const nombre=()=>(lsGet('mision_name')||'').trim();
+const nombre=()=>(lsGet(SUITE.nombre)||'').trim();
 function pideNombre(){
   app().innerHTML=`<div class="box center" style="margin-top:30px">${guia('¡Hola! Soy tu guía de Misión Estudio. ¿Cómo te llamas?',{saluda:1})}<h2 class="ent" style="--i:1">¿Cómo te llamas?</h2>
-    <p class="sub ent" style="--i:2">Así la tablet recuerda tu progreso en cada juego.</p>
+    <p class="sub ent" style="--i:2">Así el dispositivo recuerda tu progreso en cada juego.</p>
     <input class="typ ent" style="--i:3;max-width:320px;text-align:center" id="nm" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu nombre"><br>
     <button class="btn ent" style="--i:4" id="nmok">¡Vamos! ▶</button><div class="fb" id="nmfb"></div></div>`;
   const go=()=>{const v=document.getElementById('nm').value.trim().slice(0,20);if(!v){document.getElementById('nmfb').textContent='Escribe tu nombre 😉';return}
@@ -99,7 +102,7 @@ function pideNombre(){
       JUEGOS.forEach(j=>{const c=CLAVES[j.id];if(!c)return;try{const pk='perfil:'+j.id+':'+v.toLowerCase(),pf=JSON.parse(localStorage.getItem(pk)||'null');
         if(!pf||['estado','ruta','arcade'].some(k=>c[k]&&localStorage.getItem(c[k])!=null))return;
         ['estado','ruta','arcade'].forEach(k=>{if(c[k]&&pf[k]!=null)localStorage.setItem(c[k],pf[k])});localStorage.removeItem(pk);vuelve=vuelve||pf.nombre}catch(e){}});
-      try{localStorage.setItem('mision_name',vuelve||v)}catch(e){}pinta()})};
+      try{localStorage.setItem(SUITE.nombre,vuelve||v)}catch(e){}pinta()})};
   document.getElementById('nmok').onclick=go;document.getElementById('nm').onkeydown=e=>{if(e.key=='Enter')go()}}
 function pinta(){
   if(!nombre())return pideNombre();
@@ -119,9 +122,7 @@ function pinta(){
       <span>${prox.r&&prox.r.nota!=null?'Tu nota ahora: '+semaforo(prox.r).slice(3)+' · sigue la ruta de hoy':'Empieza por la 🧭 ruta de estudio'}</span></a>`:''}
     ${asigs.map(a=>`<section class="estante"><h2 class="${ent()}">${ASIGNATURAS[a]?.ic||'📘'} ${esc(ASIGNATURAS[a]?.n||a)}</h2><div class="cuerpo"><div class="fila">${js.filter(j=>j.asignatura===a).sort((x,y)=>(x.d<0)-(y.d<0)||(x.d<0?y.d-x.d:x.d-y.d)).map(tarjeta).join('')}</div></div></section>`).join('')
       ||`<div class="vacio ${ent()}">Todavía no hay juegos de ${CURSO}º. En cuanto llegue el temario, aparecerán aquí.</div>`}
-    <button class="cambia" id="cambia">↺ Cambiar de curso (ahora: ${CURSO}º)</button>
     <div id="instalar"></div>`;
-  document.getElementById('cambia').onclick=()=>{CURSO=null;try{localStorage.removeItem('mision_curso')}catch(e){}son('tap');pinta()};
   app().querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>son('tap')));
   js.forEach(leeRuta);
   app().querySelectorAll('.tarj[data-id],.prox[data-id]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();abreFicha(js.find(j=>j.id===a.dataset.id),a.classList.contains('prox'))}));

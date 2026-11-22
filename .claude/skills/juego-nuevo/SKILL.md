@@ -65,7 +65,7 @@ Es algo importante, así que el plan tiene que estar completo antes de empezar.
 - **`JUEGO`:**
   - `id` propio, igual que la carpeta sin `-beta`;
   - `codigo`;
-  - `claves` de guardado propias (`estado`, `ruta`, `arcade`) y `nombre:'mision_name'`;
+  - `claves` de guardado propias (`estado`, `ruta`, `arcade`) y `nombre:'mision_name'` en 5º o `nombre:'mision_name_2'` en 2º (cada curso tiene su enlace y su nombre);
   - `saludo`, `notaBoletin`, `menu`, `chuleta`;
   - `examen` (`min`, `dia`, `preguntas()`), `ruta`, `arcade` (`bloques`, `jefes`, `test`, `deletreo`);
   - `voz` (`en-GB` en Inglés, `es-ES` en Lengua o Ciencias) y `tildesCuentan` (`true` en Lengua de 5º);
