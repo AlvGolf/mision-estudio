@@ -12,3 +12,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
+| mates-u3-beta, motor-beta | Claude Code | 22-nov | División por dos cifras como en el vídeo del cole (ronda 6, V3) |
