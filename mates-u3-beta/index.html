@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>(beta) Misión Mates · Unidad 3</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=21">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=22">
 </head>
 <body>
 <header>
@@ -187,7 +187,7 @@ const JUEGO={
    ['#','👑 Examen'],
    ['exam','👑','EXAMEN FINAL','20 preguntas · 30 minutos · con borrador'],
    ['#','🎮 Arcade'],
-   ['arcade','🎮','Arcade','Contrarreloj, jefes, globos y cohetes'],
+   ['arcade','🎮','Arcade','El Cohete del Saber y, pronto, la Torre del Jefe'],
  ],
  chuleta:`<div class="box"><h2>📘 Chuleta rápida</h2>
 <table class="rules">
@@ -204,6 +204,10 @@ const JUEGO={
  }},
  ruta:{facil:true,minutos:'dos días de unos 20',partes:[],estacion(){},textoFin:'Mañana, el examen final: 20 preguntas en 30 minutos.'},
  arcade:{
+  /* Arcade propio de Mates (22-nov, artefacto «Arcade de Misión Estudio», A1): sustituye a los cuatro modos de Inglés */
+  juegos:[{k:'cohete',ic:'🚀',c:'m1',n:'Cohete del Saber',d:'Revienta las rocas que cumplen la consigna y vence al guardián de cada planeta.',
+    src:['../vendor/phaser.min.js','../vendor/zzfx.js','arcade/numeros.js?v=1','arcade/cohete.js?v=1']},
+   {k:'torre',ic:'🗼',c:'m2',n:'La Torre del Jefe',d:'Duelo por turnos: el golpe fuerte se gana escribiendo el cociente y el resto.',pronto:true}],
   bloques:[{k:'mix',n:'Todo mezclado',ic:'🎲'},{k:'mult',n:'Múltiplos y divisores',ic:'🧩'},{k:'crit',n:'Criterios y primos',ic:'🔍'}],
   jefes:{mix:['🦖','Rex de los Números'],mult:['🤖','Robot Múltiplo'],crit:['🐉','Dragón Primo']},
   test(k){const m={mult:()=>[...MULT_MC,...DIVS_MC,...DIVS_GAP],crit:()=>[...CRIT_MC,...PRIM_MC],mix:TODO_MC};return m[k]().map(q=>({...q}))},
@@ -212,7 +216,7 @@ const JUEGO={
  },
 };
 </script>
-<script src="../motor-beta/piel.js?v=21"></script>
-<script src="../motor-beta/motor.js?v=21"></script>
+<script src="../motor-beta/piel.js?v=22"></script>
+<script src="../motor-beta/motor.js?v=22"></script>
 </body>
 </html>

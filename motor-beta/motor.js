@@ -11,7 +11,7 @@ let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}
 try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;}catch(e){}
 function save(){try{localStorage.setItem(JUEGO.claves.estado,JSON.stringify({xp:XP,best:BEST,bs:BSTREAK,exam:EXAMB,hist:HIST,seeded:SEEDED,gr:GR,real:REAL}))}catch(e){}}
 const MAP=Object.fromEntries(BLOCKS.map(b=>[b.k,1]));
-function grade(k,n){n=Math.round(n*10)/10;(GR[k]=GR[k]||[]).push(n);if(GR[k].length>3)GR[k].shift();save();return n}
+function grade(k,n){n=Math.round(n*10)/10;(GR[k]=GR[k]||[]).push(n);if(GR[k].length>3)GR[k].shift();save();try{ARC.repasado(k)}catch(e){}return n}
 function nota(k){const a=GR[k];return a&&a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null}
 function finalNota(){let s=0,w=0,miss=0;BLOCKS.forEach(b=>{const n=nota(b.k);if(n==null)miss++;else{s+=n*b.w;w+=b.w}});return{n:w?Math.round(s/w*10)/10:null,miss}}
 function label(n){return n==null?'Sin datos':n<5?'Insuficiente':n<6?'Suficiente':n<7?'Bien':n<9?'Notable':'Sobresaliente'}
@@ -19,6 +19,8 @@ function sem(n){return n==null?'⚪':n>=8?'🟢':n>=5?'🟡':'🔴'}
 const fmt=n=>n==null?'–':n.toFixed(1).replace('.',',');
 function hoyToca(){
   const miss=BLOCKS.find(b=>nota(b.k)==null);if(miss)return{b:miss,why:'aún no lo has jugado'};
+  /* Arcade de Mates (22-nov): lo que se falla en el arcade vuelve al estudio */
+  let rp=null;try{rp=ARC.repasar()}catch(e){}const rb=rp&&BLOCKS.find(b=>(rp[b.k]||0)>=2);if(rb)return{b:rb,why:`en el arcade fallaste ${rp[rb.k]} veces`};
   const w=[...BLOCKS].sort((a,b)=>nota(a.k)-nota(b.k))[0];return nota(w.k)>=8?null:{b:w,why:'es tu nota más baja'};}
 const MAXSTAR=c=>c=='arcade'?1:3;const MAXST=MIC.reduce((s,[k])=>s+MAXSTAR(k),0);
 function starLine(b){return MIC.map(([k,ic])=>{const s=Math.min((b&&b[k])||0,MAXSTAR(k));const M3=MAXSTAR(k);return `<span style="display:inline-block;background:var(--sunk);border-radius:8px;padding:2px 7px;margin:2px;white-space:nowrap">${ic} <span style="color:var(--gold)">${'★'.repeat(s)}</span><span style="color:var(--line2)">${'★'.repeat(M3-s)}</span></span>`}).join('')}
@@ -1230,7 +1232,7 @@ function sfx(t){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)(
   g.gain.setValueAtTime(.12,n);g.gain.exponentialRampToValueAtTime(.001,n+.25);o.start(n);o.stop(n+.26)}catch(e){}}
 function confetti(){const e=['⭐','🎉','✨','🏆','🪙'];for(let i=0;i<24;i++){const d=document.createElement('div');d.className='conf';d.textContent=e[i%5];d.style.left=Math.random()*100+'vw';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}}
 function floatTxt(txt,x,y,color){const d=document.createElement('div');d.className='dmg';d.textContent=txt;d.style.left=x+'px';d.style.top=y+'px';if(color)d.style.color=color;document.body.appendChild(d);setTimeout(()=>d.remove(),1000)}
-let TIMERS=[];function clearAll(){TIMERS.forEach(t=>{clearInterval(t);clearTimeout(t);cancelAnimationFrame(t)});TIMERS=[];document.onkeydown=null}
+let TIMERS=[],LIMPIA=[];function clearAll(){TIMERS.forEach(t=>{clearInterval(t);clearTimeout(t);cancelAnimationFrame(t)});TIMERS=[];document.onkeydown=null;LIMPIA.splice(0).forEach(f=>{try{f()}catch(e){}})}
 /* ===== Pantalla de resultado ===== */
 function result(icon,title,lines,mode,score,again){
   clearAll();const rec=record(mode,score);const c=Math.max(1,Math.round(score/10));coins(c);if(rec||score>0)confetti();sfx('win');
@@ -1255,8 +1257,38 @@ const MODES=[
  {k:'balloon',c:'m3',ic:'🎈',n:'Explota globos',d:'Explota el globo correcto antes de que se escape.',r:s=>s+' globos'},
  {k:'spell',c:'m4',ic:'🚀',n:'Rescate letra a letra',d:'Escribe la palabra letra a letra antes de que despegue el cohete.',r:s=>s+' rescates'},
 ];
+/* Arcade propio de un juego (22-nov, el padre: cada juego tiene el suyo). JUEGO.arcade.juegos = [{k, ic, n, d, c, src:[scripts]}].
+   Cada script registra window.ARCADE[k] = {start(api), rec(api)}; el motor pone lo común: XP, monedas, récords, la estrella,
+   lo que hay que repasar y la pantalla de resultado. Los scripts se cargan al entrar, una sola vez. */
+const PROPIOS=JUEGO.arcade.juegos||null;
+const cargado={};
+function carga(src){return src.reduce((p,u)=>p.then(()=>cargado[u]||(cargado[u]=new Promise((ok,ko)=>{const t=document.createElement('script');t.src=u;t.onload=ok;t.onerror=()=>{delete cargado[u];ko(new Error('No se ha podido cargar '+u))};document.head.appendChild(t)}))),Promise.resolve())}
+function api(k){ST.juegos=ST.juegos||{};const J=ST.juegos[k]=ST.juegos[k]||{};return{
+  caja:app(),estado:J,guarda:asave,prueba:!!window.ARCADE_PRUEBA||/[?&]prueba/.test(location.search),quieto:escQuieto(),
+  sonido:()=>SONIDO,monedas:()=>ST.monedas||0,
+  gasta(n){if((ST.monedas||0)<n)return false;ST.monedas-=n;asave();return true},
+  mejor:c=>ST.best[k+':'+c]||0,
+  estrella(){if(BEST.arcade)return false;BEST.arcade=1;save();return true},
+  repasa(b){if(!MAP[b])return;(ST.repasar=ST.repasar||{})[b]=(ST.repasar[b]||0)+1;asave()},
+  salir:ahome,alSalir:f=>LIMPIA.push(f),
+  /* Fin de partida: {ic, titulo, lineas, clave (del récord), puntos, monedas, otra()} */
+  fin(o){clearAll();const rec=(o.puntos||0)>(ST.best[k+':'+o.clave]||0);if(rec){ST.best[k+':'+o.clave]=o.puntos;asave()}
+    const m=Math.max(0,o.monedas|0);ST.monedas=(ST.monedas||0)+m;asave();if(m)coins(m);if(rec||o.gana)confetti();sfx('win');
+    const rp=Object.entries(ST.repasar||{}).filter(([b,n])=>n>=2&&MAP[b]).map(([b])=>BLOCKS.find(x=>x.k===b));
+    app().innerHTML=`<div class="box center"><div class="big">${o.ic||'🎮'}</div><h2>${esc(o.titulo)}</h2><p style="font-size:20px">${o.lineas}</p>
+    <p style="font-size:19px">${rec?'🏆 ¡NUEVO RÉCORD!':'Récord: '+(ST.best[k+':'+o.clave]||0)} · +${m} 🪙 · +${m*5} XP</p>
+    ${rp.length?`<p class="sub">Para repasar: ${rp.map(b=>`<button class="tab rep" data-k="${b.k}">${(MIC.find(m=>m[0]===b.k)||[])[1]||''} ${esc(b.n)}</button>`).join(' ')}</p>`:''}
+    <button class="btn" id="again">🔁 Otra vez</button> <button class="btn sec" id="arc">🎮 Arcade</button></div>`;
+    $('#again').onclick=o.otra;$('#arc').onclick=ahome;document.querySelectorAll('.rep').forEach(b=>b.onclick=()=>R[b.dataset.k]())}}}
+function propio(j){clearAll();app().innerHTML=`<div class="box center"><p class="sub">Cargando ${esc(j.n)}…</p></div>`;
+  carga(j.src).then(()=>window.ARCADE[j.k].start(api(j.k))).catch(e=>{app().innerHTML=`<div class="box center"><h2>No se ha podido abrir</h2><p class="sub">${esc(e.message)}. Prueba otra vez con conexión.</p><button class="btn sec" id="arc">🎮 Arcade</button></div>`;$('#arc').onclick=ahome})}
 function ahome(){
   clearAll();
+  if(PROPIOS){try{Object.assign(ST,JSON.parse(localStorage.getItem(JUEGO.claves.arcade)||'{}'))}catch(e){}
+    app().innerHTML=`<div class="box"><h2>🎮 Arcade</h2><p class="sub">Juegos de verdad con lo que estudias. Lo que ganas suma XP y monedas, pero no cuenta para la nota. Vence a un jefe y gana la ⭐ número ${MAXST}. Tienes 🪙 ${ST.monedas||0}.</p>
+    <div class="modes">${PROPIOS.map((j,ix)=>`<button class="mode ${j.c||'m'+(ix+1)}" data-j="${j.k}"><div class="tag">Juego 0${ix+1}</div><div class="ic">${j.ic}</div><h3>${esc(j.n)}</h3><p>${esc(j.d)}</p>${j.pronto?'<div class="rec">Muy pronto</div>':''}</button>`).join('')}</div>
+    <button class="btn sec" onclick="home()">🏠 Volver</button></div>`;
+    document.querySelectorAll('[data-j]').forEach(b=>{const j=PROPIOS.find(x=>x.k===b.dataset.j);if(j.pronto){b.disabled=true;return}b.onclick=()=>propio(j)});return}
   app().innerHTML=`<div class="box"><h2>🎮 Arcade</h2><p class="sub">Los mismos ejercicios, en modo arcade. Lo que ganas suma XP, pero no cuenta para la nota. Vence a un jefe y gana la ⭐ número ${MAXST}.</p>
   <div class="achips">${ABLK.map(b=>`<button class="chipb ${ST.blk==b.k?'on':''}" data-k="${b.k}">${b.ic} ${b.n}</button>`).join('')}</div>
   <div class="modes">${MODES.map((m,ix)=>`<button class="mode ${m.c}" data-k="${m.k}"><div class="tag">Modo 0${ix+1}</div><div class="ic">${m.ic}</div><h3>${m.n}</h3><p>${m.d}</p><div class="rec">🏆 ${m.r(best(m.k))}</div></button>`).join('')}</div><button class="btn sec" onclick="home()">🏠 Volver a las misiones</button></div>`;
@@ -1373,7 +1405,10 @@ const G={
  },
 };
 
-return{home:ahome,clear:clearAll};
+/* Lo que se falló en el arcade y vuelve a «Hoy toca»; se borra al jugar ese bloque */
+function repasar(){try{return JSON.parse(localStorage.getItem(JUEGO.claves.arcade)||'{}').repasar||{}}catch(e){return{}}}
+function repasado(b){if(!(ST.repasar||{})[b]&&!repasar()[b])return;try{Object.assign(ST,JSON.parse(localStorage.getItem(JUEGO.claves.arcade)||'{}'))}catch(e){}if(ST.repasar)delete ST.repasar[b];asave()}
+return{home:ahome,clear:clearAll,repasar,repasado};
 })();
 hud();home();loadClass();
 

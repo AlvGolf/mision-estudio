@@ -247,6 +247,30 @@ for (const juego of juegos) {
     await page.screenshot({ path: path.join(dirCapturas, `${A.n}-menu-final.png`), fullPage: true });
     await ctx.close();
   }
+
+  /* Arcade propio (22-nov): cada juego del arcade se juega solo en modo prueba (semilla fija y partida corta), a 820 px y con el dedo */
+  {
+    const ctx = await navegador.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true, deviceScaleFactor: 1 });
+    await ctx.addInitScript(() => { localStorage.setItem('mision_name', 'Prueba'); window.ARCADE_PRUEBA = true; });
+    const page = await ctx.newPage();
+    const errores = [];
+    page.on('pageerror', e => errores.push(e.message));
+    page.on('response', r => { if (r.status() >= 400 && r.url().startsWith(BASE)) errores.push(`no carga ${r.url().slice(BASE.length)} (${r.status()})`); });
+    await page.goto(`${BASE}/${juego}/`, { waitUntil: 'networkidle' });
+    const propios = await page.evaluate(() => ((JUEGO.arcade && JUEGO.arcade.juegos) || []).filter(j => !j.pronto).map(j => j.k));
+    for (const k of propios) {
+      await page.evaluate(() => { BLOCKS.forEach(b => { GR[b.k] = [8]; }); save(); R.arcade(); });
+      await page.click(`[data-j="${k}"]`);
+      const jugador = { cohete: jugarCohete }[k];
+      if (!jugador) { aviso(`El juego del arcade «${k}» no tiene jugador en el verificador`); continue; }
+      const r = await jugador(page);
+      await page.screenshot({ path: path.join(dirCapturas, `arcade-${k}.png`) });
+      if (r.error) fallo(`[arcade · ${k}] ${r.error}`);
+      else R.notas.push(`[arcade · ${k}] ${r.nota}`);
+    }
+    errores.forEach(e => fallo(`[arcade] ${e}`));
+    await ctx.close();
+  }
 }
 
 /* ---------- Menú principal: la suite (21-nov), pinta las tarjetas desde juegos.js ---------- */
@@ -363,6 +387,42 @@ process.exit(hayFallos ? 1 : 0);
 /* =====================================================================
    Jugadores de cada formato
    ===================================================================== */
+/* 🚀 Cohete del Saber: arrastra el cohete bajo la roca buena más baja y lejos de las malas. Antes de ganar, choca a propósito
+   con una mala para comprobar que quita una vida y queda para repasar. Tiene que vencer al guardián y dar la estrella. */
+async function jugarCohete(page) {
+  await page.waitForSelector('[data-p]', { timeout: 8000 });
+  await page.click('[data-p]');
+  if (!await page.waitForFunction(() => window._ARC, null, { timeout: 15000 }).then(() => true, () => false)) return { error: 'la partida no arranca (no aparece el juego)' };
+  const lienzo = await page.$('#cohLienzo canvas');
+  const mover = async x => {
+    const b = await lienzo.boundingBox(), A = await page.evaluate(() => window._ARC && window._ARC.nave.x);
+    if (A == null) return;
+    const k = b.width / 600, y = b.y + b.height * .8, x0 = b.x + b.width / 2;
+    await page.mouse.move(x0, y); await page.mouse.down(); await page.mouse.move(x0 + (x - A) * k / 1.15, y, { steps: 4 }); await page.mouse.up();
+  };
+  let fallado = false, vidas = 3, jefe = false;
+  const t0 = Date.now();
+  while (Date.now() - t0 < 70000) {
+    const A = await page.evaluate(() => window._ARC);
+    if (!A) break;
+    if (A.fase === 'jefe') jefe = true;
+    if (A.vidas < vidas) { vidas = A.vidas; fallado = true; }
+    const r = A.rocas.sort((a, b) => b.y - a.y)[0];
+    if (r) { const x = (r.bueno || !fallado) ? r.x : (r.x > 300 ? 80 : 520); if (Math.abs(A.nave.x - x) > 20) await mover(x); }
+    await page.waitForTimeout(100);
+  }
+  await page.waitForTimeout(2500);
+  const fin = await page.locator('#app').innerText().catch(() => '');
+  const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
+  if (!fallado) return { error: 'chocar con una roca mala no quita ninguna vida' };
+  if (!Object.keys(est.arc.repasar || {}).length) return { error: 'la roca mala no queda apuntada para repasar' };
+  if (!jefe) return { error: 'no llega el guardián al reventar las rocas buenas' };
+  if (!/Planeta conquistado/.test(fin)) return { error: `no se puede vencer al guardián (pantalla final: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
+  if (est.estrella !== 1) return { error: 'vencer al guardián no da la estrella del arcade' };
+  if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('cohete:'))) return { error: 'no se guarda el récord' };
+  return { nota: 'una roca mala quita una vida y queda para repasar; llega el guardián, se le vence, da la estrella y guarda el récord' };
+}
+
 async function arrastrar(page, de, a) {
   const cab = await page.evaluate(() => document.querySelector('header')?.getBoundingClientRect().bottom || 0);
   const vh = page.viewportSize().height;
