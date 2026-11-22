@@ -22,6 +22,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { atrasados } from './menus.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ARGS = process.argv.slice(2);
@@ -32,6 +33,15 @@ const ANCHOS = [
   { n: 1440, viewport: { width: 1440, height: 900 } },
 ];
 const ES_REDIRECCION = f => /http-equiv="refresh"/i.test(fs.readFileSync(f, 'utf8').slice(0, 800));
+/* Los menús de la suite (22-nov: un enlace por curso). Cada uno dice su curso y sus claves en «const SUITE={…}»;
+   el de antes (sin SUITE) enseña los dos cursos y guarda en mision_curso y mision_name */
+const MENUS_SUITE = ['/', '/menu-beta/', '/segundo/'].map(ruta => {
+  const html = path.join(RAIZ, ruta, 'index.html');
+  if (!fs.existsSync(html) || ES_REDIRECCION(html)) return null;
+  const t = fs.readFileSync(html, 'utf8'), m = t.match(/const SUITE=(\{[^}]*\});/);
+  const S = m ? new Function('return ' + m[1])() : null;
+  return { ruta, html, t, suite: S, cursos: S ? [String(S.curso)] : ['5', '2'], nombre: S ? S.nombre : 'mision_name', cursoK: S ? S.cursoK : 'mision_curso' };
+}).filter(Boolean);
 
 let juegos = ARGS.filter(a => !a.startsWith('--'));
 if (!juegos.length) {
@@ -74,7 +84,9 @@ for (const juego of juegos) {
   for (const A of ANCHOS) {
     const tag = `${A.n}px`;
     const ctx = await navegador.newContext({ viewport: A.viewport, isMobile: !!A.isMobile, hasTouch: !!A.hasTouch, deviceScaleFactor: 1 });
-    await ctx.addInitScript(() => { try { if (!localStorage.getItem('mision_name')) localStorage.setItem('mision_name', 'Prueba'); } catch (e) { } });
+    /* El nombre va en la clave de su juego (22-nov: los de 2º guardan el suyo aparte, «mision_name_2») */
+    const claveNombre = (fs.readFileSync(path.join(RAIZ, juego, 'index.html'), 'utf8').match(/nombre:'([^']+)'\}/) || [])[1] || 'mision_name';
+    await ctx.addInitScript(k => { try { if (!localStorage.getItem(k)) localStorage.setItem(k, 'Prueba'); } catch (e) { } }, claveNombre);
     await ctx.route('**/*', async r => {
       const u = r.request().url();
       if (u.startsWith(BASE) || /fonts\.(googleapis|gstatic)\.com/.test(u)) return r.continue();
@@ -154,6 +166,11 @@ for (const juego of juegos) {
         if (d.suma < pide[0] || d.suma > pide[1]) aviso(`La ruta suma ${d.suma} minutos y en ${curso} tiene que durar de ${pide[0]} a ${pide[1]}: ajusta los «min» de ROUTE_ST`);
         if (!d.min) aviso(`JUEGO.ruta.minutos no está puesto: el botón dirá «unos 30 minutos» (en ${curso}: «${pide[0]} a ${pide[1]}»)`);
       }
+    }
+    /* Un enlace por curso (22-nov): el botón ‹ ME de un juego de 2º vuelve al menú de 2º, nunca al de 5º */
+    if (A.n === 390) {
+      const vuelta = await page.evaluate(() => { const a = document.getElementById('amenu'); return a ? { href: a.getAttribute('href'), curso: JUEGO.curso } : null });
+      if (vuelta && vuelta.curso == 2 && vuelta.href !== '../segundo/') fallo(`[${tag}] El botón de volver al menú de este juego de 2º lleva a «${vuelta.href}» y no al menú de 2º (../segundo/)`);
     }
     const tieneRuta = await visible('.routebtn');
     if (!tieneRuta) { aviso(`[${tag}] No hay botón de ruta de estudio: no se juega la ruta`); await ctx.close(); continue; }
@@ -303,43 +320,52 @@ for (const juego of juegos) {
 {
   const R = { juego: 'menú principal', fallos: [], avisos: [], notas: [] };
   RESUMEN.push(R);
-  for (const A of ANCHOS) for (const curso of ['5', '2']) {
+  /* Los menús que salen de la plantilla tienen que estar al día con ella */
+  for (const m of atrasados()) R.fallos.push(`El menú «${m.dir || 'raíz'}» no está al día con scripts/menu.html: ejecuta «npm run menus»`);
+  for (const M of MENUS_SUITE) for (const A of ANCHOS) for (const curso of M.cursos) {
     const ctx = await navegador.newContext({ viewport: A.viewport, isMobile: !!A.isMobile });
     /* Con nombre y entrada ya vistos: el orden logo → nombre → curso lo prueba «Tablet nueva» */
-    await ctx.addInitScript(c => { localStorage.setItem('mision_curso', c); localStorage.setItem('mision_name', 'Prueba'); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, curso);
+    await ctx.addInitScript(([c, kc, kn]) => { localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, [curso, M.cursoK, M.nombre]);
     const page = await ctx.newPage();
     const errores = [];
     page.on('pageerror', e => errores.push(e.message));
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.goto(BASE + M.ruta, { waitUntil: 'networkidle' });
     await page.waitForTimeout(600);
-    errores.forEach(e => R.fallos.push(`[${A.n}px, ${curso}º] Error en la página: ${e}`));
+    errores.forEach(e => R.fallos.push(`[${M.ruta} ${A.n}px, ${curso}º] Error en la página: ${e}`));
+    if (M.suite && await page.locator('#cambia').count()) R.fallos.push(`[${M.ruta}] El menú de ${curso}º tiene el botón de cambiar de curso`);
     const enlaces = await page.$$eval('#app a', as => as.map(a => a.getAttribute('href')));
     const juegos = await page.evaluate(c => JUEGOS.filter(j => String(j.curso) === c).length, curso);
     const tarjetas = await page.$$eval('.tarj', a => a.length);
     if (tarjetas !== juegos) R.fallos.push(`[${A.n}px, ${curso}º] Hay ${juegos} juegos de ${curso}º en juegos.js y el menú enseña ${tarjetas}`);
     for (const href of enlaces) {
-      const dest = path.join(RAIZ, href.replace(/\/$/, '/index.html'));
+      const dest = path.join(RAIZ, M.ruta, href.replace(/\/$/, '/index.html'));
       if (!fs.existsSync(dest)) R.fallos.push(`El menú enlaza a «${href}», que no existe`);
     }
     const d = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (d > 1) R.fallos.push(`[${A.n}px, ${curso}º] El menú desborda ${d}px en horizontal`);
-    await page.screenshot({ path: path.join(RAIZ, 'verificacion', `menu-suite-${A.n}-${curso}.png`), fullPage: true });
+    await page.screenshot({ path: path.join(RAIZ, 'verificacion', `menu-suite-${M.ruta.replace(/\//g, '') || 'raiz'}-${A.n}-${curso}.png`), fullPage: true });
+    /* La pantalla del curso solo ofrece el de este enlace */
+    if (M.suite && A.n === 390) {
+      await page.evaluate(k => { localStorage.removeItem(k); CURSO = null; pinta(); }, M.cursoK); await page.waitForTimeout(300);
+      const cs = await page.$$eval('.curso [data-c]', b => b.map(x => x.dataset.c));
+      if (cs.join() !== curso) R.fallos.push(`[${M.ruta}] La pantalla del curso ofrece ${cs.length ? cs.map(c => c + 'º').join(' y ') : 'ningún curso'}; en este enlace solo tiene que salir ${curso}º`);
+    }
     await ctx.close();
   }
-  if (!R.fallos.length) R.notas.push(`Cursos 5º y 2º a ${ANCHOS.map(a => a.n).join(', ')} px: tarjetas y enlaces bien, sin desbordes`);
+  if (!R.fallos.length) R.notas.push(`${MENUS_SUITE.map(M => `${M.ruta} (${M.cursos.map(c => c + 'º').join(' y ')})`).join(', ')} a ${ANCHOS.map(a => a.n).join(', ')} px: solo su curso, tarjetas y enlaces bien, sin desbordes`);
 }
 
 /* ---------- La ruta en el menú (22-nov, M2): en una tablet nueva, al tocar cada juego sale su mapa entero con el cohete
    en la primera estación, leído de la propia página del juego. Se revisa en cada menú que tenga la ficha (beta o portada). ---------- */
-for (const ruta of ['/', '/menu-beta/']) {
-  const html = path.join(RAIZ, ruta, 'index.html');
-  if (!fs.existsSync(html) || ES_REDIRECCION(html) || !fs.readFileSync(html, 'utf8').includes('function abreFicha')) continue;
+for (const M of MENUS_SUITE) {
+  const { ruta, html } = M;
+  if (!M.t.includes('function abreFicha')) continue;
   const R = { juego: `ruta en el menú (${ruta})`, fallos: [], avisos: [], notas: [] };
   RESUMEN.push(R);
   const errores = [];
-  for (const curso of ['5', '2']) {
+  for (const curso of M.cursos) {
     const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
-    await ctx.addInitScript(c => { localStorage.setItem('mision_curso', c); localStorage.setItem('mision_name', 'Prueba'); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, curso);
+    await ctx.addInitScript(([c, kc, kn]) => { localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); }, [curso, M.cursoK, M.nombre]);
     const page = await ctx.newPage();
     page.on('pageerror', e => errores.push(e.message));
     await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
@@ -371,16 +397,16 @@ for (const ruta of ['/', '/menu-beta/']) {
     await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
     if (!await page.locator('#nm').count() || await page.locator('.tarj, .curso').count()) R.fallos.push('En una tablet nueva, el menú no pide el nombre antes del curso y de los juegos');
     else { await page.fill('#nm', 'Prueba'); await page.click('#nmok'); await page.waitForSelector('.curso', { timeout: 4000 }).catch(() => {});
-      if (await page.evaluate(() => localStorage.getItem('mision_name')) !== 'Prueba' || !await page.locator('.curso').count()) R.fallos.push('Al escribir el nombre en el menú no se guarda o no pasa a elegir el curso');
+      if (await page.evaluate(k => localStorage.getItem(k), M.nombre) !== 'Prueba' || !await page.locator('.curso').count()) R.fallos.push('Al escribir el nombre en el menú no se guarda o no pasa a elegir el curso');
       else R.notas.push('Tablet nueva: logo, nombre, curso y menú, en ese orden'); }
     await ctx.close();
     const pj = await navegador.newPage(); await pj.goto(BASE + ruta, { waitUntil: 'domcontentloaded' });
-    const j = await pj.evaluate(() => { const x = JUEGOS.find(x => x.curso === 5); return { id: x.id, href: ir(x.carpeta) }; }); await pj.close();
-    const fuente = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, j.href)), 'index.html'), 'utf8');
-    const clave = (fuente.match(/claves:\{[^}]*ruta:'([^']+)'/) || [])[1];
+    const j = await pj.evaluate(c => { const x = JUEGOS.find(x => x.curso === +c); return x ? { id: x.id, href: ir(x.carpeta) } : null; }, M.cursos[0]); await pj.close();
+    const fuente = !j ? '' : fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, j.href)), 'index.html'), 'utf8');
+    const clave = j && (fuente.match(/claves:\{[^}]*ruta:'([^']+)'/) || [])[1];
     if (clave) {
       ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
-      await ctx.addInitScript(([h, k]) => { localStorage.setItem('mision_entrada', h); localStorage.setItem('mision_curso', '5'); localStorage.setItem('mision_name', 'Prueba'); localStorage.setItem(k, JSON.stringify({ i: 2, part: 0, on: false })); }, [hoy, clave]);
+      await ctx.addInitScript(([h, k, c, kc, kn]) => { localStorage.setItem('mision_entrada', h); localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem(k, JSON.stringify({ i: 2, part: 0, on: false })); }, [hoy, clave, M.cursos[0], M.cursoK, M.nombre]);
       page = await ctx.newPage();
       page.on('pageerror', e => errores.push(e.message));
       await page.goto(BASE + ruta, { waitUntil: 'networkidle' });

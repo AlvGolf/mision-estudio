@@ -62,8 +62,11 @@ function entradaMarca(){let hoy=new Date().toISOString().slice(0,10),ya=null;try
 let INSTALA=null;
 (function(){const yo=(document.currentScript||{}).src||location.href,beta=/motor-beta\//.test(yo),raiz=new URL('../',yo).href;
   const add=(t,a)=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));document.head.appendChild(e)};
-  if(!document.querySelector('link[rel="manifest"]'))add('link',{rel:'manifest',href:raiz+'manifest.webmanifest'});
-  if(!document.querySelector('link[rel="apple-touch-icon"]'))add('link',{rel:'apple-touch-icon',href:raiz+'iconos/apple-touch-icon.png'});
+  /* Un enlace por curso (22-nov): un juego de 2º se instala como la app de 2º (su enlace, el cohete del libro y su nombre) */
+  const dos=typeof JUEGO!=='undefined'&&JUEGO.curso==2;
+  if(!document.querySelector('link[rel="manifest"]'))add('link',{rel:'manifest',href:raiz+(dos?'segundo/':'')+'manifest.webmanifest'});
+  if(!document.querySelector('link[rel="apple-touch-icon"]'))add('link',{rel:'apple-touch-icon',href:raiz+(dos?'iconos/cohete/':'iconos/')+'apple-touch-icon.png'});
+  if(dos&&!document.querySelector('meta[name="apple-mobile-web-app-title"]'))add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio 2º'});
   add('meta',{name:'apple-mobile-web-app-capable',content:'yes'});add('meta',{name:'mobile-web-app-capable',content:'yes'});add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio'});
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register(raiz+'sw.js',{scope:beta?'./':raiz}).catch(()=>{});
   addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALA=e;pintaInstalar()});

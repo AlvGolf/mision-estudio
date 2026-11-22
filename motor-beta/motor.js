@@ -1321,7 +1321,7 @@ Object.assign(STEP,{
 });
 /* Volver al menú de la suite (21-nov): en la app instalada no hay barra del navegador, así que sin esto el niño no sale del juego. */
 function botonMenu(){const h=document.querySelector('header');if(!h||document.getElementById('amenu'))return;
-  const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href=ES_BETA?'../menu-beta/':'../';b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
+  const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href=JUEGO.curso==2?'../segundo/':ES_BETA?'../menu-beta/':'../'; /* cada curso vuelve a su menú (22-nov) */b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
   b.innerHTML='<span aria-hidden="true">‹</span>'+logoMarca('simbolo','',22);b.onclick=()=>son('tap');h.insertBefore(b,h.firstChild)}
 botonMenu();
 function sfxOk(){son('ok');return;try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.connect(g);g.connect(A.destination);const n=A.currentTime;o.frequency.setValueAtTime(660,n);o.frequency.exponentialRampToValueAtTime(990,n+.12);g.gain.setValueAtTime(.08,n);g.gain.exponentialRampToValueAtTime(.001,n+.2);o.start(n);o.stop(n+.21)}catch(e){}}

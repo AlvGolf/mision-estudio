@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "verificar": "node scripts/verificar.mjs"
+    "verificar": "node scripts/verificar.mjs",
+    "menus": "node scripts/menus.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.65.1"
