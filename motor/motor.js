@@ -233,16 +233,22 @@ function wireFame(){
   wireClass();
 }
 function examRun(qs){
-  qs=qs.map(q=>q.num?{...q}:{...q,opts:shuf(q.opts)});let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
-  app().innerHTML=`<div class="box"><h2>👑 EXAMEN FINAL</h2><p class="sub">Sin pistas. Las correcciones salen al final. Tienes ${JUEGO.examen.min} minutos.</p>
+  qs=qs.map(q=>q.num||q.poner?{...q}:{...q,opts:shuf(q.opts)});let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
+  /* 22-nov (reloj de 2º): con min 0 el examen no tiene tiempo límite */
+  const sinTiempo=!JUEGO.examen.min;
+  app().innerHTML=`<div class="box"><h2>👑 EXAMEN FINAL</h2><p class="sub">Sin pistas. Las correcciones salen al final. ${sinTiempo?'Sin prisa: tómate tu tiempo.':`Tienes ${JUEGO.examen.min} minutos.`}</p>
   ${guia('Sin pistas, pero tú puedes. ¡Respira y a por ello!',{saluda:1})}
   <button class="btn" id="go">Empezar el examen ⏱️</button></div>`;
-  $('#go').onclick=()=>{const t=setInterval(()=>{left--;const el=$('#clk');if(el){el.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(left<=60)el.classList.add('prisa')}if(left===60)son('cuenta');if(left<=0){clearInterval(t);finish(true)}},1000);
-    function show(){if(done)return;if(i>=qs.length){clearInterval(t);return finish(false)}
+  $('#go').onclick=()=>{const t=sinTiempo?null:setInterval(()=>{left--;const el=$('#clk');if(el){el.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(left<=60)el.classList.add('prisa')}if(left===60)son('cuenta');if(left<=0){clearInterval(t);finish(true)}},1000);
+    function show(){if(done)return;if(i>=qs.length){if(t)clearInterval(t);return finish(false)}
       const q=qs[i];
-      app().innerHTML=`<div class="box"><div style="display:flex;justify-content:space-between"><h2>👑 Examen</h2><span class="pill" id="clk">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span></div>
+      app().innerHTML=`<div class="box"><div style="display:flex;justify-content:space-between"><h2>👑 Examen</h2>${sinTiempo?'':`<span class="pill" id="clk">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span>`}</div>
       <div class="bar"><div style="width:${i/qs.length*100}%"></div></div><div class="hint">Pregunta ${i+1} de ${qs.length}</div>
-      <div class="q">${esc(q.q)}</div>${q.num?`${q.borrador?'<div id="eb"></div>':''}<div id="tk"></div>`:`<div class="opts">${q.opts.map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`}</div>`;
+      <div class="q">${esc(q.q)}</div>${q.reloj?relojSVG():''}${q.poner?`<div class="rlj-pon"></div><button class="btn" id="rsig">Siguiente ➜</button>`:q.num?`${q.borrador?'<div id="eb"></div>':''}<div id="tk"></div>`:`<div class="opts">${q.opts.map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`}</div>`;
+      if(q.reloj)relojAgujas($('#app .rlj'),q.reloj.h,q.reloj.m);
+      /* Poner la hora en el reloj (2º, 22-nov): se apunta sin enseñar si está bien */
+      if(q.poner){const P=q.poner,RM=relojMovil($('#app .rlj-pon'),12,0,P.paso||15);
+        $('#rsig').onclick=()=>{const {h,m}=RM.get();if(h%12==P.h%12&&m==P.m)ok++;else wrong.push({q:q.q,yo:horaTxt(h,m),a:horaTxt(P.h,P.m)});i++;setTimeout(show,120)};return}
       /* Con teclado (Mates, 21-nov): se apunta sin enseñar si está bien; las correcciones salen al final */
       if(q.num){if(q.borrador)borrador($('#eb'));teclado($('#tk'),v=>{if(mismoNum(v,q.a))ok++;else wrong.push({q:q.q,yo:v,a:fmtN(numES(q.a))});i++;setTimeout(show,120)},{neg:q.neg,boton:'Siguiente ➜'});return}
       document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(b.textContent==q.a)ok++;else wrong.push({q:q.q,yo:b.textContent,a:q.a});i++;show()});}
@@ -1045,6 +1051,16 @@ const ESC_SITIOS={
     <rect x="316" y="114" width="7" height="40" fill="#7a5230" ${ESC_O}/><path d="M300 118 a13 13 0 0 1 6 -20 a14 14 0 0 1 26 -2 a12 12 0 0 1 5 22z" fill="${p.arbol}" ${ESC_O}/><circle cx="312" cy="104" r="4" fill="#ffffff2e"/>
     <rect x="370" y="108" width="7" height="46" fill="#7a5230" ${ESC_O}/><path d="M352 112 a15 15 0 0 1 6 -24 a17 17 0 0 1 32 -2 a14 14 0 0 1 4 26z" fill="${p.arbol2}" ${ESC_O}/><circle cx="366" cy="96" r="5" fill="#ffffff2e"/>
     <g stroke="${ESC_L}" stroke-width=".7">${[[330,182,'#ff7aa8'],[358,186,'#ffe14d'],[388,180,'#ff7aa8'],[342,192,'#ffe14d'],[376,190,'#b28dff']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="${c}"/>`).join('')}</g>`},
+  /* El cole (22-nov, «Las horas del reloj»): edificio con su reloj en la fachada, ventanas y la puerta */
+  cole:{col:1,spot:{x:152,y:192},svg:p=>`
+    <rect x="104" y="96" width="96" height="72" fill="${p.muro}" ${ESC_O}/><rect x="182" y="96" width="18" height="72" fill="${p.muroS}"/><rect x="104" y="96" width="96" height="72" fill="none" ${ESC_O}/>
+    <path d="M98 98 L152 70 L206 98Z" fill="${p.tejado}" ${ESC_O}/>
+    <circle cx="152" cy="86" r="9" fill="#fff" ${ESC_O}/><path d="M152 86 V80 M152 86 H157" stroke="${ESC_L}" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M152 70 V56" stroke="${ESC_L}" stroke-width="1.4"/><path d="M152 56 h14 l-4 4 l4 4 h-14z" fill="#ff5c6c" ${ESC_O}/>
+    ${[112,136,168].map(x=>`<rect x="${x}" y="106" width="20" height="18" rx="2" fill="${p.ventana}" ${ESC_O}/>`).join('')}
+    <rect x="112" y="134" width="20" height="18" rx="2" fill="${p.ventana}" ${ESC_O}/><rect x="168" y="134" width="20" height="18" rx="2" fill="${p.ventana}" ${ESC_O}/>
+    <path d="M140 168 V140 a12 12 0 0 1 24 0 V168Z" fill="#3d7bd6" ${ESC_O}/><path d="M152 132 V168" stroke="${ESC_L}" stroke-width="1"/>
+    <rect x="96" y="166" width="112" height="6" rx="2" fill="#c9b08a" ${ESC_O}/>`},
 };
 /* Personajes de cómic con contorno. Si el juego no da colores, se toman en orden de aquí */
 /* Dibuja una escena: sitios [{k, l}] (de 2 a 4), luz y lo que vaya encima (personajes). Devuelve el SVG y dónde se coloca cada uno */
@@ -1060,6 +1076,59 @@ function escSVG(sitios,luz,encima,etiqueta){
   const spot=k=>{const i=sitios.findIndex(z=>z.k==k),d=ESC_SITIOS[k];return d&&i>=0?{x:d.spot.x+(i-d.col)*100,y:d.spot.y}:{x:i*100+50,y:190}};
   return {svg,spot,W};
 }
+/* =====================================================================
+   RELOJ DE AGUJAS (22-nov, «Las horas del reloj», 2º; artefacto «El reloj de 2º», P2 «Un día con Lía»).
+   La corta (azul) marca la hora y la larga (roja) los minutos; la corta avanza también con los minutos.
+   Nivel 1: de cuarto en cuarto (paso 15) · Nivel 2: de cinco en cinco (paso 5).
+   ===================================================================== */
+const MIN_TXT={5:'cinco',10:'diez',15:'cuarto',20:'veinte',25:'veinticinco',30:'media'};
+const NUM_TXT=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once'];
+const hArt=h=>h==1?'la 1':`las ${h}`;
+const h12=x=>((x-1)%12+12)%12+1;
+/* La hora como se dice en clase: «las 3 y cuarto», «las 7 menos veinte» */
+function horaTxt(h,m){h=h12(h);if(m==0)return `${hArt(h)} en punto`;if(m<=30)return `${hArt(h)} y ${MIN_TXT[m]||m}`;return `${hArt(h%12+1)} menos ${MIN_TXT[60-m]||60-m}`}
+const aLas=t=>'a '+t;const Mayus=t=>t[0].toUpperCase()+t.slice(1);
+/* Dónde van las agujas, para explicar un fallo */
+const agujasTxt=(h,m)=>`la larga en el ${m?m/5:12} y la corta ${m?`entre el ${h12(h)} y el ${h12(h)%12+1}`:`en el ${h12(h)}`}`;
+/* Falsas de siempre: «y» por «menos», agujas cambiadas, la hora de al lado y, de cinco en cinco, leer el número como minutos */
+function horaFalsas(h,m,paso){const M=[...Array(60/paso).keys()].map(i=>i*paso),c=[];
+  if(m==0)c.push([12,h*5%60],[h12(h+1),0],[h12(h-1),0]);
+  else{if(m<30)c.push([h12(h-1),60-m]);if(m>30)c.push([h12(h+1),60-m]);
+    if(paso<15&&m<30&&m%15)c.push(`${hArt(h12(h))} y ${NUM_TXT[m/5]}`);
+    c.push([m/5||12,h*5%60]);c.push(m>30?[h12(h-1),m]:[h12(h+1),m])}
+  c.push([h12(h+1),m],[h12(h+2),m]);
+  const ok=horaTxt(h,m),vis=new Set([ok]),out=[];
+  for(const x of c){const t=typeof x=='string'?x:M.includes(x[1])?horaTxt(x[0],x[1]):null;if(t&&!vis.has(t)){vis.add(t);out.push(t)}if(out.length==2)break}return out}
+/* Las mismas confusiones, pero como relojes dibujados (para elegir el reloj): «y» por «menos», agujas cambiadas y la hora de al lado */
+function relojFalsas(h,m){const c=[];
+  if(m==0)c.push([12,h*5%60],[h12(h+1),0],[h12(h-1),0]);
+  else{if(m<30)c.push([h12(h-1),60-m]);if(m>30)c.push([h12(h+1),60-m]);c.push([m/5||12,h*5%60]);c.push(m>30?[h12(h-1),m]:[h12(h+1),m])}
+  c.push([h12(h+1),m],[h12(h+2),m]);
+  const vis=new Set([horaTxt(h,m)]),out=[];for(const x of c){const t=horaTxt(x[0],x[1]);if(!vis.has(t)){vis.add(t);out.push(x)}if(out.length==2)break}return out}
+function relojSVG(cls=''){
+  const num=[...Array(12)].map((_,i)=>{const n=i+1,a=n*Math.PI/6;return `<text x="${(100+70*Math.sin(a)).toFixed(1)}" y="${(100-70*Math.cos(a)+7).toFixed(1)}" text-anchor="middle">${n}</text>`}).join('');
+  const tic=[...Array(60)].map((_,i)=>{const a=i*Math.PI/30,r1=i%5?86:82;return `<line x1="${(100+r1*Math.sin(a)).toFixed(1)}" y1="${(100-r1*Math.cos(a)).toFixed(1)}" x2="${(100+90*Math.sin(a)).toFixed(1)}" y2="${(100-90*Math.cos(a)).toFixed(1)}" stroke-width="${i%5?1.2:3}"/>`}).join('');
+  return `<svg class="rlj ${cls}" viewBox="0 0 200 200" role="img" aria-label="Reloj de agujas"><circle cx="100" cy="100" r="96" fill="#ffc83d"/><circle cx="100" cy="100" r="91" fill="#fff" stroke="#1d2033" stroke-width="3"/>
+    <g stroke="#17224a">${tic}</g><g class="rlj-n">${num}</g>
+    <g class="rlj-g" data-h><line x1="100" y1="108" x2="100" y2="56" stroke="#1D3BA8" stroke-width="10" stroke-linecap="round"/><circle class="asa" data-asa="h" cx="100" cy="58" r="14" fill="#1D3BA8" fill-opacity=".001"/></g>
+    <g class="rlj-g" data-m><line x1="100" y1="112" x2="100" y2="24" stroke="#EE3B4F" stroke-width="6" stroke-linecap="round"/><circle class="asa" data-asa="m" cx="100" cy="26" r="15" fill="#EE3B4F" fill-opacity=".001"/></g>
+    <circle cx="100" cy="100" r="7" fill="#1d2033"/></svg>`}
+function relojAgujas(svg,h,m){svg.querySelector('[data-h]').style.transform=`rotate(${(h%12)*30+m/2}deg)`;svg.querySelector('[data-m]').style.transform=`rotate(${m*6}deg)`;svg.dataset.h=h12(h);svg.dataset.m=m}
+/* Reloj para poner la hora: se arrastra cada aguja (la larga salta según el paso) o se usan los botones + y − */
+function relojMovil(box,h0,m0,paso){
+  box.innerHTML=relojSVG('mueve')+`<div class="rlj-aj"><div><span class="cor">corta</span><button type="button" class="b-cor" data-ah="-1" aria-label="Aguja corta hacia atrás">−</button><button type="button" class="b-cor" data-ah="1" aria-label="Aguja corta hacia delante">+</button></div>
+    <div><span class="lar">larga</span><button type="button" class="b-lar" data-am="-${paso}" aria-label="Aguja larga hacia atrás">−</button><button type="button" class="b-lar" data-am="${paso}" aria-label="Aguja larga hacia delante">+</button></div></div>`;
+  const svg=box.querySelector('svg');let h=h0,m=m0,arr=null;const pon=()=>relojAgujas(svg,h,m);pon();
+  const ang=e=>{const q=svg.createSVGPoint();q.x=e.clientX;q.y=e.clientY;const r=q.matrixTransform(svg.getScreenCTM().inverse());return (Math.atan2(r.x-100,100-r.y)*180/Math.PI+360)%360};
+  svg.addEventListener('pointerdown',e=>{const t=e.target.closest('[data-asa]');if(!t)return;arr=t.dataset.asa;try{svg.setPointerCapture(e.pointerId)}catch(_){}svg.classList.add('arrastra');e.preventDefault()});
+  svg.addEventListener('pointermove',e=>{if(!arr)return;const a=ang(e);if(arr=='m')m=(Math.round(a/(paso*6))*paso)%60;else h=(Math.round((a-m/2)/30)+12)%12||12;pon()});
+  const suelta=()=>{if(arr)sfxTap();arr=null;svg.classList.remove('arrastra')};svg.addEventListener('pointerup',suelta);svg.addEventListener('pointercancel',suelta);
+  box.querySelectorAll('[data-ah]').forEach(b=>b.onclick=()=>{h=h12(h+ +b.dataset.ah);sfxTap();pon()});
+  box.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>{m+= +b.dataset.am;if(m>=60){m-=60;h=h12(h+1)}if(m<0){m+=60;h=h12(h-1)}sfxTap();pon()});
+  return {get:()=>({h,m}),set:(a,b)=>{h=a;m=b;pon()}}}
+/* La escena de cómic de arriba: los sitios del día y la protagonista donde toque */
+function relojEscena(e){if(!e)return '';const E=escSVG(e.sitios,e.luz||'dia','',e.l||''),sp=E.spot(e.donde),P={...ESC_DEF[0],...(e.quien||{})};
+  return `<div class="rlj-esc">${E.svg.replace(/viewBox="0 0 (\d+) 300"/,'viewBox="0 44 $1 172"').replace('</svg>',`<g class="pj salta" style="transform:translate(${sp.x}px,${sp.y}px)">${escPersona(P)}</g></svg>`)}</div>`}
 function guiaFin(p){return guia(p>=.9?'¡Lo bordaste! 🎉':p>=.7?'¡Muy bien! Repite y a por las tres estrellas.':p>=.5?'Vas bien. A la segunda sale mejor.':'No pasa nada: repítela y verás cómo mejora. ¡Tú puedes!',{sinTexto:1})}
 const escQuieto=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1100,6 +1169,47 @@ Object.assign(STEP,{
         st.querySelectorAll('.zona').forEach(x=>{x.removeAttribute('tabindex');x.style.pointerEvents='none'});
         done(ok,G.length,ok==G.length?'✅ ¡Escena completa, todos a la primera!':`👍 Escena completa: ${ok} de ${G.length} a la primera.`)};
       z.addEventListener('click',go);z.addEventListener('keydown',e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();go()}})});
+  },
+});
+Object.assign(STEP,{
+  /* 🕗 Reloj de agujas: {modo:'leer'|'elige'|'poner'|'dura'|'ordena', h, m, paso (15 o 5), q?, relato?, escena?:{sitios,donde,luz?,quien?}}
+     leer: tres horas para elegir · elige: la hora en palabras y tres relojes para elegir (al revés que leer) · poner: mover las agujas (arrastrando o con botones) · dura: {mas} minutos después, para elegir
+     · ordena: {eventos:[{t, ic, h, m}]}, tocar de lo que pasa antes a lo que pasa después (cuenta cada uno a la primera) */
+  reloj(st,s,done){
+    const paso=s.paso||15,oye=`<button type="button" class="rlj-oye" aria-label="Escuchar">🔊</button>`;
+    const cab=relojEscena(s.escena)+(s.relato?`<div class="relato rlj-rel">${esc(s.relato)}</div>`:'');
+    const pinta=(q,cuerpo)=>{st.innerHTML=`${cab}<div class="rlj-q">${oye}<div class="q">${esc(q)}</div></div>${cuerpo}`;
+      st.querySelectorAll('.rlj-esc .zona').forEach(z=>{z.removeAttribute('tabindex');z.removeAttribute('role');z.style.pointerEvents='none'});
+      st.querySelector('.rlj-oye').onclick=()=>hablar([s.relato,q].filter(Boolean).join(' '),false,JUEGO.voz||'es-ES')};
+    const elige=(q,opts,buena,reloj,alFin)=>{pinta(q,`${reloj?relojSVG():''}<div class="opts rlj-opts">${shuf(opts).map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`);
+      if(reloj)relojAgujas(st.querySelector('.rlj'),reloj[0],reloj[1]);
+      st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.textContent==buena;st.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.textContent==buena)x.classList.add('ok')});
+        if(!ok)b.classList.add('bad');ok?win(10):lose();alFin(ok)})};
+    if(s.modo=='leer'){const buena=Mayus(horaTxt(s.h,s.m));
+      return elige(s.q||'¿Qué hora marca el reloj?',[buena,...horaFalsas(s.h,s.m,paso).map(Mayus)],buena,[s.h,s.m],
+        ok=>done(ok?1:0,1,ok?'✅ ¡Muy bien!':`❌ Son <b>${horaTxt(s.h,s.m)}</b>: ${agujasTxt(s.h,s.m)}.`))}
+    if(s.modo=='elige'){const rs=shuf([[s.h,s.m],...relojFalsas(s.h,s.m)]);
+      pinta(s.q||`¿Qué reloj marca ${horaTxt(s.h,s.m)}?`,`<div class="rlj-cartas rlj-elige">${rs.map((_,i)=>`<button class="rlj-carta" data-r="${i}">${relojSVG('chico')}</button>`).join('')}</div>`);
+      st.querySelectorAll('.rlj-carta').forEach(c=>{const [h,m]=rs[+c.dataset.r];relojAgujas(c.querySelector('.rlj'),h,m);c.dataset.ok=h%12==s.h%12&&m==s.m?1:0;
+        c.onclick=()=>{const ok=c.dataset.ok=='1';st.querySelectorAll('.rlj-carta').forEach(x=>{x.disabled=true;if(x.dataset.ok=='1')x.classList.add('ok')});
+          if(!ok)c.classList.add('bad');ok?win(10):lose();
+          done(ok?1:0,1,ok?'✅ ¡Ese es!':`❌ Para ${horaTxt(s.h,s.m)}: ${agujasTxt(s.h,s.m)}.`)}});return}
+    if(s.modo=='dura'){const t=s.h*60+s.m+s.mas,fh=h12(Math.floor(t/60)),fm=t%60,b=s.h*60+s.m-s.mas,bh=h12(Math.floor(b/60)),bm=(b%60+60)%60;
+      const buena=Mayus(aLas(horaTxt(fh,fm))),dura=s.mas==60?'una hora':s.mas==30?'media hora':s.mas+' minutos';
+      const malas=[...new Set([aLas(horaTxt(bh,bm)),...horaFalsas(fh,fm,15).map(aLas),aLas(horaTxt(s.h,s.m))].map(Mayus))].filter(x=>x!==buena).slice(0,2);
+      return elige(s.q||`Empieza ${aLas(horaTxt(s.h,s.m))} y dura ${dura}. ¿A qué hora termina?`,[buena,...malas],buena,[s.h,s.m],ok=>{relojAgujas(st.querySelector('.rlj'),fh,fm);
+        done(ok?1:0,1,(ok?'✅ ¡Eso es! ':'❌ ')+(s.mas==60?`Una hora después, la corta avanza un número: <b>${horaTxt(fh,fm)}</b>.`:`Media hora después, la larga da media vuelta: <b>${horaTxt(fh,fm)}</b>.`))})}
+    if(s.modo=='poner'){pinta(s.q||`Pon las agujas: ${horaTxt(s.h,s.m)}`,`<div class="rlj-pon"></div><button class="btn" id="rchk">Comprobar ✔</button>`);
+      const R=relojMovil(st.querySelector('.rlj-pon'),12,0,paso);
+      $('#rchk').onclick=()=>{const {h,m}=R.get(),ok=h%12==s.h%12&&m==s.m;$('#rchk').remove();st.querySelectorAll('.rlj-aj button').forEach(b=>b.disabled=true);st.querySelector('.rlj').classList.remove('mueve');
+        ok?win(15):lose();if(!ok)setTimeout(()=>R.set(s.h,s.m),500);
+        done(ok?1:0,1,ok?'✅ ¡Justo! Las agujas están en su sitio.':`❌ Mira: ${agujasTxt(s.h,s.m)}.`)};return}
+    if(s.modo=='ordena'){const ev=s.eventos,orden=ev.map((e,i)=>i).sort((a,b)=>(ev[a].h%12)*60+ev[a].m-((ev[b].h%12)*60+ev[b].m));let k=0,ok=0,fallo=false;
+      pinta(s.q||'Toca las cosas en orden: de lo que pasa antes a lo que pasa después.',`<div class="rlj-cartas">${shuf(ev.map((e,i)=>i)).map(i=>`<button class="rlj-carta" data-e="${i}">${relojSVG('chico')}<span>${ev[i].ic||''} ${esc(ev[i].t)}</span><b class="n"></b></button>`).join('')}</div>`);
+      st.querySelectorAll('.rlj-carta').forEach(c=>{const e=ev[+c.dataset.e];relojAgujas(c.querySelector('.rlj'),e.h,e.m);
+        c.onclick=()=>{if(c.disabled)return;if(+c.dataset.e===orden[k]){c.disabled=true;c.classList.add('ok');c.querySelector('.n').textContent=k+1;if(!fallo){ok++;win(5)}else sfxOk();fallo=false;k++;
+            if(k==ev.length)done(ok,ev.length,ok==ev.length?'✅ ¡Todo en orden a la primera!':`👍 ${ok} de ${ev.length} a la primera. Fíjate en la hora de cada reloj.`)}
+          else{if(!fallo){fallo=true;lose()}c.classList.remove('bad');void c.offsetWidth;c.classList.add('bad');$('#fb').textContent='Esa va después. Mira bien su reloj.'}}});return}
   },
 });
 Object.assign(STEP,{

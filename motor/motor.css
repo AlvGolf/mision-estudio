@@ -636,3 +636,27 @@ html[data-fam=D] .entrada-m span{color:#6a6a78;border-color:#c9c9d4}
 .entrada-m.quieto *{animation:none!important}.entrada-m.quieto .ent-me{fill-opacity:1;stroke-opacity:0}.entrada-m.quieto .ent-n,.entrada-m.quieto .ent-d{opacity:1}.entrada-m.quieto .ent-vm{stroke-dashoffset:0}.entrada-m.quieto .ent-br{display:none}
 .entrada-m.sale{opacity:0}
 @media (prefers-reduced-motion:reduce){.rst .ficha-m,.despegue .vuela{animation:none}.despegue .vuela{opacity:0}}
+
+/* ===== Reloj de agujas (22-nov, «Las horas del reloj», 2º) ===== */
+.rlj{width:min(250px,66vw);height:auto;display:block;margin:6px auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.rlj.chico{width:100%;max-width:110px;margin:0 auto}
+.rlj .rlj-n text{font:700 21px var(--ft);fill:#17224a}
+.rlj .rlj-g{transform-origin:100px 100px;transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.rlj.arrastra .rlj-g{transition:none}
+.rlj.mueve .asa{cursor:grab}
+@media (prefers-reduced-motion:reduce){.rlj .rlj-g{transition:none}}
+.rlj-q{display:flex;gap:10px;align-items:center}.rlj-q .q{margin:0}
+.rlj-oye{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:var(--card2);color:var(--txt);font-size:22px;cursor:pointer}
+.rlj-esc svg{width:100%;max-width:440px;height:auto;display:block;margin:0 auto;border-radius:14px}
+.rlj-rel{margin:8px 0}
+.rlj-opts .opt{text-align:center;font-size:21px}
+.rlj-aj{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:330px;margin:0 auto 10px}
+.rlj-aj div{display:flex;gap:6px;align-items:center;justify-content:center;background:var(--sunk);border-radius:14px;padding:6px}
+.rlj-aj span{font-weight:700}.rlj-aj .cor{color:#5b7cf0}.rlj-aj .lar{color:#ff6b7c}
+.rlj-aj button{border:0;border-radius:12px;width:44px;height:44px;font:700 24px var(--ft);color:#fff;cursor:pointer;touch-action:manipulation}
+.rlj-aj .b-cor{background:#1D3BA8}.rlj-aj .b-lar{background:#EE3B4F}.rlj-aj button:disabled{opacity:.4}
+.rlj-cartas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,30%),1fr));gap:10px}
+.rlj-carta{min-width:0;display:grid;gap:4px;justify-items:center;background:var(--card2);color:var(--txt);border:3px solid transparent;border-radius:16px;padding:8px;font:600 16px var(--ft);cursor:pointer}
+.rlj-carta span{overflow-wrap:anywhere;text-align:center}.rlj-carta .n{font-size:22px;color:var(--gold);min-height:26px}
+.rlj-elige .rlj.chico{max-width:150px}
+.rlj-carta.ok{border-color:var(--yes)}.rlj-carta.bad{border-color:var(--no);animation:sh .35s}

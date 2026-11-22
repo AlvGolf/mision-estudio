@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| mates-reloj-beta, motor-beta, pruebas-motor | Claude Code | 22-nov | Juego nuevo de 2º: Las horas del reloj (Un día con Lía) |

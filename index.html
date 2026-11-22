@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
 <link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="motor/motor.css?v=23">
+<link rel="stylesheet" href="motor/motor.css?v=26">
 <style>
 /* Menú de la suite (ronda 6 del rediseño, 21-nov): S1 «estanterías por asignatura» con la pantalla de curso de la S2 al empezar. */
 header h1{display:flex;align-items:center;gap:8px;cursor:default}
@@ -64,7 +64,7 @@ let CURSO=null;try{CURSO=+localStorage.getItem('mision_curso')||null}catch(e){}
 const JUEGO={id:'menu',estilo:0,curso:CURSO||5};
 </script>
 <script src="juegos.js"></script>
-<script src="motor/piel.js?v=23"></script>
+<script src="motor/piel.js?v=26"></script>
 <script>
 const app=()=>document.getElementById('app');
 const RAIZ='';
@@ -108,9 +108,9 @@ function pinta(){
   const prox=js.filter(j=>j.d>=0).sort((a,b)=>a.d-b.d)[0];
   const A=j=>ASIGNATURAS[j.asignatura]||{n:j.asignatura,ic:'📘',col:'#3dd6ff'};
   let i=0;const ent=()=>`ent" style="--i:${i++}`;
-  const hola=`¡Hola, ${esc(nombre())}!`,saludo=prox?`${hola} Hoy toca ${A(prox).n}: el examen es ${cuando(prox.d)}.`:js.length?`${hola} Elige tu misión. Los exámenes pasados sirven para repasar.`:`${hola} Los juegos de tu curso llegarán muy pronto.`;
+  const hola=`¡Hola, ${esc(nombre())}!`,saludo=prox?`${hola} Hoy toca ${A(prox).n}: el examen es ${cuando(prox.d)}.`:js.length?`${hola} Elige tu misión.${js.some(j=>j.d<0)?' Los exámenes pasados sirven para repasar.':''}`:`${hola} Los juegos de tu curso llegarán muy pronto.`;
   const tarjeta=j=>`<a class="tarj ${j.d<0?'pasado ':''}${ent()};--asig:${A(j).col}" href="${ir(j.carpeta)}" data-id="${j.id}" aria-expanded="false"><b>${esc(j.titulo)}</b><small>${esc(j.temas||'')}</small>
-    <small>Examen ${fecha(j.examen)}${j.d<0?' · para repasar':' · '+cuando(j.d)}</small><span class="sem">${semaforo(j.r)}</span></a>`;
+    <small>${j.examen?`Examen ${fecha(j.examen)}${j.d<0?' · para repasar':' · '+cuando(j.d)}`:'Para practicar cuando quieras'}</small><span class="sem">${semaforo(j.r)}</span></a>`;
   // asignaturas ordenadas por su próximo examen; las que solo tienen exámenes pasados, al final
   const orden=a=>{const f=js.filter(j=>j.asignatura===a&&j.d>=0).map(j=>j.d);return f.length?Math.min(...f):1e6};
   const asigs=[...new Set(js.map(j=>j.asignatura))].sort((a,b)=>orden(a)-orden(b));
