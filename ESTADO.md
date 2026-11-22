@@ -17,7 +17,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 | Cada niño con su progreso en el mismo dispositivo | ✅ en producción | 20-nov, «no soy yo» aparta el progreso y lo recupera con el nombre |
 | Juego de Mates de 5º (Unidad 3) | ✅ en producción | Examen el 27-nov-2026. `mates-u3-beta/` (21-nov): divisiones en cuadrícula, múltiplos, divisores, criterios, primos, la historia de la excursión, la miniinvestigación del torneo y problemas; examen de 20 preguntas en 30 minutos. Aprobado por el padre el 21-nov y pasado a la normal (`mates-u3/`, con su fila en `juegos.js`); los formatos nuevos ya están en `motor/`. **22-nov, en producción con todo lo de las betas:** arcade propio (Cohete del Saber con cápsulas y Torre del Jefe), logo y entrada, ruta en el menú, nombre tras el logo, teclado de las divisiones libres e icono del ME |
 | Juego de Lengua de 5º | ⚪ sin empezar | Examen el 1-dic-2026. Falta el temario (fotos) |
-| Juego de 2º | ⚪ sin empezar | Sin examen a la vista: el padre mandará temario la semana del 23-nov. Hasta entonces, tampoco hay examen nuevo de 5º: tiempo para mejorar la app |
+| Juego de 2º: «Las horas del reloj» | 🟡 en beta | 22-nov: el primer juego de 2º, sin temario del cole (el padre fijó dos niveles). Artefacto «El reloj de 2º» (https://claude.ai/artifact/9Do2ibbM9t9dLwh13PVURV): elegida la P2, «Un día con Lía». Nivel 1: en punto, y cuarto, y media y menos cuarto (leer, poner y ordenar el día); nivel 2: de cinco en cinco y «¿cuánto dura?» (se abre con un 8 en el nivel 1; en la beta, abierto). Ruta en dos días, examen de 10 relojes sin tiempo, escenas de cómic con el cole nuevo. Formato «reloj» nuevo en `motor-beta/` (y en `pruebas-motor/`); el examen acepta relojes y `min:0` = sin tiempo. `mates-reloj-beta/`; falta que el padre la pruebe |
 
 ## Abierto
 
@@ -75,6 +75,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
+- **Probar la beta del reloj de 2º:** https://alvgolf.github.io/mision-estudio/mates-reloj-beta/ (leer, poner arrastrando o con botones, ordenar el día, nivel 2 y examen). Con su visto bueno: el motor beta pasa al normal, el juego a `mates-reloj/` y su fila a `juegos.js` (estantería de Mates de 2º).
 - **22-nov: todo lo de las betas está en producción** (motor, menú en la portada con la ruta y el nombre, logo y entrada, icono del ME, divisiones, arcade de Mates). `menu-beta/` y `mates-u3-beta/` redirigen a la normal. Al abrir la app en la tablet, el icono nuevo puede tardar en salir: si no cambia, quitar la app y volver a instalarla.
 - Mates Unidad 3 ya está en el menú (21-nov): el lunes 24 y el martes 25, la ruta; el miércoles 26, el examen. Contar cómo va, y después del examen del 27, la nota real.
 - (21-nov) Historia y miniinvestigación de Mates, elegidas por el padre en el artefacto: H1 (la excursión) y M2 (el torneo del colegio).

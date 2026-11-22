@@ -214,6 +214,7 @@ for (const juego of juegos) {
       let preguntas = 0;
       for (let k = 0; k < 60; k++) {
         if (await visible('#app .opt')) { await page.locator('#app .opt').first().click(); preguntas++; }
+        else if (await visible('#app #rsig')) { await page.click('#app #rsig'); preguntas++; await page.waitForTimeout(200); } // poner la hora en el reloj (2º)
         else if (await visible('#app .pad')) { // preguntas con teclado de números (Mates)
           await page.locator('#app .pad [data-n="1"]').click(); await page.locator('#app .pad #wchk').click(); preguntas++;
           await page.waitForTimeout(250);
@@ -830,6 +831,43 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
         await arrastrarOTocar(ficha, st.locator(`.caja[data-rc="${r},${c}"]`), 'cajas 2×2');
         if (!await ficha.evaluate(e => e.classList.contains('used'))) { fallo(`[${tag}] «${t}»: arrastrar «${txt}» a su caja no la coloca`); return; }
       }
+      break;
+    }
+    /* 🕗 Reloj de agujas (22-nov, «Las horas del reloj», 2º): leer, ¿cuánto dura?, ordenar el día y poner la hora.
+       Al poner, la corta se mueve con sus botones y la larga se arrastra de verdad hasta su número. */
+    case 'reloj': {
+      const paso = S.paso || 15;
+      if (S.modo === 'poner') {
+        const h = mal ? (S.h % 12) + 1 : S.h, m = S.m;
+        for (let k = 0; k < h % 12; k++) await st.locator('[data-ah="1"]').click();
+        if (m) {
+          const svg = st.locator('svg.rlj'), bb = await svg.boundingBox(), k = bb.width / 200, ab = await st.locator('[data-asa="m"]').boundingBox(), ang = m * Math.PI / 30;
+          await page.mouse.move(ab.x + ab.width / 2, ab.y + ab.height / 2); await page.mouse.down();
+          await page.mouse.move(bb.x + (100 + 70 * Math.sin(ang)) * k, bb.y + (100 - 70 * Math.cos(ang)) * k, { steps: 8 }); await page.mouse.up();
+        }
+        const [ph, pm] = await st.locator('svg.rlj').evaluate(x => [+x.dataset.h, +x.dataset.m]);
+        if (pm !== m) fallo(`[${tag}] «${t}»: arrastrando la aguja larga hasta las ${S.h}:${String(m).padStart(2, '0')} se queda en ${pm} minutos (salta de ${paso} en ${paso})`);
+        if (ph % 12 !== h % 12) fallo(`[${tag}] «${t}»: con los botones, la aguja corta no llega a las ${h} (se queda en las ${ph})`);
+        await st.locator('#rchk').click();
+        if (!mal && !/Justo/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: el reloj bien puesto (${S.h}:${String(m).padStart(2, '0')}) no sale bien`);
+        break;
+      }
+      if (S.modo === 'ordena') {
+        const v = e => (e.h % 12) * 60 + e.m, orden = S.eventos.map((_, i) => i).sort((a, b) => v(S.eventos[a]) - v(S.eventos[b]));
+        /* Cada tarjeta enseña su propia hora en las agujas (22-nov: se dibujaban todas en el primer reloj) */
+        const marcan = await st.locator('.rlj-carta').evaluateAll(cs => cs.map(c => { const x = c.querySelector('svg.rlj'); return [+c.dataset.e, +x.dataset.h, +x.dataset.m] }));
+        for (const [i, h, m] of marcan) { const e = S.eventos[i]; if (h % 12 !== e.h % 12 || m !== e.m) fallo(`[${tag}] «${t}»: la tarjeta «${e.t}» no marca su hora (${e.h}:${String(e.m).padStart(2, '0')}) en el reloj`); }
+        if (mal) await st.locator(`.rlj-carta[data-e="${orden[orden.length - 1]}"]`).click();
+        for (const i of orden) await st.locator(`.rlj-carta[data-e="${i}"]`).click();
+        if (!mal && !/a la primera/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: el día bien ordenado no sale todo a la primera`);
+        break;
+      }
+      /* Leer y ¿cuánto dura?: la buena es la hora en palabras que dice el motor; nunca dos opciones iguales */
+      const buena = await page.evaluate(S => { let t; if (S.modo === 'dura') { const x = S.h * 60 + S.m + S.mas; t = 'a ' + horaTxt(Math.floor(x / 60), x % 60) } else t = horaTxt(S.h, S.m); return t[0].toUpperCase() + t.slice(1) }, S);
+      const opts = st.locator('.opt'), txt = await opts.allTextContents(), k = txt.indexOf(buena);
+      if (k < 0) { fallo(`[${tag}] «${t}»: no sale la hora buena («${buena}») entre las opciones (${txt.join(' · ')})`); break; }
+      if (new Set(txt).size !== txt.length || txt.length < 3) fallo(`[${tag}] «${t}»: las opciones del reloj se repiten o faltan (${txt.join(' · ')})`);
+      await opts.nth(mal ? (k === 0 ? 1 : 0) : k).click();
       break;
     }
     // Cuentas en pantalla (21-nov): divisiones en la cuadrícula y problemas con la cuenta montada

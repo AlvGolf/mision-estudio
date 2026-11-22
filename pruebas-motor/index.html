@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=23">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=25">
 </head>
 <body>
 <header>
@@ -106,10 +106,20 @@ const PROBS=[
  {q:'Un cine tiene 18 filas de 26 butacas. ¿Cuántas butacas hay?',a:468,cuenta:[18,'×',26]},
  {q:'Una tienda tenía 2.050 € y gasta 875 €. ¿Cuánto le queda?',a:1175,cuenta:[2050,'−',875]}];
 
+/* Reloj de agujas (22-nov, «Las horas del reloj», 2º): los cuatro modos, de cuarto en cuarto y de cinco en cinco, con el cole en la escena */
+const ESC_RELOJ=d=>({sitios:[{k:'cocina',l:'Casa'},{k:'cole',l:'Cole'},{k:'campo',l:'Parque'}],donde:d,luz:'dia',quien:{n:'Lía',pein:'coleta',ropa:'#ff5c8a',extra:'mochila'}});
+const RELOJES=[
+ {modo:'leer',h:9,m:15,paso:15,relato:'Empieza la clase.',escena:ESC_RELOJ('cole')},
+ {modo:'poner',h:7,m:30,paso:15,relato:'Pon el despertador.',escena:ESC_RELOJ('cocina')},
+ {modo:'leer',h:6,m:40,paso:5},
+ {modo:'poner',h:4,m:35,paso:5},
+ {modo:'dura',h:10,m:0,mas:60,relato:'La clase dura una hora.',q:'¿A qué hora termina?',escena:ESC_RELOJ('cole')},
+ {modo:'ordena',q:'Toca en orden',eventos:[{t:'Desayuna',ic:'🥣',h:8,m:15},{t:'Recreo',ic:'⚽',h:11,m:30},{t:'Cole',ic:'🏫',h:9,m:0}],escena:ESC_RELOJ('campo')}];
+
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
 const BLOCKS=[{k:'escuchar',n:'Escucha y elige',w:1},{k:'dictado',n:'Dictado',w:1},{k:'reparar',n:'Detecta y repara',w:1},{k:'cruci',n:'Crucigrama',w:1},{k:'letra',n:'Primera letra',w:1},{k:'escena',n:'Construir una escena',w:1},{k:'historia',n:'Historia',w:1},{k:'investiga',n:'Miniinvestigación',w:1},
- {k:'numero',n:'Número',w:1},{k:'recta',n:'Recta numérica',w:1},{k:'cadena',n:'Cálculo en cadena',w:1},{k:'tabla',n:'Completar tablas',w:1},{k:'marcar',n:'Marcar palabras',w:1},{k:'silabas',n:'Sílabas',w:1},{k:'cajas2',n:'Cajas 2×2',w:1},{k:'divis',n:'Divisiones',w:1},{k:'probs',n:'Problemas',w:1}];
-const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['investiga','🔎'],['numero','🔢'],['recta','📏'],['cadena','⛓️'],['tabla','📋'],['marcar','🖍️'],['silabas','✂️'],['cajas2','🗃️'],['divis','➗'],['probs','📝'],['exam','👑'],['arcade','🎮']];
+ {k:'numero',n:'Número',w:1},{k:'recta',n:'Recta numérica',w:1},{k:'cadena',n:'Cálculo en cadena',w:1},{k:'tabla',n:'Completar tablas',w:1},{k:'marcar',n:'Marcar palabras',w:1},{k:'silabas',n:'Sílabas',w:1},{k:'cajas2',n:'Cajas 2×2',w:1},{k:'divis',n:'Divisiones',w:1},{k:'probs',n:'Problemas',w:1},{k:'reloj',n:'Reloj de agujas',w:1}];
+const MIC=[['escuchar','🎧'],['dictado','✍️'],['reparar','🛠️'],['cruci','🧩'],['letra','🔡'],['escena','🏞️'],['historia','📖'],['investiga','🔎'],['numero','🔢'],['recta','📏'],['cadena','⛓️'],['tabla','📋'],['marcar','🖍️'],['silabas','✂️'],['cajas2','🗃️'],['divis','➗'],['probs','📝'],['reloj','🕗'],['exam','👑'],['arcade','🎮']];
 
 /* ================== MISIONES ================== */
 const R={
@@ -129,6 +139,7 @@ const R={
  silabas(){runSteps('✂️ Separar en sílabas',SILABAS.map(x=>({t:'silabas',...x,sub:'Toca entre las letras para cortar'})),'silabas',R.silabas,'✂️')},
  divis(){runSteps('➗ Divisiones',DIVIS.map(x=>({t:'divi',...x,sub:x.modo=='guiada'?'Paso a paso':'Como en la hoja'})),'divis',R.divis,'➗')},
  probs(){runSteps('📝 Problemas',PROBS.map(x=>({t:'prob',...x,sub:'Monta la cuenta y escribe la respuesta'})),'probs',R.probs,'📝')},
+ reloj(){runSteps('🕗 Reloj de agujas',RELOJES.map(x=>({t:'reloj',...x,sub:'Lee, pon y ordena las horas'})),'reloj',R.reloj,'🕗')},
  cajas2(){runSteps('🗃️ Clasificar con dos criterios',CAJAS2.map(x=>({t:'cajas2',...x,sub:'Cada ficha tiene una sola caja'})),'cajas2',R.cajas2,'🗃️')},
 };
 const ROUTE_ST=[
@@ -136,7 +147,7 @@ const ROUTE_ST=[
  {k:'letra',n:'Primera letra',ic:'🔡',min:2},{k:'escuchar',n:'Escucha y elige',ic:'🎧',min:2},{k:'escena',n:'Construir una escena',ic:'🏞️',min:2},{k:'historia',n:'Historia',ic:'📖',min:3},{k:'investiga',n:'Miniinvestigación',ic:'🔎',min:2},
  {k:'cadena',n:'Cálculo en cadena',ic:'⛓️',min:2},{k:'tabla',n:'Completar tablas',ic:'📋',min:2},{k:'silabas',n:'Sílabas',ic:'✂️',min:2},{k:'marcar',n:'Marcar palabras',ic:'🖍️',min:2},
  {k:'cajas2',n:'Cajas 2×2',ic:'🗃️',min:2},{k:'recta',n:'Recta numérica',ic:'📏',min:1},{k:'numero',n:'Número',ic:'🔢',min:1},
- {k:'divis',n:'Divisiones',ic:'➗',min:3},{k:'probs',n:'Problemas',ic:'📝',min:3}];
+ {k:'divis',n:'Divisiones',ic:'➗',min:3},{k:'probs',n:'Problemas',ic:'📝',min:3},{k:'reloj',n:'Reloj de agujas',ic:'🕗',min:2}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const MC=[
@@ -153,7 +164,7 @@ const JUEGO={
   ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],['historia','📖','Historia','El Theatre Club'],['investiga','🔎','Miniinvestigación','La agenda de Sam'],
   ['#','🧮 Mates y Lengua'],['numero','🔢','Número','Teclado con coma'],['recta','📏','Recta numérica','Decimales y fracciones'],['cadena','⛓️','Cálculo en cadena','Paso a paso'],
   ['tabla','📋','Completar tablas','Verbos y ceros'],['marcar','🖍️','Marcar palabras','Adjetivos y verbos'],['silabas','✂️','Sílabas','Y la tónica'],['cajas2','🗃️','Cajas 2×2','Aguda o llana, con tilde o sin'],
-  ['divis','➗','Divisiones','Guiadas y libres'],['probs','📝','Problemas','Con la cuenta montada'],
+  ['divis','➗','Divisiones','Guiadas y libres'],['probs','📝','Problemas','Con la cuenta montada'],['reloj','🕗','Reloj de agujas','Leer, poner, durar y ordenar'],
   ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
  chuleta:'',
  examen:{min:3,dia:'el examen',preguntas(){return shuf([...MC,{q:'Calcula 7 × 8 (con teclado y borrador)',a:56,num:true,borrador:true}])}},
@@ -162,7 +173,7 @@ const JUEGO={
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/piel.js?v=23"></script>
-<script src="../motor-beta/motor.js?v=23"></script>
+<script src="../motor-beta/piel.js?v=25"></script>
+<script src="../motor-beta/motor.js?v=25"></script>
 </body>
 </html>
