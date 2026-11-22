@@ -66,7 +66,7 @@ let INSTALA=null;
   const dos=typeof JUEGO!=='undefined'&&JUEGO.curso==2;
   if(!document.querySelector('link[rel="manifest"]'))add('link',{rel:'manifest',href:raiz+(dos?'segundo/':'')+'manifest.webmanifest'});
   if(!document.querySelector('link[rel="apple-touch-icon"]'))add('link',{rel:'apple-touch-icon',href:raiz+(dos?'iconos/cohete/':'iconos/')+'apple-touch-icon.png'});
-  if(dos&&!document.querySelector('meta[name="apple-mobile-web-app-title"]'))add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio 2º'});
+  if(dos&&!document.querySelector('meta[name="apple-mobile-web-app-title"]'))add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio 2'});
   add('meta',{name:'apple-mobile-web-app-capable',content:'yes'});add('meta',{name:'mobile-web-app-capable',content:'yes'});add('meta',{name:'apple-mobile-web-app-title',content:'Misión Estudio'});
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register(raiz+'sw.js',{scope:beta?'./':raiz}).catch(()=>{});
   addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALA=e;pintaInstalar()});
