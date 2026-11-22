@@ -12,3 +12,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
+| mates-reloj-beta, motor-beta, pruebas-motor | Claude Code | 22-nov | El cohete como premio (ronda 13 del logo): al terminar cada día de la ruta y con el primer 10 de cada misión |
