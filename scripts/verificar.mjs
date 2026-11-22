@@ -852,6 +852,16 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
         if (!mal && !/Justo/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: el reloj bien puesto (${S.h}:${String(m).padStart(2, '0')}) no sale bien`);
         break;
       }
+      /* Elegir el reloj: de los tres, uno solo marca la hora pedida, y es el que se toca */
+      if (S.modo === 'elige') {
+        const marcan = await st.locator('.rlj-carta').evaluateAll(cs => cs.map(c => { const x = c.querySelector('svg.rlj'); return [+c.dataset.r, +x.dataset.h, +x.dataset.m] }));
+        const buenas = marcan.filter(([, h, m]) => h % 12 === S.h % 12 && m === S.m);
+        if (marcan.length !== 3 || buenas.length !== 1) { fallo(`[${tag}] «${t}»: para ${S.h}:${String(S.m).padStart(2, '0')} tiene que haber tres relojes y solo uno con esa hora (hay ${marcan.length}, ${buenas.length} con la hora: ${marcan.map(x => x[1] + ':' + x[2]).join(' · ')})`); break; }
+        const otra = marcan.find(x => x !== buenas[0]);
+        await st.locator(`.rlj-carta[data-r="${(mal ? otra : buenas[0])[0]}"]`).click();
+        if (!mal && !/Ese es/.test(await page.locator('#fb').innerText())) fallo(`[${tag}] «${t}»: el reloj bueno no sale bien`);
+        break;
+      }
       if (S.modo === 'ordena') {
         const v = e => (e.h % 12) * 60 + e.m, orden = S.eventos.map((_, i) => i).sort((a, b) => v(S.eventos[a]) - v(S.eventos[b]));
         /* Cada tarjeta enseña su propia hora en las agujas (22-nov: se dibujaban todas en el primer reloj) */

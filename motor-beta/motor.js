@@ -1099,6 +1099,12 @@ function horaFalsas(h,m,paso){const M=[...Array(60/paso).keys()].map(i=>i*paso),
   c.push([h12(h+1),m],[h12(h+2),m]);
   const ok=horaTxt(h,m),vis=new Set([ok]),out=[];
   for(const x of c){const t=typeof x=='string'?x:M.includes(x[1])?horaTxt(x[0],x[1]):null;if(t&&!vis.has(t)){vis.add(t);out.push(t)}if(out.length==2)break}return out}
+/* Las mismas confusiones, pero como relojes dibujados (para elegir el reloj): «y» por «menos», agujas cambiadas y la hora de al lado */
+function relojFalsas(h,m){const c=[];
+  if(m==0)c.push([12,h*5%60],[h12(h+1),0],[h12(h-1),0]);
+  else{if(m<30)c.push([h12(h-1),60-m]);if(m>30)c.push([h12(h+1),60-m]);c.push([m/5||12,h*5%60]);c.push(m>30?[h12(h-1),m]:[h12(h+1),m])}
+  c.push([h12(h+1),m],[h12(h+2),m]);
+  const vis=new Set([horaTxt(h,m)]),out=[];for(const x of c){const t=horaTxt(x[0],x[1]);if(!vis.has(t)){vis.add(t);out.push(x)}if(out.length==2)break}return out}
 function relojSVG(cls=''){
   const num=[...Array(12)].map((_,i)=>{const n=i+1,a=n*Math.PI/6;return `<text x="${(100+70*Math.sin(a)).toFixed(1)}" y="${(100-70*Math.cos(a)+7).toFixed(1)}" text-anchor="middle">${n}</text>`}).join('');
   const tic=[...Array(60)].map((_,i)=>{const a=i*Math.PI/30,r1=i%5?86:82;return `<line x1="${(100+r1*Math.sin(a)).toFixed(1)}" y1="${(100-r1*Math.cos(a)).toFixed(1)}" x2="${(100+90*Math.sin(a)).toFixed(1)}" y2="${(100-90*Math.cos(a)).toFixed(1)}" stroke-width="${i%5?1.2:3}"/>`}).join('');
@@ -1166,8 +1172,8 @@ Object.assign(STEP,{
   },
 });
 Object.assign(STEP,{
-  /* 🕗 Reloj de agujas: {modo:'leer'|'poner'|'dura'|'ordena', h, m, paso (15 o 5), q?, relato?, escena?:{sitios,donde,luz?,quien?}}
-     leer: tres horas para elegir · poner: mover las agujas (arrastrando o con botones) · dura: {mas} minutos después, para elegir
+  /* 🕗 Reloj de agujas: {modo:'leer'|'elige'|'poner'|'dura'|'ordena', h, m, paso (15 o 5), q?, relato?, escena?:{sitios,donde,luz?,quien?}}
+     leer: tres horas para elegir · elige: la hora en palabras y tres relojes para elegir (al revés que leer) · poner: mover las agujas (arrastrando o con botones) · dura: {mas} minutos después, para elegir
      · ordena: {eventos:[{t, ic, h, m}]}, tocar de lo que pasa antes a lo que pasa después (cuenta cada uno a la primera) */
   reloj(st,s,done){
     const paso=s.paso||15,oye=`<button type="button" class="rlj-oye" aria-label="Escuchar">🔊</button>`;
@@ -1182,6 +1188,12 @@ Object.assign(STEP,{
     if(s.modo=='leer'){const buena=Mayus(horaTxt(s.h,s.m));
       return elige(s.q||'¿Qué hora marca el reloj?',[buena,...horaFalsas(s.h,s.m,paso).map(Mayus)],buena,[s.h,s.m],
         ok=>done(ok?1:0,1,ok?'✅ ¡Muy bien!':`❌ Son <b>${horaTxt(s.h,s.m)}</b>: ${agujasTxt(s.h,s.m)}.`))}
+    if(s.modo=='elige'){const rs=shuf([[s.h,s.m],...relojFalsas(s.h,s.m)]);
+      pinta(s.q||`¿Qué reloj marca ${horaTxt(s.h,s.m)}?`,`<div class="rlj-cartas rlj-elige">${rs.map((_,i)=>`<button class="rlj-carta" data-r="${i}">${relojSVG('chico')}</button>`).join('')}</div>`);
+      st.querySelectorAll('.rlj-carta').forEach(c=>{const [h,m]=rs[+c.dataset.r];relojAgujas(c.querySelector('.rlj'),h,m);c.dataset.ok=h%12==s.h%12&&m==s.m?1:0;
+        c.onclick=()=>{const ok=c.dataset.ok=='1';st.querySelectorAll('.rlj-carta').forEach(x=>{x.disabled=true;if(x.dataset.ok=='1')x.classList.add('ok')});
+          if(!ok)c.classList.add('bad');ok?win(10):lose();
+          done(ok?1:0,1,ok?'✅ ¡Ese es!':`❌ Para ${horaTxt(s.h,s.m)}: ${agujasTxt(s.h,s.m)}.`)}});return}
     if(s.modo=='dura'){const t=s.h*60+s.m+s.mas,fh=h12(Math.floor(t/60)),fm=t%60,b=s.h*60+s.m-s.mas,bh=h12(Math.floor(b/60)),bm=(b%60+60)%60;
       const buena=Mayus(aLas(horaTxt(fh,fm))),dura=s.mas==60?'una hora':s.mas==30?'media hora':s.mas+' minutos';
       const malas=[...new Set([aLas(horaTxt(bh,bm)),...horaFalsas(fh,fm,15).map(aLas),aLas(horaTxt(s.h,s.m))].map(Mayus))].filter(x=>x!==buena).slice(0,2);

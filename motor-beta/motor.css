@@ -658,4 +658,5 @@ html[data-fam=D] .entrada-m span{color:#6a6a78;border-color:#c9c9d4}
 .rlj-cartas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,30%),1fr));gap:10px}
 .rlj-carta{min-width:0;display:grid;gap:4px;justify-items:center;background:var(--card2);color:var(--txt);border:3px solid transparent;border-radius:16px;padding:8px;font:600 16px var(--ft);cursor:pointer}
 .rlj-carta span{overflow-wrap:anywhere;text-align:center}.rlj-carta .n{font-size:22px;color:var(--gold);min-height:26px}
+.rlj-elige .rlj.chico{max-width:150px}
 .rlj-carta.ok{border-color:var(--yes)}.rlj-carta.bad{border-color:var(--no);animation:sh .35s}

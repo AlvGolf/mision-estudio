@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>(beta) Las horas del reloj</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=25">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=26">
 </head>
 <body>
 <header>
@@ -16,8 +16,8 @@
 
 <script>
 /* Las horas del reloj (2º): un día con Lía. Elegido por el padre el 22-nov en el artefacto «El reloj de 2º» (P2).
-   Sin temario del cole: el padre fijó dos niveles. Nivel 1: en punto, y cuarto, y media y menos cuarto.
-   Nivel 2: de cinco en cinco minutos, más «¿cuánto dura?» (una hora y media hora después); se abre con un 8 en el nivel 1.
+   Sin temario del cole. Solo el nivel 1: en punto, y cuarto, y media y menos cuarto (el padre, 22-nov: en clase aún
+   no han pasado de ahí). Lo de cinco en cinco irá en un juego aparte, «Reloj nivel 2», con su propia ruta.
    Sin «de la mañana» ni «de la tarde»: lo que se ordena va siempre dentro de la mañana o dentro de la tarde.
    El motor común (../motor-beta/motor.js) se carga al final y arranca el juego. */
 
@@ -51,26 +51,26 @@ const ORDENA=[
  {q:'¿Qué hace Lía primero por la mañana? Toca las cosas en orden.',escena:esc_('cocina'),eventos:[{t:'Se despierta',ic:'🛏️',h:7,m:45},{t:'Desayuna',ic:'🥣',h:8,m:15},{t:'Va al cole',ic:'🏫',h:9,m:0}]},
  {q:'En el cole: toca las cosas en orden.',escena:esc_('cole'),eventos:[{t:'Lectura',ic:'📖',h:9,m:15},{t:'Recreo',ic:'⚽',h:11,m:30},{t:'Música',ic:'🎵',h:10,m:0},{t:'Mates',ic:'➗',h:11,m:45}]},
  {q:'Por la tarde: toca las cosas en orden.',escena:esc_('campo','atardecer'),eventos:[{t:'Come',ic:'🍽️',h:2,m:0},{t:'Parque',ic:'🛝',h:5,m:30},{t:'Cena',ic:'🍲',h:8,m:0},{t:'Deberes',ic:'✏️',h:4,m:15}]}];
-/* Nivel 2 · leer de cinco en cinco */
-const LEER2=[
- {h:7,m:50,relato:'Lía se despierta. Mira su despertador.',escena:esc_('cocina')},
- {h:8,m:10,relato:'Lía sale de casa con su mochila.',escena:esc_('cocina')},
- {h:9,m:5,relato:'La profesora pasa lista.',escena:esc_('cole')},
- {h:10,m:20,relato:'Lía mira el reloj de la clase.',escena:esc_('cole')},
- {h:11,m:35,relato:'Lía juega en el recreo.',escena:esc_('cole')},
- {h:12,m:55,relato:'Ya casi es la hora de comer.',escena:esc_('cole')},
- {h:5,m:40,relato:'Lía juega en el parque.',escena:esc_('campo','atardecer')},
- {h:6,m:25,relato:'Lía merienda con su amiga.',escena:esc_('campo','atardecer')}];
-/* Nivel 2 · poner de cinco en cinco */
-const PONER2=[
- {h:7,m:40,relato:'Pon el despertador de Lía.',escena:esc_('cocina')},
- {h:8,m:55,relato:'El autobús del cole pasa a las 9 menos cinco.',escena:esc_('cocina')},
- {h:10,m:10,relato:'La clase de inglés empieza a las 10 y diez.',escena:esc_('cole')},
- {h:11,m:25,relato:'El recreo acaba a las 11 y veinticinco.',escena:esc_('cole')},
- {h:1,m:5,relato:'Lía come a la 1 y cinco.',escena:esc_('cole')},
- {h:4,m:35,relato:'La clase de natación es a las 5 menos veinticinco.',escena:esc_('campo','atardecer')},
- {h:6,m:20,relato:'Lía vuelve del parque a las 6 y veinte.',escena:esc_('campo','atardecer')},
- {h:8,m:50,relato:'Lía se acuesta a las 9 menos diez.',escena:esc_('cocina','noche')}];
+/* ¿Qué reloj es? Al revés que leer: la hora en palabras y tres relojes para elegir */
+const ELIGE=[
+ {h:7,m:15,relato:'Suena el despertador de Lía.',escena:esc_('cocina')},
+ {h:8,m:45,relato:'Lía sale de casa hacia el cole.',escena:esc_('cocina')},
+ {h:10,m:0,relato:'Empieza la clase de música.',escena:esc_('cole')},
+ {h:10,m:30,relato:'La profesora reparte los cuadernos.',escena:esc_('cole')},
+ {h:12,m:15,relato:'Lía guarda sus cosas en la mochila.',escena:esc_('cole')},
+ {h:1,m:45,relato:'Lía sale del comedor.',escena:esc_('cole')},
+ {h:5,m:0,relato:'Lía llega al parque.',escena:esc_('campo','atardecer')},
+ {h:6,m:30,relato:'Lía se toma un zumo en el banco.',escena:esc_('campo','atardecer')}];
+/* Poner la hora de la tarde: otras horas, del cole al parque y a casa */
+const PONERT=[
+ {h:3,m:0,relato:'La clase de pintura empieza a las 3 en punto.',escena:esc_('cole','atardecer')},
+ {h:4,m:15,relato:'Lía llega al parque a las 4 y cuarto.',escena:esc_('campo','atardecer')},
+ {h:4,m:45,relato:'Su amigo Leo llega a las 5 menos cuarto.',escena:esc_('campo','atardecer')},
+ {h:5,m:30,relato:'Meriendan juntos a las 5 y media.',escena:esc_('campo','atardecer')},
+ {h:6,m:45,relato:'Lía vuelve a casa a las 7 menos cuarto.',escena:esc_('cocina','atardecer')},
+ {h:7,m:15,relato:'Ayuda a poner la mesa a las 7 y cuarto.',escena:esc_('cocina','atardecer')},
+ {h:9,m:30,relato:'Su padre le lee un cuento a las 9 y media.',escena:esc_('cocina','noche')},
+ {h:10,m:0,relato:'A las 10 en punto, Lía ya duerme.',escena:esc_('cocina','noche')}];
 /* ¿Cuánto dura? (una hora o media hora después) */
 const DURA=[
  {h:10,m:0,mas:60,relato:'La clase de música empieza a las 10 en punto y dura una hora.',q:'¿A qué hora termina?',escena:esc_('cole')},
@@ -82,16 +82,9 @@ const DURA=[
 
 /* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
 const BLOCKS=[{k:'leer1',n:'Leer la hora',w:1},{k:'poner1',n:'Poner la hora',w:2},{k:'ordena',n:'Ordenar el día',w:1},
- {k:'leer2',n:'Leer de cinco en cinco',w:1},{k:'poner2',n:'Poner de cinco en cinco',w:2},{k:'dura',n:'¿Cuánto dura?',w:1}];
-const MIC=[['leer1','🕗'],['poner1','✋'],['ordena','📅'],['leer2','🕔'],['poner2','👆'],['dura','⏳'],['exam','👑']];
+ {k:'elige',n:'¿Qué reloj es?',w:1},{k:'tarde',n:'Poner la hora de la tarde',w:2},{k:'dura',n:'¿Cuánto dura?',w:1}];
+const MIC=[['leer1','🕗'],['poner1','✋'],['ordena','📅'],['elige','🔍'],['tarde','🌇'],['dura','⏳'],['exam','👑']];
 
-/* El nivel 2 se abre con un 8 en el nivel 1 (en la beta, siempre abierto para probarlo) */
-const NIVEL1=['leer1','poner1','ordena'];
-const nivel2Abierto=()=>/-beta\//.test(location.pathname)||NIVEL1.every(k=>(nota(k)??0)>=8);
-function cerrado(){const faltan=NIVEL1.filter(k=>(nota(k)??0)<8).map(k=>BLOCKS.find(b=>b.k==k).n);
-  app().innerHTML=`<div class="box center"><div class="big">🔒</div><h2>El nivel 2 está cerrado</h2>
-    <p style="font-size:20px">Se abre cuando tengas un 8 en el nivel 1.</p><p class="sub">Te falta: ${faltan.join(', ')}.</p>
-    <button class="btn" onclick="R['${NIVEL1.find(k=>(nota(k)??0)<8)}']()">▶ Ir a practicar</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`}
 const paso=(x,modo,p)=>({t:'reloj',modo,paso:p,...x});
 
 /* ================== MISIONES ================== */
@@ -99,17 +92,16 @@ const R={
  leer1(){runSteps('🕗 Leer la hora',pick(LEER1,6).map(x=>paso(x,'leer',15)),'leer1',R.leer1,'🕗')},
  poner1(){runSteps('✋ Poner la hora',pick(PONER1,6).map(x=>paso(x,'poner',15)),'poner1',R.poner1,'✋')},
  ordena(){runSteps('📅 Ordenar el día',ORDENA.map(x=>paso(x,'ordena',15)),'ordena',R.ordena,'📅')},
- leer2(){if(!nivel2Abierto())return cerrado();runSteps('🕔 Leer de cinco en cinco',pick(LEER2,6).map(x=>paso(x,'leer',5)),'leer2',R.leer2,'🕔')},
- poner2(){if(!nivel2Abierto())return cerrado();runSteps('👆 Poner de cinco en cinco',pick(PONER2,6).map(x=>paso(x,'poner',5)),'poner2',R.poner2,'👆')},
- dura(){if(!nivel2Abierto())return cerrado();runSteps('⏳ ¿Cuánto dura?',pick(DURA,5).map(x=>paso(x,'dura',15)),'dura',R.dura,'⏳')},
+ elige(){runSteps('🔍 ¿Qué reloj es?',pick(ELIGE,6).map(x=>paso(x,'elige',15)),'elige',R.elige,'🔍')},
+ tarde(){runSteps('🌇 Poner la hora de la tarde',pick(PONERT,6).map(x=>paso(x,'poner',15)),'tarde',R.tarde,'🌇')},
+ dura(){runSteps('⏳ ¿Cuánto dura?',pick(DURA,5).map(x=>paso(x,'dura',15)),'dura',R.dura,'⏳')},
 };
-/* La ruta en dos días, de lo más fácil a lo más difícil: el primero, el nivel 1; el segundo, el nivel 2
-   (si aún no tiene el 8 del nivel 1, su estación sale cerrada y le manda a practicar) */
-const ROUTE_ST=[{k:'leer1',n:'Leer la hora',ic:'🕗',min:6},{k:'poner1',n:'Poner la hora',ic:'✋',min:7},{k:'ordena',n:'Ordenar el día',ic:'📅',min:4,corte:'Hasta aquí el primer día (nivel 1)'},
- {k:'leer2',n:'Leer de cinco en cinco',ic:'🕔',min:5},{k:'poner2',n:'Poner de cinco en cinco',ic:'👆',min:7},{k:'dura',n:'¿Cuánto dura?',ic:'⏳',min:5}];
+/* La ruta en dos días de unos 17 minutos: el primero, leer, poner y ordenar; el segundo, elegir el reloj, la tarde y ¿cuánto dura? */
+const ROUTE_ST=[{k:'leer1',n:'Leer la hora',ic:'🕗',min:6},{k:'poner1',n:'Poner la hora',ic:'✋',min:7},{k:'ordena',n:'Ordenar el día',ic:'📅',min:4,corte:'Hasta aquí el primer día'},
+ {k:'elige',n:'¿Qué reloj es?',ic:'🔍',min:5},{k:'tarde',n:'Poner la hora de la tarde',ic:'🌇',min:6},{k:'dura',n:'¿Cuánto dura?',ic:'⏳',min:5}];
 
-/* ================== EXAMEN: 10 relojes, mitad leer y mitad poner, del nivel que tenga abierto ================== */
-function preguntasExamen(){const cinco=nivel2Abierto(),p=cinco?5:15,M=[...Array(60/p).keys()].map(i=>i*p),vistas=new Set(),hs=[];
+/* ================== EXAMEN: 10 relojes, mitad leer y mitad poner, de cuarto en cuarto ================== */
+function preguntasExamen(){const p=15,M=[...Array(60/p).keys()].map(i=>i*p),vistas=new Set(),hs=[];
   while(hs.length<10){const h=1+Math.floor(Math.random()*12),m=M[Math.floor(Math.random()*M.length)];if(!vistas.has(h+':'+m)){vistas.add(h+':'+m);hs.push([h,m])}}
   return hs.map(([h,m],i)=>i<5?{q:'¿Qué hora marca el reloj?',reloj:{h,m},opts:[horaTxt(h,m),...horaFalsas(h,m,p)].map(Mayus),a:Mayus(horaTxt(h,m))}
     :{q:`Pon las agujas: ${horaTxt(h,m)}`,poner:{h,m,paso:p},a:horaTxt(h,m)})}
@@ -124,13 +116,13 @@ const JUEGO={
  saludo:'Un día con Lía, reloj en mano. La aguja corta dice la hora y la larga, los minutos.',
  notaBoletin:'Solo cuenta la primera respuesta. Poner la hora vale doble, porque es lo que más se pide.',
  menu:[
-   ['#','🕗 Nivel 1 · en punto, y cuarto, y media y menos cuarto'],
+   ['#','🕗 Primer día'],
    ['leer1','🕗','Leer la hora','¿Qué hora marca?'],
    ['poner1','✋','Poner la hora','Mueve las agujas'],
    ['ordena','📅','Ordenar el día','¿Qué pasa antes?'],
-   ['#','🕔 Nivel 2 · de cinco en cinco (se abre con un 8 en el nivel 1)'],
-   ['leer2','🕔','Leer de cinco en cinco','Las 4 y diez…'],
-   ['poner2','👆','Poner de cinco en cinco','Las 7 menos veinte…'],
+   ['#','🌇 Segundo día'],
+   ['elige','🔍','¿Qué reloj es?','Busca el que marca la hora'],
+   ['tarde','🌇','Poner la hora de la tarde','Del cole al parque'],
    ['dura','⏳','¿Cuánto dura?','Una hora después…'],
    ['#','👑 Examen'],
    ['exam','👑','EXAMEN FINAL','10 relojes, sin prisa'],
@@ -140,15 +132,15 @@ const JUEGO={
 <tr><td>La aguja <b style="color:#5b7cf0">corta</b> dice la <b>hora</b>. La <b style="color:#ff6b7c">larga</b>, los <b>minutos</b>.</td></tr>
 <tr><td>Larga en el <b>12</b>: en punto · en el <b>3</b>: y cuarto · en el <b>6</b>: y media · en el <b>9</b>: menos cuarto.</td></tr>
 <tr><td>Con «menos», la hora es la que <b>viene</b>: las 7 menos cuarto es casi las 7.</td></tr>
-<tr><td>Nivel 2: cada número de la larga son <b>5 minutos</b>. En el 2, y diez; en el 8, menos veinte.</td></tr>
+<tr><td><b>Una hora</b> después, la corta avanza un número. <b>Media hora</b> después, la larga da media vuelta.</td></tr>
 </table></div>`,
  examen:{min:0,dia:'el examen',preguntas:preguntasExamen},
- ruta:{facil:true,minutos:'dos días de 15 a 20',partes:[],estacion(){},textoFin:'Ahora, el examen: 10 relojes, sin prisa.'},
+ ruta:{facil:true,minutos:'dos días de unos 17',partes:[],estacion(){},textoFin:'Ahora, el examen: 10 relojes, sin prisa.'},
  /* Sin arcade por ahora (el padre, 22-nov: «más adelante»); el motor necesita su configuración */
  arcade:{bloques:[{k:'mix',n:'Todo mezclado',ic:'🎲'}],jefes:{mix:['🦖','Rex del reloj']},test(){return []},deletreo(){return []}},
 };
 </script>
-<script src="../motor-beta/piel.js?v=25"></script>
-<script src="../motor-beta/motor.js?v=25"></script>
+<script src="../motor-beta/piel.js?v=26"></script>
+<script src="../motor-beta/motor.js?v=26"></script>
 </body>
 </html>

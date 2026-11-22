@@ -3,11 +3,11 @@
  "asignatura": "Matemáticas",
  "curso": "2º",
  "examen": "-",
- "fuente": "Sin temario del cole: en clase están aprendiendo a leer la hora en el reloj de agujas. El padre fijó el 22-nov-2026 dos niveles en el artefacto «El reloj de 2º» (propuesta P2, «Un día con Lía»). Sin hora digital ni «de la mañana / de la tarde».",
+ "fuente": "Sin temario del cole: en clase están aprendiendo a leer la hora en el reloj de agujas. Elegido el 22-nov-2026 en el artefacto «El reloj de 2º» (propuesta P2, «Un día con Lía»). Solo el nivel 1: en clase aún no han pasado de en punto, y cuarto, y media y menos cuarto; lo de cinco en cinco irá en «Reloj nivel 2». Sin hora digital ni «de la mañana / de la tarde».",
  "puntos": [
-  {"id": "en-punto-y-media", "punto": "Nivel 1: leer y poner en punto y y media (la corta dice la hora; la larga, en el 12 o en el 6)", "test": "LEER1", "escribir": "PONER1", "ordenar": "ORDENA"},
-  {"id": "y-cuarto-menos-cuarto", "punto": "Nivel 1: leer y poner y cuarto y menos cuarto (con «menos», la hora es la que viene)", "test": "LEER1", "escribir": "PONER1", "ordenar": "ORDENA"},
-  {"id": "cinco-en-cinco", "punto": "Nivel 2: la hora de cinco en cinco minutos (y diez, y veinte, menos veinticinco…)", "test": "LEER2", "escribir": "PONER2", "ordenar": "-"},
-  {"id": "cuanto-dura", "punto": "Nivel 2: ¿cuánto dura? Una hora después y media hora después", "test": "DURA", "escribir": "-", "ordenar": "-"}
+  {"id": "en-punto-y-media", "punto": "Leer y poner en punto y y media (la corta dice la hora; la larga, en el 12 o en el 6)", "test": "LEER1", "escribir": "PONER1", "ordenar": "ORDENA"},
+  {"id": "y-cuarto-menos-cuarto", "punto": "Leer y poner y cuarto y menos cuarto (con «menos», la hora es la que viene)", "test": "LEER1", "escribir": "PONER1", "ordenar": "ORDENA"},
+  {"id": "elegir-el-reloj", "punto": "De la hora en palabras al reloj: elegir el que la marca entre tres", "test": "ELIGE", "escribir": "PONERT", "ordenar": "-"},
+  {"id": "cuanto-dura", "punto": "¿Cuánto dura? Una hora después y media hora después", "test": "DURA", "escribir": "-", "ordenar": "-"}
  ]
 }

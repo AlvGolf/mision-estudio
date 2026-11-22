@@ -6,7 +6,7 @@
 <title>Pruebas del motor</title>
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor-beta/motor.css?v=25">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=26">
 </head>
 <body>
 <header>
@@ -113,6 +113,8 @@ const RELOJES=[
  {modo:'poner',h:7,m:30,paso:15,relato:'Pon el despertador.',escena:ESC_RELOJ('cocina')},
  {modo:'leer',h:6,m:40,paso:5},
  {modo:'poner',h:4,m:35,paso:5},
+ {modo:'elige',h:3,m:45,paso:15,relato:'Al revés: la hora en palabras.',escena:ESC_RELOJ('cole')},
+ {modo:'elige',h:6,m:0,paso:15},
  {modo:'dura',h:10,m:0,mas:60,relato:'La clase dura una hora.',q:'¿A qué hora termina?',escena:ESC_RELOJ('cole')},
  {modo:'ordena',q:'Toca en orden',eventos:[{t:'Desayuna',ic:'🥣',h:8,m:15},{t:'Recreo',ic:'⚽',h:11,m:30},{t:'Cole',ic:'🏫',h:9,m:0}],escena:ESC_RELOJ('campo')}];
 
@@ -164,7 +166,7 @@ const JUEGO={
   ['reparar','🛠️','Detecta y repara','Encuentra y arregla'],['cruci','🧩','Crucigrama','Verbos irregulares'],['letra','🔡','Primera letra','Escribe con pista'],['escena','🏞️','Construir una escena','Lee y coloca'],['historia','📖','Historia','El Theatre Club'],['investiga','🔎','Miniinvestigación','La agenda de Sam'],
   ['#','🧮 Mates y Lengua'],['numero','🔢','Número','Teclado con coma'],['recta','📏','Recta numérica','Decimales y fracciones'],['cadena','⛓️','Cálculo en cadena','Paso a paso'],
   ['tabla','📋','Completar tablas','Verbos y ceros'],['marcar','🖍️','Marcar palabras','Adjetivos y verbos'],['silabas','✂️','Sílabas','Y la tónica'],['cajas2','🗃️','Cajas 2×2','Aguda o llana, con tilde o sin'],
-  ['divis','➗','Divisiones','Guiadas y libres'],['probs','📝','Problemas','Con la cuenta montada'],['reloj','🕗','Reloj de agujas','Leer, poner, durar y ordenar'],
+  ['divis','➗','Divisiones','Guiadas y libres'],['probs','📝','Problemas','Con la cuenta montada'],['reloj','🕗','Reloj de agujas','Leer, elegir, poner, durar y ordenar'],
   ['#','👑 Examen'],['exam','👑','EXAMEN','5 preguntas'],['#','🎮 Arcade'],['arcade','🎮','Arcade','Para probar que sigue funcionando']],
  chuleta:'',
  examen:{min:3,dia:'el examen',preguntas(){return shuf([...MC,{q:'Calcula 7 × 8 (con teclado y borrador)',a:56,num:true,borrador:true}])}},
@@ -173,7 +175,7 @@ const JUEGO={
   test(){return MC.map(q=>({...q}))},deletreo(){return [{q:'Past of buy',h:'comprar',a:'bought'},{q:'Past of eat',h:'comer',a:'ate'}]}},
 };
 </script>
-<script src="../motor-beta/piel.js?v=25"></script>
-<script src="../motor-beta/motor.js?v=25"></script>
+<script src="../motor-beta/piel.js?v=26"></script>
+<script src="../motor-beta/motor.js?v=26"></script>
 </body>
 </html>
