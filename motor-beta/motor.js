@@ -1489,7 +1489,7 @@ R.route=function(){
   const P=rutaEntra(false,{...ROUTE}),resume=!acabada&&P.i>0&&P.i<ROUTE_ST.length,v=ROUTE.v||1;
   app().innerHTML=`<div class="box"><h2 class="ruta-tit">${COHETE_SVG} Ruta de estudio${v>1?` · Vuelta ${v}`:''}</h2>
   ${guia(resume?`¡Seguimos! Vas por la estación ${P.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
-  <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
+  <p class="sub">${ROUTE_ST.length} estaciones seguidas, ${planActivo(planRuta())?'repartidas por días en el plan hasta el examen':`unos ${JUEGO.ruta.minutos||30} minutos`}. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
   ${(()=>{const p=planRuta(),t=planActivo(p)?planFrase(p,ROUTE_ST):'';return t?`<p class="plan-hoy">${t}${ROUTE.pr&&ROUTE.pr.n>1?` · 🔥 ${ROUTE.pr.n} días cumplidos`:''}</p>`:''})()}
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
