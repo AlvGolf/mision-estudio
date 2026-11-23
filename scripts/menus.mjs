@@ -13,6 +13,8 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const MENUS = [
   /* 5º: el enlace de siempre (la raíz). Para probar un cambio grande del menú: una entrada igual con dir 'menu-beta' y '../' en las rutas */
   { dir: '', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: 'manifest.webmanifest', icono: 'iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', betas: {} },
+  /* 2º en pruebas (23-nov: el mapa de la ruta ilumina lo hecho aunque se juegue suelto): con el motor beta y el reloj beta */
+  { dir: 'segundo-beta', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: '../segundo/manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', betas: { 'mates-reloj/': 'mates-reloj-beta/' }, motor: 'motor-beta' },
   /* 2º: su propio enlace, su app (el cohete del libro) y su propio nombre en la tablet */
   { dir: 'segundo', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: 'manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', betas: {} },
 ];
@@ -22,7 +24,7 @@ export function pinta(m) {
   const suite = JSON.stringify({ curso: m.curso, nombre: m.nombre, cursoK: m.cursoK }).replace(/"/g, "'");
   const betas = JSON.stringify(m.betas).replace(/"/g, "'");
   return fs.readFileSync(path.join(RAIZ, 'scripts', 'menu.html'), 'utf8')
-    .replaceAll('{{RAIZ}}', raiz).replaceAll('{{MANIFEST}}', m.manifest).replaceAll('{{ICONO}}', m.icono)
+    .replaceAll('{{RAIZ}}', raiz).replaceAll('{{MOTOR}}', m.motor || 'motor').replaceAll('{{MANIFEST}}', m.manifest).replaceAll('{{ICONO}}', m.icono)
     .replaceAll('{{TITULO_APP}}', m.titulo).replaceAll('{{SUITE}}', suite).replaceAll('{{BETAS}}', betas);
 }
 

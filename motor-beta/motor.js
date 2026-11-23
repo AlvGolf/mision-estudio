@@ -1365,7 +1365,7 @@ function irDirecto(){const q=new URLSearchParams(location.search),ruta=q.has('ru
   try{history.replaceState(null,'',location.pathname)}catch(e){}
   if(ex){R.exam();return true}
   if(typeof ROUTE_ST=='undefined'||!ROUTE_ST.length)return false;
-  if(!ROUTE)ROUTE={i:0,part:0,on:false};ROUTE.on=true;startStation();return true}
+  if(!ROUTE)ROUTE={i:0,part:0,on:false};rutaEntra(false);ROUTE.on=true;startStation();return true}
 function routePart(){const P=JUEGO.ruta.partes;if(!P||!P.length)return null;const n=(ROUTE&&ROUTE.part)||0;return P[n%P.length]}
 function routeTag(){return ROUTE&&ROUTE.on?`<span class="pill" style="font-size:13px">🧭 ${ROUTE.i+1}/${ROUTE_ST.length}</span>`:''}
 /* Tiempo real de cada estación (20-nov): se guardan las 5 últimas veces de cada una (en segundos), con el progreso del niño.
@@ -1375,6 +1375,14 @@ function tiempoReal(k){const a=ROUTE&&ROUTE.tm&&ROUTE.tm[k];if(!a||!a.length)ret
 function apuntaTiempo(s){if(!ROUTE.t0)return;const seg=Math.round((Date.now()-ROUTE.t0)/1000);ROUTE.t0=null;
   if(seg<20||seg>Math.max(1800,s.min*60*5))return;
   const tm=ROUTE.tm=ROUTE.tm||{};(tm[s.k]=tm[s.k]||[]).push(seg);if(tm[s.k].length>5)tm[s.k].shift()}
+/* 23-nov (el padre): la ruta sigue por el primer bloque sin hacer y se salta los que ya se jugaron sueltos.
+   Con todo hecho, o con «Empezar de cero», se repite entera sin saltar nada (rep). Se puede pasar otro objeto para saber dónde seguiría. */
+function saltaHechos(r=ROUTE){if(r.rep)return;while(r.i<ROUTE_ST.length&&nota(ROUTE_ST[r.i].k)!=null)r.i++}
+function rutaEntra(cero,r=ROUTE){
+  if(cero){r.i=0;r.rep=true;return r}
+  if(r.rep&&r.i>0&&!r.fin)return r;
+  if(ROUTE_ST.every(s=>nota(s.k)!=null)){if(r.fin||r.i>=ROUTE_ST.length||!r.rep)r.i=0;r.rep=true;return r}
+  r.rep=false;saltaHechos(r);return r}
 function startStation(){
   const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();if(ROUTE.i===0)ROUTE.fin=null;saveRoute();
   if(ROUTE_ST.length>=4){if(ROUTE.i===Math.floor(ROUTE_ST.length/2))asoma('¡Ya vas por la mitad! 💪');else if(ROUTE.i===ROUTE_ST.length-1)asoma('¡Última estación! Ya casi está.')}
@@ -1383,26 +1391,26 @@ function startStation(){
   R[s.k]();
 }
 function routeMap(){
-  const left=ROUTE_ST.slice(ROUTE?ROUTE.i:0).reduce((a,s)=>a+(tiempoReal(s.k)||s.min),0);
-  const aparca=ROUTE&&ROUTE.i>0&&ROUTE.i<ROUTE_ST.length&&ROUTE_ST[ROUTE.i-1].corte;
-  return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=!ROUTE?'':n<ROUTE.i?'done':n==ROUTE.i?'now':'';
-    return `<div class="rst ${st}" style="--i:${n}">${st=='now'&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n==ROUTE.i-1?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
+  const E=rutaEstado(ROUTE_ST.length,ROUTE?ROUTE.i:0,ROUTE&&ROUTE.fin,k=>nota(ROUTE_ST[k].k)!=null,k=>ROUTE_ST[k].corte);
+  const left=ROUTE_ST.reduce((a,s,n)=>a+(E.D[n]?0:(tiempoReal(s.k)||s.min)),0),aparca=E.aparca;
+  return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=E.D[n]?'done':n===E.now?'now':'';
+    return `<div class="rst ${st}${E.tramo(n)?' tramo':''}" style="--i:${n}">${n===E.cohete&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
 endScreen=function(icon,ok,tot,key,again,extra=''){
   _end(icon,ok,tot,key,again,extra);
   if(!(ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==key))return;
-  apuntaTiempo(ROUTE_ST[ROUTE.i]);ROUTE.i++;XP+=20;hud();save();
+  apuntaTiempo(ROUTE_ST[ROUTE.i]);const ih=ROUTE.i;ROUTE.i++;saltaHechos();XP+=20;hud();save();
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){
-    ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;ROUTE.fin=Date.now();saveRoute();confetti();setTimeout(confetti,600);
+    ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;ROUTE.rep=false;ROUTE.fin=Date.now();saveRoute();confetti();setTimeout(confetti,600);
     box.insertAdjacentHTML('beforeend',`<div class="routeend">${coheteGrande()}<div class="sello-fin" id="sfin"></div><h2>¡Ruta completada!</h2>
       <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
       ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
       <button class="btn destaca" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
     box.querySelector('#again').remove();setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(170)},escQuieto()?0:2000);return}
-  saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ROUTE.i-1];
+  saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ih];
   /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere */
   if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${coheteGrande()}${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
   box.querySelector('#again').outerHTML=`<button class="btn ${hecha.corte?'sec':''}" id="rnext">▶ ${hecha.corte?'Seguir hoy de todas formas':'Siguiente estación'}: ${nx.ic} ${nx.n}</button>`;
@@ -1410,17 +1418,17 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   $('#rnext').onclick=startStation;
 };
 R.route=function(){
-  const resume=ROUTE&&ROUTE.i>0;
   if(!ROUTE)ROUTE={i:0,part:0,on:false};
+  const P=rutaEntra(false,{...ROUTE}),resume=P.i>0&&P.i<ROUTE_ST.length;
   app().innerHTML=`<div class="box"><h2 class="ruta-tit">${COHETE_SVG} Ruta de estudio</h2>
-  ${guia(resume?`¡Seguimos! Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
+  ${guia(resume?`¡Seguimos! Vas por la estación ${P.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
   <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
-  <div class="center">${resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${ROUTE.i+1}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ruta</button>`}
+  <div class="center">${resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${P.i+1}: ${ROUTE_ST[P.i].ic} ${ROUTE_ST[P.i].n}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ruta</button>`}
   <button class="btn sec" onclick="home()">🏠 Menú</button></div></div>`;
-  $('#rgo').onclick=()=>{ROUTE.on=true;startStation()};
-  const rn=$('#rnew');if(rn)rn.onclick=()=>{ROUTE.i=0;ROUTE.on=true;startStation()};
+  $('#rgo').onclick=()=>{rutaEntra(false);ROUTE.on=true;startStation()};
+  const rn=$('#rnew');if(rn)rn.onclick=()=>{rutaEntra(true);ROUTE.on=true;startStation()};
 };
 
 /* ===== ARCADE (se desbloquea al jugar todos los bloques) ===== */

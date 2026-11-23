@@ -76,6 +76,7 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Pendiente del padre
 
+- **Probar el mapa de la ruta nuevo** (el padre, 23-nov) en https://alvgolf.github.io/mision-estudio/segundo-beta/ (abre el reloj beta): se ilumina cada bloque terminado aunque se juegue suelto, el cohete va al último hecho y un tramo de línea solo se enciende entre dos bloques hechos; la ruta sigue por el primer bloque sin hacer y se salta los hechos (con todo hecho, se repite entera). Arregla que, al terminar la ruta, el mapa del juego volviera a la primera estación. Con su visto bueno, el motor beta pasa al normal (llega también a 5º) y `segundo-beta` se quita de `scripts/menus.mjs`.
 - **Más adelante: «Reloj nivel 2»** (de cinco en cinco), juego aparte con su ruta, cuando en clase lleguen.
 - **22-nov: todo lo de las betas está en producción** (motor, menú en la portada con la ruta y el nombre, logo y entrada, icono del ME, divisiones, arcade de Mates). `menu-beta/` y `mates-u3-beta/` redirigen a la normal. Al abrir la app en la tablet, el icono nuevo puede tardar en salir: si no cambia, quitar la app y volver a instalarla.
 - Mates Unidad 3 ya está en el menú (21-nov): el lunes 24 y el martes 25, la ruta; el miércoles 26, el examen. Contar cómo va, y después del examen del 27, la nota real.

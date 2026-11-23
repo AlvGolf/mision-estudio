@@ -445,7 +445,7 @@ html.c2 .cf .guia.salta .cuerpo{animation-iteration-count:4}
 /* R1: el camino de la ruta se dibuja y la estación de ahora late dos veces */
 .rst{position:relative}
 .rst:not(:last-child):not(:nth-child(5n))::after{content:"";position:absolute;top:21px;left:calc(50% + 22px);width:calc(100% + 6px - 44px);height:3px;border-radius:2px;background:var(--line);opacity:.6}
-.rst.done:not(:last-child):not(:nth-child(5n))::after{background:var(--yes);opacity:1;transform-origin:left;animation:traza .3s ease backwards;animation-delay:calc(var(--i,0)*.16s + .1s)}
+.rst.tramo:not(:last-child):not(:nth-child(5n))::after{background:var(--yes);opacity:1;transform-origin:left;animation:traza .3s ease backwards;animation-delay:calc(var(--i,0)*.16s + .1s)}
 @keyframes traza{from{transform:scaleX(0)}}
 .rst.done .rdot{animation:popin2 .35s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i,0)*.16s)}
 @keyframes popin2{from{scale:.4;opacity:0}}

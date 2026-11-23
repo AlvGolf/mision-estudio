@@ -139,6 +139,17 @@ function vaPor(j){try{const c=CLAVES[j.id],r=c&&c.ruta?JSON.parse(localStorage.g
 /* La ficha de la ruta: el mapa con el cohete en la estación que toca y dos botones. El avance se lee de la clave de ruta del propio juego;
    si aún no se ha jugado en esta tablet, el mapa sale con el cohete en la primera estación. Con la ruta terminada, el examen. */
 function fichaRuta(j){const L=RUTAS[j.id],v=vaPor(j),ru=L?{est:L.map(x=>[x.ic,x.n]),i:0,cortes:L.map((x,n)=>x.corte?[n,x.corte]:null).filter(Boolean),fin:false,...v}:(j.r&&j.r.ruta)||null,url=ir(j.carpeta),N=ru?ru.est.length:0;
+  /* 23-nov: con la piel que trae rutaEstado, se ilumina lo hecho aunque se jugara suelto (lo lee del estado del juego) */
+  if(ru&&L&&typeof rutaEstado==='function'){let es=null;try{const c=CLAVES[j.id];es=c&&c.estado?JSON.parse(localStorage.getItem(c.estado)||'null'):null}catch(e){}
+    const E=rutaEstado(N,ru.i,ru.fin,k=>!!(es&&es.gr&&es.gr[L[k].k]&&es.gr[L[k].k].length),k=>!!L[k].corte);
+    const mapa=`<div class="rmap">${ru.est.map((x,n)=>{const st=E.D[n]?'done':n===E.now?'now':'',c=ru.cortes.find(c=>c[0]===n);
+      return `<div class="rst ${st}${E.tramo(n)?' tramo':''}" style="--i:${n}">${n===E.cohete&&!E.aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st==='done'?'✓':x[0]}</div><div class="rname">${esc(x[1])}</div></div>${c&&n<N-1?`<div class="rcorte">🌙 ${esc(c[1])}${E.aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>`;
+    /* La ruta sigue por el primer bloque sin hacer (el juego se salta los ya hechos) */
+    const sig=!E.completa?ru.est[E.now]:null,alguno=E.D.some(Boolean);
+    const bts=E.completa?`<a class="btn destaca" href="${url}?examen=1">👑 Hacer el examen final</a><a class="btn sec" href="${url}?ruta=1">🔁 Repetir la ruta</a>`
+      :`<a class="btn" href="${url}?ruta=1">▶ ${sig?(alguno?'Seguir':'Empezar la ruta')+': '+sig[0]+' '+esc(sig[1]):'Empezar la ruta'}</a>`;
+    return `<div class="ficha-r" role="region" aria-label="Ruta de estudio de ${esc(j.titulo)}"><h3 class="tt">${COHETE_SVG} ${E.completa?'¡Ruta completada!':`Ruta de estudio · ${E.D.filter(Boolean).length} de ${N} hechas`}</h3>
+    ${mapa}<div class="bts">${bts}<a class="btn sec" href="${url}">▶ Misiones sueltas y examen</a></div></div>`}
   const mapa=ru?(()=>{const ap=ru.i>0&&!ru.fin&&ru.cortes.some(c=>c[0]===ru.i-1),fin=ru.fin;
     return `<div class="rmap">${ru.est.map((x,n)=>{const st=fin||n<ru.i?'done':n===ru.i?'now':'',c=ru.cortes.find(c=>c[0]===n);
       return `<div class="rst ${st}" style="--i:${n}">${st==='now'&&!ap?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st==='done'?'✓':x[0]}</div><div class="rname">${esc(x[1])}</div></div>${c&&n<N-1?`<div class="rcorte">🌙 ${esc(c[1])}${ap&&n===ru.i-1?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>`})():'';

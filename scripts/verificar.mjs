@@ -22,7 +22,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { atrasados } from './menus.mjs';
+import { atrasados, MENUS } from './menus.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ARGS = process.argv.slice(2);
@@ -35,7 +35,7 @@ const ANCHOS = [
 const ES_REDIRECCION = f => /http-equiv="refresh"/i.test(fs.readFileSync(f, 'utf8').slice(0, 800));
 /* Los menús de la suite (22-nov: un enlace por curso). Cada uno dice su curso y sus claves en «const SUITE={…}»;
    el de antes (sin SUITE) enseña los dos cursos y guarda en mision_curso y mision_name */
-const MENUS_SUITE = ['/', '/menu-beta/', '/segundo/'].map(ruta => {
+const MENUS_SUITE = [...new Set(['/', '/menu-beta/', ...MENUS.map(m => m.dir ? `/${m.dir}/` : '/')])].map(ruta => {
   const html = path.join(RAIZ, ruta, 'index.html');
   if (!fs.existsSync(html) || ES_REDIRECCION(html)) return null;
   const t = fs.readFileSync(html, 'utf8'), m = t.match(/const SUITE=(\{[^}]*\});/);
@@ -223,6 +223,21 @@ for (const juego of juegos) {
     if (acabada) {
       R.notas.push(`[${tag}] Ruta completa: ${estaciones} estaciones, ${pasos} ejercicios, ${Math.round((Date.now() - t0) / 1000)} s`);
       await revisarPantalla('ruta completada');
+      /* 23-nov (el padre): al terminar la ruta, su mapa sale completo con el cohete al final (antes volvía a la primera estación) */
+      if (await page.evaluate(() => typeof rutaEstado === 'function')) {
+        const p3 = await page.context().newPage(); await p3.goto(page.url()); await p3.waitForTimeout(300);
+        const m = await p3.evaluate(() => { R.route(); const st = [...document.querySelectorAll('.rmap .rst')]; return { n: st.length, hechas: st.filter(e => e.classList.contains('done')).length, cohete: st.findIndex(e => e.querySelector('.ficha-m')) } });
+        if (m.hechas !== m.n || m.cohete !== m.n - 1) fallo(`[${tag}] Terminada la ruta, el mapa del juego ilumina ${m.hechas} de ${m.n} estaciones y pone el cohete en la ${m.cohete + 1}`);
+        /* La ruta se salta los bloques jugados sueltos (bloques 1 y 4 hechos: empieza en el 2 y del 3 salta al 5); con todo hecho, se repite desde el 1 */
+        if (A.n === 390 && await p3.evaluate(() => typeof rutaEntra === 'function')) {
+          const sx = await p3.evaluate(() => { for (const k in GR) delete GR[k]; const K = n => ROUTE_ST[n].k; GR[K(0)] = [8]; GR[K(3)] = [8];
+            const r = rutaEntra(false, { i: 0, part: 0, on: false }), a = r.i; GR[K(1)] = [8]; GR[K(2)] = [8]; r.i = 2; saltaHechos(r); const b = r.i;
+            ROUTE_ST.forEach(x => GR[x.k] = [8]); const c = rutaEntra(false, { i: 3, part: 0, on: false }); return [a, b, c.i, c.rep] });
+          if (sx.join() !== '1,4,0,true') fallo(`[${tag}] La ruta no se salta bien lo jugado suelto (empieza en ${sx[0] + 1}, salta a ${sx[1] + 1}; con todo hecho va a ${sx[2] + 1}, repetir: ${sx[3]})`);
+          else R.notas.push(`[${tag}] La ruta se salta lo jugado suelto y, con todo hecho, se repite desde el principio`);
+        }
+        await p3.close();
+      }
       /* El cohete del final tiene que perderse por encima de la pantalla, no quedarse parado a mitad (el padre, 22-nov) */
       const cv = page.locator('.routeend .despegue .cv');
       if (await cv.count()) {
@@ -385,6 +400,31 @@ for (const M of MENUS_SUITE) {
       else R.notas.push(`[${curso}º] «${id}»: mapa de ${esperadas} estaciones con el cohete al principio desde la primera vez · ${f.boton.trim()}`);
     }
     await ctx.close();
+  }
+  /* 23-nov (el padre): lo jugado suelto también se ilumina; el cohete va al último hecho y un tramo solo se enciende entre dos hechos */
+  if (M.suite) {
+    const pj2 = await navegador.newPage(); await pj2.goto(BASE + ruta, { waitUntil: 'domcontentloaded' });
+    const g = await pj2.evaluate(c => { const x = JUEGOS.find(x => x.curso === +c); return x ? { id: x.id, href: ir(x.carpeta), nueva: typeof rutaEstado === 'function' } : null; }, M.cursos[0]); await pj2.close();
+    if (g && g.nueva) {
+      const src = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, g.href)), 'index.html'), 'utf8');
+      const kEst = (src.match(/claves:\{estado:'([^']+)'/) || [])[1], est = new Function('return ' + src.match(/const ROUTE_ST=(\[[\s\S]*?\]);/)[1])();
+      for (const caso of ['sueltos', 'todos']) {
+        const gr = {}; est.forEach((x, n) => { if (caso === 'todos' || n === 0 || n === 3) gr[x.k] = [8]; });
+        const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
+        await ctx.addInitScript(([kc, c, kn, ke, v]) => { localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem(ke, v); }, [M.cursoK, M.cursos[0], M.nombre, kEst, JSON.stringify({ gr })]);
+        const page = await ctx.newPage(); page.on('pageerror', e => errores.push(e.message));
+        await page.goto(BASE + ruta, { waitUntil: 'networkidle' }); await page.click(`.tarj[data-id="${g.id}"]`);
+        await page.waitForSelector('.ficha-r', { timeout: 4000 }).catch(() => {});
+        const f = await page.evaluate(() => { const r = document.querySelector('.ficha-r'); if (!r) return null; const st = [...r.querySelectorAll('.rst')];
+          return { hechas: st.map((e, n) => e.classList.contains('done') ? n : -1).filter(n => n >= 0), cohete: st.findIndex(e => e.querySelector('.ficha-m')), tramos: r.querySelectorAll('.rst.tramo').length, tit: r.querySelector('.tt').textContent, boton: (r.querySelector('.bts .btn') || {}).textContent || '' } });
+        if (!f) R.fallos.push(`[${ruta}] Con bloques jugados, al tocar «${g.id}» no sale la ficha`);
+        else if (caso === 'sueltos' && (f.hechas.join() !== '0,3' || f.cohete !== 3 || f.tramos !== 0)) R.fallos.push(`[${ruta}] Con los bloques 1 y 4 jugados sueltos, el mapa ilumina ${f.hechas.map(n => n + 1).join(', ') || 'ninguno'}, pone el cohete en el ${f.cohete + 1} y enciende ${f.tramos} tramos (tiene que ser: 1 y 4, el cohete en el 4 y ningún tramo)`);
+        else if (caso === 'sueltos' && !f.boton.includes(est[1].n)) R.fallos.push(`[${ruta}] Con los bloques 1 y 4 hechos, el botón de la ruta dice «${f.boton.trim()}» y no propone el bloque 2 («${est[1].n}»)`);
+        else if (caso === 'todos' && (f.hechas.length !== est.length || !/completada/.test(f.tit))) R.fallos.push(`[${ruta}] Con todos los bloques jugados, el mapa no sale completo (${f.hechas.length} de ${est.length}, «${f.tit.trim()}»)`);
+        else R.notas.push(`[${ruta}] ${caso === 'sueltos' ? 'Bloques 1 y 4 jugados sueltos: se iluminan esos dos, el cohete en el 4 y sin tramos' : 'Todos los bloques jugados: ruta completada'}`);
+        await ctx.close();
+      }
+    }
   }
   /* 22-nov: el nombre se pide después del logo y antes del menú, y el mapa enseña por dónde va la ruta guardada por el juego
      (también la jugada antes de esta versión), no la primera estación */
