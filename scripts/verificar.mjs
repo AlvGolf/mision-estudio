@@ -156,8 +156,8 @@ for (const juego of juegos) {
     /* ---------- 2. La ruta entera ---------- */
     /* Duración de la ruta según el curso (el padre, 20-nov): 2º, de 15 a 20 minutos en total; 5º, de 30 a 35 */
     if (A === ANCHOS[0]) {
-      const d = await page.evaluate(() => ({ suma: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.reduce((a, s) => a + (s.min || 0), 0) : null, min: typeof JUEGO !== 'undefined' && JUEGO.ruta ? JUEGO.ruta.minutos : null,
-        dias: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.reduce((a, s) => { a[a.length - 1] += s.min || 0; if (s.corte) a.push(0); return a; }, [0]).filter(x => x) : [] }));
+      const d = await page.evaluate(() => ({ suma: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.filter(s => s.k !== 'exam').reduce((a, s) => a + (s.min || 0), 0) : null, min: typeof JUEGO !== 'undefined' && JUEGO.ruta ? JUEGO.ruta.minutos : null,
+        dias: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.filter(s => s.k !== 'exam').reduce((a, s) => { a[a.length - 1] += s.min || 0; if (s.corte) a.push(0); return a; }, [0]).filter(x => x) : [] }));
       const curso = temario && String(temario.curso || '');
       const pide = /2/.test(curso) ? [15, 20] : /5/.test(curso) ? [30, 35] : null;
       // Ruta en varios días (el padre, 21-nov, Mates): cada día, unos 20 minutos
@@ -166,6 +166,14 @@ for (const juego of juegos) {
         if (d.suma < pide[0] || d.suma > pide[1]) aviso(`La ruta suma ${d.suma} minutos y en ${curso} tiene que durar de ${pide[0]} a ${pide[1]}: ajusta los «min» de ROUTE_ST`);
         if (!d.min) aviso(`JUEGO.ruta.minutos no está puesto: el botón dirá «unos 30 minutos» (en ${curso}: «${pide[0]} a ${pide[1]}»)`);
       }
+    }
+    /* Cifras nuevas en cada partida (23-nov): 2.000 partidas generadas y cada cuenta rehecha (JUEGO.cifras.comprueba) */
+    if (A === ANCHOS[0] && await page.evaluate(() => typeof JUEGO !== 'undefined' && typeof JUEGO.cifras === 'function')) {
+      const g = await page.evaluate(() => { const C = JUEGO.cifras; if (typeof C.comprueba !== 'function') return { sin: true };
+        const err = []; for (let i = 0; i < 2000 && err.length < 5; i++) { C(); err.push(...C.comprueba()); } C(); return { err } });
+      if (g.sin) aviso(`JUEGO.cifras no trae su comprobación (JUEGO.cifras.comprueba): no se revisan las cuentas generadas`);
+      else if (g.err.length) fallo(`Las cifras nuevas dan cuentas mal: ${g.err.slice(0, 3).join(' | ')}`);
+      else R.notas.push(`Cifras nuevas: 2.000 partidas generadas, todas las cuentas bien`);
     }
     /* Un enlace por curso (22-nov): el botón ‹ ME de un juego de 2º vuelve al menú de 2º, nunca al de 5º */
     if (A.n === 390) {
@@ -195,8 +203,13 @@ for (const juego of juegos) {
           else aviso(`[${tag}] El mapa de la ruta no enseña los minutos de cada estación (motor antiguo)`);
         }
         /* El cohete como premio (22-nov): al terminar cada día de la ruta despega el grande */
-        const cierraDia = await page.evaluate(() => typeof ROUTE !== 'undefined' && ROUTE && ROUTE_ST[ROUTE.i - 1] && !!ROUTE_ST[ROUTE.i - 1].corte && typeof coheteGrande === 'function');
+        /* Con plan hasta el examen (23-nov), el día acaba donde dice el plan de hoy (ROUTE.dia), con la racha; sin fecha, en el «corte» */
+        const cierraDia = await page.evaluate(() => { if (typeof ROUTE === 'undefined' || !ROUTE || !ROUTE_ST[ROUTE.i - 1] || typeof coheteGrande !== 'function') return null;
+          const prev = ROUTE_ST[ROUTE.i - 1], plan = typeof planRuta === 'function' && planActivo(planRuta());
+          return plan ? (ROUTE.dia && ROUTE.dia.hasta === prev.k ? 'plan' : null) : (prev.corte ? 'corte' : null) });
         if (cierraDia && !(await page.locator('.hoyfin .despegue .cv').count())) fallo(`[${tag}] Al terminar el día de la ruta no despega el cohete`);
+        if (cierraDia === 'plan') { const t = await page.locator('.hoyfin').innerText().catch(() => '');
+          if (!/Plan de hoy cumplido/.test(t)) fallo(`[${tag}] Al cumplir el plan de hoy no lo dice («${t.slice(0, 80)}»)`); else R.notas.push(`[${tag}] El plan de hoy acaba donde toca, con el cohete y la racha`); }
         await page.click('#rnext'); estaciones++; continue;
       }
       const t = await titulo();
@@ -425,7 +438,8 @@ for (const M of MENUS_SUITE) {
       await page.waitForTimeout(300);
       const carpeta = await page.$eval(`.tarj[data-id="${id}"]`, a => a.getAttribute('href'));
       const fuente = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, carpeta)), 'index.html'), 'utf8').match(/const ROUTE_ST=(\[[\s\S]*?\]);/);
-      const esperadas = fuente ? new Function('return ' + fuente[1])().length : 0;
+      const conEx = await page.evaluate(() => typeof planHoy === 'function');
+      const esperadas = fuente ? new Function('return ' + fuente[1])().length + (conEx ? 1 : 0) : 0;
       const f = await page.evaluate(() => { const r = document.querySelector('.ficha-r'); return r ? { est: r.querySelectorAll('.rst').length, primera: !!r.querySelector('.rst:first-child.now .ficha-m'), boton: (r.querySelector('.bts .btn') || {}).textContent || '' } : null; });
       if (!f) R.fallos.push(`[${curso}º] Al tocar «${id}» no sale la ficha de la ruta`);
       else if (!esperadas) R.avisos.push(`[${curso}º] «${id}» no tiene ROUTE_ST: su ficha sale sin mapa`);
@@ -438,12 +452,13 @@ for (const M of MENUS_SUITE) {
   /* 23-nov (el padre): lo jugado suelto también se ilumina; el cohete va al último hecho y un tramo solo se enciende entre dos hechos */
   if (M.suite) {
     const pj2 = await navegador.newPage(); await pj2.goto(BASE + ruta, { waitUntil: 'domcontentloaded' });
-    const g = await pj2.evaluate(c => { const x = JUEGOS.find(x => x.curso === +c); return x ? { id: x.id, href: ir(x.carpeta), nueva: typeof rutaEstado === 'function' } : null; }, M.cursos[0]); await pj2.close();
+    const g = await pj2.evaluate(c => { const x = JUEGOS.find(x => x.curso === +c); return x ? { id: x.id, href: ir(x.carpeta), nueva: typeof rutaEstado === 'function', plan: typeof planHoy === 'function' } : null; }, M.cursos[0]); await pj2.close();
     if (g && g.nueva) {
       const src = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, g.href)), 'index.html'), 'utf8');
       const kEst = (src.match(/claves:\{estado:'([^']+)'/) || [])[1], est = new Function('return ' + src.match(/const ROUTE_ST=(\[[\s\S]*?\]);/)[1])();
       for (const caso of ['sueltos', 'seguidos', 'todos']) {
         const gr = {}; est.forEach((x, n) => { if (caso === 'todos' || n === 0 || (caso === 'sueltos' ? n === 3 : n === 1)) gr[x.k] = [8]; });
+        if (caso === 'todos' && g.plan) gr.exam = [8];
         const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
         await ctx.addInitScript(([kc, c, kn, ke, v]) => { localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem(ke, v); }, [M.cursoK, M.cursos[0], M.nombre, kEst, JSON.stringify({ gr })]);
         const page = await ctx.newPage(); page.on('pageerror', e => errores.push(e.message));
@@ -457,8 +472,39 @@ for (const M of MENUS_SUITE) {
         else if (f.estrecha < 40) R.fallos.push(`[${ruta}] Con bloques hechos, una estación del mapa sale aplastada (${Math.round(f.estrecha)} px de ancho)`);
         else if (caso === 'seguidos' && (f.tramos !== 1 || f.cohete !== 1 || f.verde === f.gris)) R.fallos.push(`[${ruta}] Con los bloques 1 y 2 hechos, el mapa enciende ${f.tramos} tramos (color ${f.verde} frente a ${f.gris} de uno apagado) y pone el cohete en el ${f.cohete + 1} (tiene que ser: el tramo del 1 al 2 encendido y el cohete en el 2)`);
         else if (caso === 'sueltos' && !f.boton.includes(est[1].n)) R.fallos.push(`[${ruta}] Con los bloques 1 y 4 hechos, el botón de la ruta dice «${f.boton.trim()}» y no propone el bloque 2 («${est[1].n}»)`);
-        else if (caso === 'todos' && (f.hechas.length !== est.length || !/completada/.test(f.tit))) R.fallos.push(`[${ruta}] Con todos los bloques jugados, el mapa no sale completo (${f.hechas.length} de ${est.length}, «${f.tit.trim()}»)`);
+        else if (caso === 'todos' && (f.hechas.length !== est.length + (g.plan ? 1 : 0) || !/completada/.test(f.tit))) R.fallos.push(`[${ruta}] Con todos los bloques jugados, el mapa no sale completo (${f.hechas.length} de ${est.length + (g.plan ? 1 : 0)}, «${f.tit.trim()}»)`);
         else R.notas.push(`[${ruta}] ${caso === 'sueltos' ? 'Bloques 1 y 4 jugados sueltos: se iluminan esos dos, el cohete en el 4 y sin tramos' : caso === 'seguidos' ? `Bloques 1 y 2 hechos: se enciende el tramo entre ellos (${f.verde}) y el cohete en el 2` : 'Todos los bloques jugados: ruta completada'}`);
+        await ctx.close();
+      }
+    }
+  }
+  /* Plan hasta el examen (23-nov): la ficha enseña la vuelta 2 (solo lo hecho en ella), «Otra vuelta» con la vuelta acabada
+     y, en un juego con fecha de examen, el plan de hoy (se simula que faltan 4 días, un lunes o martes) */
+  if (M.suite) {
+    const pj3 = await navegador.newPage(); await pj3.goto(BASE + ruta, { waitUntil: 'domcontentloaded' });
+    const js = await pj3.evaluate(c => typeof planHoy === 'function' ? JUEGOS.filter(x => x.curso === +c).map(x => ({ id: x.id, href: ir(x.carpeta), examen: x.examen || null })) : [], M.cursos[0]); await pj3.close();
+    for (const g of js) {
+      const src = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, g.href)), 'index.html'), 'utf8');
+      const ks = (src.match(/claves:(\{[^}]*\})/) || [])[1], K = ks ? new Function('return ' + ks)() : null, est = new Function('return ' + src.match(/const ROUTE_ST=(\[[\s\S]*?\]);/)[1])();
+      if (!K || !K.ruta) continue;
+      const gr = {}; est.forEach(x => gr[x.k] = [8]);
+      const casos = [['vuelta2', { i: 1, v: 2, hv: [est[0].k], fin: null }], ['acabada', { i: 0, v: 1, hv: [], fin: Date.now() }]];
+      if (g.examen) casos.push(['plan', { i: 0, v: 1, hv: [] }]);
+      for (const [caso, r] of casos) {
+        const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
+        if (caso === 'plan') { const d = new Date(g.examen + 'T10:00:00'); d.setDate(d.getDate() - 4); while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1); await ctx.clock.setFixedTime(d); }
+        await ctx.addInitScript(([kc, c, kn, ke, ve, kr, vr]) => { localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem(ke, ve); localStorage.setItem(kr, vr); },
+          [M.cursoK, M.cursos[0], M.nombre, K.estado, JSON.stringify({ gr: caso === 'plan' ? {} : gr }), K.ruta, JSON.stringify(r)]);
+        const page = await ctx.newPage(); page.on('pageerror', e => errores.push(e.message));
+        await page.goto(BASE + ruta, { waitUntil: 'networkidle' }); await page.click(`.tarj[data-id="${g.id}"]`);
+        await page.waitForSelector('.ficha-r', { timeout: 4000 }).catch(() => {});
+        const f = await page.evaluate(() => { const r = document.querySelector('.ficha-r'); if (!r) return null; const st = [...r.querySelectorAll('.rst')];
+          return { hechas: st.map((e, n) => e.classList.contains('done') ? n : -1).filter(n => n >= 0), tit: r.querySelector('.tt').textContent, plan: (r.querySelector('.plan-hoy') || {}).textContent || '', boton: (r.querySelector('.bts .btn') || {}).textContent || '', href: (r.querySelector('.bts .btn') || {}).getAttribute?.('href') || '' } });
+        if (!f) R.fallos.push(`[${ruta}] «${g.id}» (${caso}): no sale la ficha`);
+        else if (caso === 'vuelta2' && (f.hechas.join() !== '0' || !/vuelta 2/i.test(f.tit) || !f.boton.includes(est[1].n))) R.fallos.push(`[${ruta}] «${g.id}» en la vuelta 2: ilumina ${f.hechas.map(n => n + 1).join(', ') || 'ninguna'} (solo la 1), título «${f.tit.trim()}», botón «${f.boton.trim()}»`);
+        else if (caso === 'acabada' && (!/Otra vuelta/.test(f.boton) || !/vuelta=1/.test(f.href))) R.fallos.push(`[${ruta}] «${g.id}» con la vuelta acabada: el botón dice «${f.boton.trim()}» (tiene que ofrecer otra vuelta)`);
+        else if (caso === 'plan' && !/📅 Hoy: .*min · faltan \d+ días/.test(f.plan)) R.fallos.push(`[${ruta}] «${g.id}» a 4 días del examen: la ficha no dice el plan de hoy («${f.plan}»)`);
+        else R.notas.push(`[${ruta}] «${g.id}»: ${caso === 'vuelta2' ? 'en la vuelta 2 solo se ilumina lo hecho en ella' : caso === 'acabada' ? 'con la vuelta acabada, «Otra vuelta con cifras nuevas»' : 'a 4 días del examen: ' + f.plan}`);
         await ctx.close();
       }
     }

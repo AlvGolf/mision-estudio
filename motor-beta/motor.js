@@ -1410,17 +1410,18 @@ function rutaEntra(cero,r=ROUTE){
   if(ROUTE_ST.every(s=>hechoRuta(s.k,r))){if(r.fin||r.i>=ROUTE_ST.length||!r.rep)r.i=0;r.rep=true;return r}
   r.rep=false;saltaHechos(r);return r}
 function startStation(){
-  const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();if(ROUTE.i===0)ROUTE.fin=null;saveRoute();
+  const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();if(ROUTE.i===0)ROUTE.fin=null;fijaDia();saveRoute();
   if(ROUTE_ST.length>=4){if(ROUTE.i===Math.floor(ROUTE_ST.length/2))asoma('¡Ya vas por la mitad! 💪');else if(ROUTE.i===ROUTE_ST.length-1)asoma('¡Última estación! Ya casi está.')}
   const part=routePart();
   if(JUEGO.ruta.estacion&&JUEGO.ruta.estacion(s.k,part))return;
   R[s.k]();
 }
 function routeMap(){
-  const E=rutaEstado(ROUTE_ST.length,ROUTE?ROUTE.i:0,ROUTE&&ROUTE.fin,k=>hechoRuta(ROUTE_ST[k].k),k=>ROUTE_ST[k].corte);
+  const pa=planActivo(planRuta()),cte=k=>pa?null:ROUTE_ST[k].corte;
+  const E=rutaEstado(ROUTE_ST.length,ROUTE?ROUTE.i:0,ROUTE&&ROUTE.fin,k=>hechoRuta(ROUTE_ST[k].k),cte);
   const left=ROUTE_ST.reduce((a,s,n)=>a+(E.D[n]?0:(tiempoReal(s.k)||s.min)),0),aparca=E.aparca;
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=E.D[n]?'done':n===E.now?'now':'';
-    return `<div class="rst ${st}${E.tramo(n)?' rlinea':''}${E.finfila(n)?' finfila':''}" style="--i:${n}">${n===E.cohete&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
+    return `<div class="rst ${st}${E.tramo(n)?' rlinea':''}${E.finfila(n)?' finfila':''}" style="--i:${n}">${n===E.cohete&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${cte(n)&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
@@ -1432,12 +1433,28 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   const box=document.querySelector('.box');
   if(ROUTE.i>=ROUTE_ST.length){box.querySelector('#again').remove();finRuta(box);return}
   saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ih];
-  /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere */
-  if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${coheteGrande()}${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
-  box.querySelector('#again').outerHTML=`<button class="btn ${hecha.corte?'sec':''}" id="rnext">▶ ${hecha.corte?'Seguir hoy de todas formas':'Siguiente estación'}: ${nx.ic} ${nx.n}</button>`;
+  /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere.
+     Con plan hasta el examen (23-nov), el día acaba donde dice el plan de hoy, con su racha; el «corte» fijo solo vale sin fecha. */
+  const plan=planActivo(planRuta()),cumple=plan&&diaCumplido(key),corte=plan?null:hecha.corte,para=cumple||!!corte;
+  if(cumple){const n=ROUTE.pr.n;box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${coheteGrande()}${guia(`¡Plan de hoy cumplido! 🔥 ${n} día${n>1?'s':''} seguido${n>1?'s':''}. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`)}
+  else if(corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${coheteGrande()}${guia(`¡${corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
+  box.querySelector('#again').outerHTML=`<button class="btn ${para?'sec':''}" id="rnext">▶ ${para?'Seguir hoy de todas formas':'Siguiente estación'}: ${nx.ic} ${nx.n}</button>`;
   box.insertAdjacentHTML('beforeend',`<div style="margin-top:14px">${routeMap()}</div><p class="center" style="color:var(--gold)">+20 XP por estación completada</p>`);
   $('#rnext').onclick=startStation;
 };
+/* Plan hasta el examen (23-nov): solo en los juegos con fecha de examen (JUEGO.examen.fecha, 'AAAA-MM-DD').
+   Con la vuelta acabada, el plan ya es el de la vuelta siguiente. ROUTE.dia guarda qué toca hoy (hasta qué estación)
+   y ROUTE.pr la racha de días cumplidos (se sigue si entre dos días cumplidos hay 3 días o menos: los fines de semana no la cortan). */
+function planRuta(hoy=new Date()){if(!JUEGO.examen||!JUEGO.examen.fecha||typeof planHoy!='function'||typeof ROUTE_ST=='undefined')return null;
+  const r=ROUTE||{v:1,hv:[]},acab=vueltaAcabada(r)&&!(r.rep&&r.i>0&&!r.fin);
+  return planHoy({est:ROUTE_ST,hecho:acab?()=>false:k=>hechoRuta(k,r),examen:JUEGO.examen.fecha,hoy,curso:JUEGO.curso,mins:x=>tiempoReal(x.k)||x.min})}
+function planActivo(p){return !!p&&p.modo!=='sin'&&p.modo!=='pasado'}
+function fijaDia(){const p=planRuta();if(!ROUTE||!p||!(p.modo==='plan'||p.modo==='vispera')||!p.est.length)return;
+  const f=fechaDia(new Date());if(!ROUTE.dia||ROUTE.dia.f!==f){ROUTE.dia={f,hasta:ROUTE_ST[p.est[p.est.length-1]].k,ok:false};saveRoute()}}
+function diaCumplido(key){if(!ROUTE)return false;const f=fechaDia(new Date()),d=ROUTE.dia;
+  if(!d||d.f!==f||d.ok||d.hasta!==key)return false;d.ok=true;
+  const pr=ROUTE.pr||{n:0,ult:null},gap=pr.ult?Math.round((new Date(f+'T00:00:00')-new Date(pr.ult+'T00:00:00'))/864e5):99;
+  pr.n=gap<=3?pr.n+1:1;pr.ult=f;ROUTE.pr=pr;saveRoute();return true}
 /* Fin de una vuelta (23-nov): el examen ya está hecho (es la última estación). Se abre el arcade (ARCA),
    se puede subir la marca al ranking con su vuelta y empezar otra vuelta con los mismos ejercicios y cifras nuevas. */
 function finRuta(box){
@@ -1460,7 +1477,7 @@ function otraVuelta(){if(!ROUTE)ROUTE={i:0,part:0,on:false,v:1,hv:[]};
 function rutaTrasExamen(g){
   const v=ROUTE?ROUTE.v||1:1;EXV[v]=g;save();
   if(!(ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==='exam'))return;
-  apuntaTiempo(ROUTE_ST[ROUTE.i]);ROUTE.hv=ROUTE.hv||[];if(!ROUTE.hv.includes('exam'))ROUTE.hv.push('exam');ROUTE.i++;saltaHechos();XP+=20;hud();save();
+  apuntaTiempo(ROUTE_ST[ROUTE.i]);ROUTE.hv=ROUTE.hv||[];if(!ROUTE.hv.includes('exam'))ROUTE.hv.push('exam');diaCumplido('exam');ROUTE.i++;saltaHechos();XP+=20;hud();save();
   const fin=app().lastElementChild;if(fin&&fin.classList.contains('center')&&!fin.classList.contains('box'))fin.remove();
   const box=document.createElement('div');box.className='box center';app().appendChild(box);
   if(ROUTE.i>=ROUTE_ST.length)return finRuta(box);
@@ -1473,6 +1490,7 @@ R.route=function(){
   app().innerHTML=`<div class="box"><h2 class="ruta-tit">${COHETE_SVG} Ruta de estudio${v>1?` · Vuelta ${v}`:''}</h2>
   ${guia(resume?`¡Seguimos! Vas por la estación ${P.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
   <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
+  ${(()=>{const p=planRuta(),t=planActivo(p)?planFrase(p,ROUTE_ST):'';return t?`<p class="plan-hoy">${t}${ROUTE.pr&&ROUTE.pr.n>1?` · 🔥 ${ROUTE.pr.n} días cumplidos`:''}</p>`:''})()}
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
   <div class="center">${acabada?`<button class="btn" id="rvuelta">🔁 Otra vuelta con cifras nuevas (vuelta ${v+1})</button> <button class="btn sec" id="rnew">Repetir la vuelta ${v}</button>`:resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${P.i+1}: ${ROUTE_ST[P.i].ic} ${ROUTE_ST[P.i].n}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ${v>1?'vuelta '+v:'ruta'}</button>`}

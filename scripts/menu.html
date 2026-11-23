@@ -129,16 +129,37 @@ function pinta(){
   pintaInstalar()}
 /* Las estaciones de cada juego se leen de su propia página (su «const ROUTE_ST=[…];»), una sola vez: así el mapa sale
    desde la primera vez, con el cohete al principio, sin copiar la ruta a otro sitio (el padre, 22-nov). */
-const RUTAS={},CLAVES={};
+const RUTAS={},CLAVES={},EXMIN={};
 function leeRuta(j){if(j.id in RUTAS)return Promise.resolve(RUTAS[j.id]);
   return fetch(ir(j.carpeta)+'index.html').then(x=>x.ok?x.text():'').then(t=>{const m=t.match(/const ROUTE_ST=(\[[\s\S]*?\]);/),mc=t.match(/claves:(\{[^}]*\})/);let v=null;
     try{v=m?new Function('return '+m[1])():null}catch(e){}try{CLAVES[j.id]=mc?new Function('return '+mc[1])():null}catch(e){}
+    const me=t.match(/examen:\{min:(\d+)/);EXMIN[j.id]=me?+me[1]:null;
     return RUTAS[j.id]=Array.isArray(v)&&v.length?v:null}).catch(()=>RUTAS[j.id]=null)}
 /* Por dónde va la ruta: lo que el juego guarda en su propia clave (sirve también para lo jugado antes de esta versión) */
 function vaPor(j){try{const c=CLAVES[j.id],r=c&&c.ruta?JSON.parse(localStorage.getItem(c.ruta)||'null'):null;return r?{i:r.i||0,fin:!!r.fin}:null}catch(e){return null}}
 /* La ficha de la ruta: el mapa con el cohete en la estación que toca y dos botones. El avance se lee de la clave de ruta del propio juego;
    si aún no se ha jugado en esta tablet, el mapa sale con el cohete en la primera estación. Con la ruta terminada, el examen. */
-function fichaRuta(j){const L=RUTAS[j.id],v=vaPor(j),ru=L?{est:L.map(x=>[x.ic,x.n]),i:0,cortes:L.map((x,n)=>x.corte?[n,x.corte]:null).filter(Boolean),fin:false,...v}:(j.r&&j.r.ruta)||null,url=ir(j.carpeta),N=ru?ru.est.length:0;
+/* Plan hasta el examen (23-nov): con la piel que trae planHoy, la ficha enseña la vuelta, el examen como última estación,
+   el plan de hoy (si el juego tiene fecha de examen) y, con la vuelta acabada, «Otra vuelta con cifras nuevas». */
+function fichaVueltas(j){const L0=RUTAS[j.id],url=ir(j.carpeta);let r=null,es=null;
+  try{const c=CLAVES[j.id];r=c&&c.ruta?JSON.parse(localStorage.getItem(c.ruta)||'null'):null;es=c&&c.estado?JSON.parse(localStorage.getItem(c.estado)||'null'):null}catch(e){}
+  const L=EXMIN[j.id]!=null&&!L0.some(x=>x.k==='exam')?[...L0,{k:'exam',n:'Examen final',ic:'👑',min:Math.max(5,EXMIN[j.id]||5)}]:L0,N=L.length;
+  r=r||{i:0};const v=r.v||1,hv=r.hv||[],gr=es&&es.gr||{};
+  const hecho=k=>v>1?hv.includes(k):!!(gr[k]&&gr[k].length),tm=k=>{const a=r.tm&&r.tm[k];if(!a||!a.length)return null;const o=[...a].sort((x,y)=>x-y);return Math.max(1,Math.round(o[Math.floor(o.length/2)]/60))};
+  const acab=!!r.fin||L.every(x=>hecho(x.k)),enRep=r.rep&&r.i>0&&!r.fin;
+  const p=planHoy({est:L,hecho:acab&&!enRep?()=>false:hecho,examen:j.examen,hoy:new Date(),curso:CURSO,mins:x=>tm(x.k)||x.min});
+  const conPlan=p.modo!=='sin'&&p.modo!=='pasado',frase=conPlan?planFrase(p,L):'';
+  const E=rutaEstado(N,acab?0:r.i||0,acab&&!enRep,k=>hecho(L[k].k),k=>conPlan?null:L[k].corte);
+  const mapa=`<div class="rmap">${L.map((x,n)=>{const st=E.D[n]?'done':n===E.now?'now':'',c=!conPlan&&x.corte;
+    return `<div class="rst ${st}${E.tramo(n)?' rlinea':''}${E.finfila(n)?' finfila':''}" style="--i:${n}">${n===E.cohete&&!E.aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st==='done'?'✓':x.ic}</div><div class="rname">${esc(x.n)}</div></div>${c&&n<N-1?`<div class="rcorte">🌙 ${esc(c)}${E.aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>`;
+  const sig=!E.completa?L[E.now]:null,alguno=E.D.some(Boolean),vv=v>1?` · vuelta ${v}`:'';
+  const bts=E.completa?`<a class="btn destaca" href="${url}?vuelta=1">🔁 Otra vuelta con cifras nuevas</a>`
+    :`<a class="btn" href="${url}?ruta=1">▶ ${sig?(alguno?'Seguir':v>1?'Empezar la vuelta '+v:'Empezar la ruta')+': '+sig.ic+' '+esc(sig.n):'Empezar la ruta'}</a>`;
+  return `<div class="ficha-r" role="region" aria-label="Ruta de estudio de ${esc(j.titulo)}"><h3 class="tt">${COHETE_SVG} ${E.completa?`¡${v>1?'Vuelta '+v:'Ruta'} completada!`:`Ruta de estudio${vv} · ${E.D.filter(Boolean).length} de ${N} hechas`}</h3>
+    ${frase?`<p class="plan-hoy">${esc(frase)}${r.pr&&r.pr.n>1?` · 🔥 ${r.pr.n} días cumplidos`:''}</p>`:''}
+    ${mapa}<div class="bts">${bts}<a class="btn sec" href="${url}">▶ Misiones sueltas y examen</a></div></div>`}
+function fichaRuta(j){if(RUTAS[j.id]&&typeof planHoy==='function'&&typeof rutaEstado==='function')return fichaVueltas(j);
+  const L=RUTAS[j.id],v=vaPor(j),ru=L?{est:L.map(x=>[x.ic,x.n]),i:0,cortes:L.map((x,n)=>x.corte?[n,x.corte]:null).filter(Boolean),fin:false,...v}:(j.r&&j.r.ruta)||null,url=ir(j.carpeta),N=ru?ru.est.length:0;
   /* 23-nov: con la piel que trae rutaEstado, se ilumina lo hecho aunque se jugara suelto (lo lee del estado del juego) */
   if(ru&&L&&typeof rutaEstado==='function'){let es=null;try{const c=CLAVES[j.id];es=c&&c.estado?JSON.parse(localStorage.getItem(c.estado)||'null'):null}catch(e){}
     const E=rutaEstado(N,ru.i,ru.fin,k=>!!(es&&es.gr&&es.gr[L[k].k]&&es.gr[L[k].k].length),k=>!!L[k].corte);
