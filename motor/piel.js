@@ -26,6 +26,16 @@ function aplicaEstilo(){const e=estiloAhora(),h=document.documentElement,c2=Stri
   let l=document.getElementById('estilo-letras');if(!l){l=document.createElement('link');l.id='estilo-letras';l.rel='stylesheet';document.head.appendChild(l)}if(l.href!==href)l.href=href}
 aplicaEstilo();
 
+/* ================== EL MAPA DE LA RUTA (23-nov, el padre) ==================
+   Se ilumina cada bloque terminado, se haya jugado en la ruta o suelto; el cohete va al último bloque terminado
+   (si no hay ninguno, en la primera estación) y un tramo de línea solo se ilumina si están hechos los dos bloques que une.
+   n estaciones · i: por dónde va la ruta · fin: ruta terminada · hecho(k) y corte(k) de cada estación. */
+function rutaEstado(n,i,fin,hecho,corte){const D=[...Array(n)].map((_,k)=>!!fin||k<i||!!hecho(k));let ult=-1;D.forEach((d,k)=>{if(d)ult=k});
+  const sig=D.indexOf(false),c=Math.max(ult,0);
+  /* finfila: la última estación de cada fila de 5 (contando desde el corte del día, que ocupa su propia fila): sin línea a la derecha */
+  const fila=[];let p=0;for(let k=0;k<n;k++){fila[k]=p%5===4;p=corte(k)?0:p+1}
+  return {D,cohete:c,now:ult<0?0:sig,completa:sig<0,tramo:k=>D[k]&&!!D[k+1],aparca:ult>=0&&!!corte(c)&&c<n-1&&!D[c+1],finfila:k=>fila[k]}}
+
 /* ================== MARCA (21-nov, rondas 8 a 10 del artefacto «Logo de Misión Estudio») ==================
    Opción B, equilibrada: el ME en la cabecera, la portada de cada juego, el boletín y el sello; nada mientras se estudia.
    Los archivos están en /marca/. A color en los estilos claros (familia D, la mañana) y en blanco en los oscuros. */

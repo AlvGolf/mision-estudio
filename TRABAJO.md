@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| motor-beta, mates-reloj-beta, segundo-beta, menús | Claude Code | 23-nov | El mapa de la ruta ilumina lo hecho aunque se juegue suelto |

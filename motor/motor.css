@@ -444,13 +444,13 @@ html.c2 .cf .guia.salta .cuerpo{animation-iteration-count:4}
 @media(max-width:600px){.cf-sello span{top:-54px;font-size:14px;padding:2px 7px;right:1%}.cf-estr{font-size:34px}}
 /* R1: el camino de la ruta se dibuja y la estación de ahora late dos veces */
 .rst{position:relative}
-.rst:not(:last-child):not(:nth-child(5n))::after{content:"";position:absolute;top:21px;left:calc(50% + 22px);width:calc(100% + 6px - 44px);height:3px;border-radius:2px;background:var(--line);opacity:.6}
-.rst.done:not(:last-child):not(:nth-child(5n))::after{background:var(--yes);opacity:1;transform-origin:left;animation:traza .3s ease backwards;animation-delay:calc(var(--i,0)*.16s + .1s)}
+.rst:not(:last-child):not(.finfila)::after{content:"";position:absolute;top:21px;left:calc(50% + 22px);width:calc(100% + 6px - 44px);height:3px;border-radius:2px;background:var(--line);opacity:.6}
+.rst.rlinea:not(:last-child):not(.finfila)::after{background:var(--yes);opacity:1;transform-origin:left;animation:traza .3s ease backwards;animation-delay:calc(var(--i,0)*.16s + .1s)}
 @keyframes traza{from{transform:scaleX(0)}}
 .rst.done .rdot{animation:popin2 .35s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i,0)*.16s)}
 @keyframes popin2{from{scale:.4;opacity:0}}
 .rst.now .rdot{animation:pulse .8s ease 2;animation-delay:calc(var(--i,0)*.16s + .2s)}
-@media(max-width:600px){.rst:not(:last-child):not(:nth-child(5n))::after{top:18px;left:calc(50% + 19px);width:calc(100% + 2px - 38px)}}
+@media(max-width:600px){.rst:not(:last-child):not(.finfila)::after{top:18px;left:calc(50% + 19px);width:calc(100% + 2px - 38px)}}
 /* E1: la buena se llena de verde con ✓, la buena brilla si fallas, +10 que sube y barra con brillo */
 .opts .opt.ok{background:linear-gradient(var(--yes),var(--yes)) left/0% 100% no-repeat,var(--card2);animation:llena .35s ease-out forwards;border-color:var(--yes)}
 @keyframes llena{to{background-size:100% 100%}}
