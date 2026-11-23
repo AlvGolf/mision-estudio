@@ -4,7 +4,8 @@
  * Para borrar una marca: borra su fila en la hoja.
  */
 const SHEET = 'Marcas';
-const COLS = ['fecha', 'juego', 'nombre', 'nota', 'examen', 'xp', 'estrellas', 'racha', 'desglose'];
+// 23-nov: «vuelta» (plan hasta el examen). En la hoja que ya existe hay que escribir «vuelta» a mano en la celda J1.
+const COLS = ['fecha', 'juego', 'nombre', 'nota', 'examen', 'xp', 'estrellas', 'racha', 'desglose', 'vuelta'];
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -42,7 +43,8 @@ function doPost(e) {
       new Date().toISOString(), juego, nombre,
       num_(d.nota, 0, 10), num_(d.examen, 0, 10),
       num_(d.xp, 0, 100000), num_(d.estrellas, 0, 60), num_(d.racha, 0, 1000),
-      "'" + desglose
+      "'" + desglose,
+      num_(d.vuelta || 1, 1, 99)
     ]);
     return json_({ ok: true });
   } catch (err) {

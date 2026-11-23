@@ -7,9 +7,9 @@
    Antes del motor se carga piel.js (estilo, app, guía y sonidos), común con el menú.
    ===================================================================== */
 /* ================== ESTADO ================== */
-let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}, REAL=null;
-try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;}catch(e){}
-function save(){try{localStorage.setItem(JUEGO.claves.estado,JSON.stringify({xp:XP,best:BEST,bs:BSTREAK,exam:EXAMB,hist:HIST,seeded:SEEDED,gr:GR,real:REAL}))}catch(e){}}
+let XP=0, STREAK=0, BEST={}, BSTREAK=0, EXAMB=null, HIST=[], SEEDED=false, GR={}, REAL=null, EXV={}, ARCA=false, ARCAMIG=false;
+try{const s=JSON.parse(localStorage.getItem(JUEGO.claves.estado)||'{}');XP=s.xp||0;BEST=s.best||{};BSTREAK=s.bs||0;EXAMB=s.exam||null;HIST=s.hist||[];SEEDED=!!s.seeded;GR=s.gr||{};REAL=s.real||null;EXV=s.exv||{};ARCA=!!s.arca;ARCAMIG=!!s.am;}catch(e){}
+function save(){try{localStorage.setItem(JUEGO.claves.estado,JSON.stringify({xp:XP,best:BEST,bs:BSTREAK,exam:EXAMB,hist:HIST,seeded:SEEDED,gr:GR,real:REAL,exv:EXV,arca:ARCA,am:ARCAMIG}))}catch(e){}}
 const MAP=Object.fromEntries(BLOCKS.map(b=>[b.k,1]));
 function grade(k,n){n=Math.round(n*10)/10;(GR[k]=GR[k]||[]).push(n);if(GR[k].length>3)GR[k].shift();save();try{ARC.repasado(k)}catch(e){}return n}
 function nota(k){const a=GR[k];return a&&a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10:null}
@@ -142,11 +142,19 @@ function loadClass(){
   /* JUEGO.ranking=false: juego sin ranking (p. ej. el de pruebas del motor) */
   if(!API_URL||JUEGO.ranking===false){CLASS_STATE='sin';return}
   fetch(API_URL+'?juego='+GAME_ID).then(r=>r.json()).then(d=>{
-    const last={};(d.rows||[]).forEach(x=>{const k=String(x.nombre).trim().toLowerCase();if(!last[k]||x.fecha>last[k].fecha)last[k]=x});
-    CLASS=Object.values(last).map(x=>({n:x.nombre,nota:x.nota===''?null:+x.nota,ex:x.examen===''?null:+x.examen,xp:+x.xp,st:+x.estrellas,bs:+x.racha,sb:x.desglose?Object.fromEntries(MIC.map(([k],i)=>[k,+String(x.desglose).replace(/\D/g,'')[i]||0])):null,f:x.fecha}));
+    CLASS=agrupaRanking(d.rows||[]);
     CLASS_STATE='ok';const c=$('#clase');if(c){c.outerHTML=classBox();wireClass();if(window._msg){$('#sfb').textContent=window._msg;window._msg=''}}
   }).catch(()=>{CLASS_STATE='err';const c=$('#clase');if(c){c.outerHTML=classBox();wireClass()}});
 }
+/* 23-nov (plan hasta el examen, ronda 2): cada niño sale una vez, con su mejor nota y su mejor examen; en su tarjeta, el examen de
+   cada vuelta («Vuelta 1: 7,5 · Vuelta 2: 8,4»). Las marcas sin vuelta (de antes) cuentan como vuelta 1. */
+function agrupaRanking(rows){const by={},num=v=>v===''||v==null||isNaN(+v)?null:+v;
+  rows.forEach(x=>{const k=String(x.nombre).trim().toLowerCase();(by[k]=by[k]||[]).push(x)});
+  return Object.values(by).map(rs=>{rs.sort((a,b)=>a.fecha>b.fecha?1:a.fecha<b.fecha?-1:0);const x=rs[rs.length-1];
+    const mx=a=>{a=a.filter(v=>v!=null);return a.length?Math.max(...a):null},vu={};
+    rs.forEach(r=>{const e=num(r.examen);if(e!=null){const v=num(r.vuelta)||1;vu[v]=Math.max(vu[v]??0,e)}});
+    return {n:x.nombre,nota:mx(rs.map(r=>num(r.nota))),ex:mx(rs.map(r=>num(r.examen))),xp:mx(rs.map(r=>num(r.xp)))||0,st:mx(rs.map(r=>num(r.estrellas)))||0,bs:+x.racha||0,
+      sb:x.desglose?Object.fromEntries(MIC.map(([k],i)=>[k,+String(x.desglose).replace(/\D/g,'')[i]||0])):null,f:x.fecha,vu}})}
 function chk(s){let x=7;for(const c of s)x=(x*31+c.charCodeAt(0))%1679616;return x.toString(36).toUpperCase().padStart(4,'0')}
 function classBox(){
   if(CLASS_STATE!='ok')return `<div class="box" id="clase"><h2>🏫 Ranking de la clase</h2><p class="sub">${CLASS_STATE=='cargando'?'Cargando el ranking… ⏳':CLASS_STATE=='sin'?'El ranking aún no está conectado.':'No se ha podido cargar el ranking. Prueba a recargar dentro de un rato.'}</p>${importBox()}</div>`;
@@ -154,7 +162,7 @@ function classBox(){
   const med=['🥇','🥈','🥉'];
   return `<div class="box" id="clase"><h2>🏫 Ranking de la clase</h2>
   <p class="sub">Pulsa 📤 para subir tu marca. Ordenado por nota; si empatan, por XP. <button class="tab" id="crel" style="font-size:12px;padding:3px 10px">🔄 actualizar</button></p>
-  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk${String(r.n||'').trim().toLowerCase()===String(lsGet(JUEGO.claves.nombre)||'').trim().toLowerCase()?' yo':''}" style="--i:${Math.min(i,12)}"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MAXST}</span><span>🔥 ${r.bs}</span></div>${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
+  ${rows.length?`<div class="rk-list">${rows.map((r,i)=>`<div class="rk${String(r.n||'').trim().toLowerCase()===String(lsGet(JUEGO.claves.nombre)||'').trim().toLowerCase()?' yo':''}" style="--i:${Math.min(i,12)}"><div class="rk-m">${med[i]||(i+1)+'.'}</div><div class="rk-b"><div class="rk-n">${esc(r.n)}</div><div class="rk-s"><span>📊 <b>${r.nota!=null?fmt(r.nota):'–'}</b></span><span>👑 ${r.ex!=null?fmt(r.ex):'–'}</span><span>⭐ ${r.xp}</span><span>★ ${r.st}/${MAXST}</span><span>🔥 ${r.bs}</span></div>${r.vu&&Object.keys(r.vu).some(v=>v>1)?`<div class="rk-vu">👑 ${Object.entries(r.vu).sort((a,b)=>a[0]-b[0]).map(([v,e])=>`Vuelta ${v}: <b>${fmt(e)}</b>`).join(' · ')}</div>`:''}${r.sb?`<div class="rk-st">${starLine(r.sb)}</div>`:''}</div></div>`).join('')}</div>`
   :'<p style="font-size:18px">Todavía no hay nadie. ¡Juega, pulsa 📤 y sé el primero!</p>'}
   <button class="btn" id="fsend">📤 Subir mi marca al ranking</button>
   <div class="fb" id="sfb"></div>${importBox()}</div>`;
@@ -177,8 +185,8 @@ async function sendScore(){
   if(SENDING)return;const fb=$('#sfb');
   if(!API_URL||JUEGO.ranking===false){fb.textContent='Este juego no tiene ranking.';return}
   const n=(lsGet(JUEGO.claves.nombre)||'').trim();if(!n){fb.textContent='Primero pon tu nombre.';return}
-  const f=finalNota(),ex=nota('exam');
-  const d={juego:GAME_ID,nombre:n,nota:f.miss?'':f.n,examen:ex==null?'':ex,xp:XP,estrellas:totalStars(),racha:BSTREAK,desglose:MIC.map(([k])=>BEST[k]||0).join('')};
+  const f=finalNota(),vs=Object.keys(EXV).map(Number),uv=vs.length?Math.max(...vs):null,ex=uv?EXV[uv]:nota('exam');
+  const d={juego:GAME_ID,nombre:n,nota:f.miss?'':f.n,examen:ex==null?'':ex,xp:XP,estrellas:totalStars(),racha:BSTREAK,desglose:MIC.map(([k])=>BEST[k]||0).join(''),vuelta:uv||1};
   SENDING=true;fb.textContent='Enviando… 📤';
   try{const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(d)});const j=await r.json();if(!j.ok)throw 0;
     fb.textContent='✅ ¡Marca subida!';window._msg='✅ ¡Marca subida! Mira tu puesto.';confetti();loadClass();
@@ -263,7 +271,8 @@ function examRun(qs){
       <p class="sub">Nota prevista para ${JUEGO.examen.dia} (media de tus 3 últimos exámenes): <b>${fmt(nota('exam'))}</b></p>${guiaFin(p)}</div>
       ${wrong.length?`<div class="box"><h2>📌 Repasa estas</h2><table class="rules">${wrong.map(w=>`<tr><td>${esc(w.q)}<br><span style="color:var(--no)">Tú: ${esc(w.yo)}</span> · <span style="color:var(--yes)">Bien: ${esc(w.a)}</span></td></tr>`).join('')}</table></div>`:''}
       <div class="center"><button class="btn" onclick="R.exam()">🔁 Otro examen</button> <button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
-      celebra(app().querySelector('.box'),p,g,{sello:5000,confeti:5500});if(p>=.5)setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(150)},escQuieto()?0:1900);}
+      celebra(app().querySelector('.box'),p,g,{sello:5000,confeti:5500});if(p>=.5)setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(150)},escQuieto()?0:1900);
+      rutaTrasExamen(g);}
   };
 }
 /* ===== El cohete como premio (22-nov, ronda 13 del logo: A y B) =====
@@ -366,20 +375,27 @@ function chooser(title,sub,parts,run){
 }
 
 /* En las betas el arcade está siempre abierto, para poder probarlo (el padre, 22-nov). En la versión normal se abre al tener nota en todos los bloques. */
-function arcadeCerrado(){return !/-beta\//.test(location.pathname)&&finalNota().miss>0}
+/* 23-nov (plan hasta el examen, ronda 2): se abre al terminar la primera vuelta de la ruta con su examen (ARCA).
+   Quien ya lo tenía abierto por la regla de antes (nota en todos los bloques) lo conserva: no se quita nada. */
+if(!ARCAMIG){ARCAMIG=true;if(finalNota().miss===0)ARCA=true;save()}   /* una sola vez, al llegar esta versión */
+function arcadeCerrado(){return !/-beta\//.test(location.pathname)&&!ARCA}
 /* El arcade bloqueado y el examen final, comunes a todos los juegos */
 Object.assign(R,{
  arcade(){
    const f=finalNota();
    if(arcadeCerrado()){app().innerHTML=`<div class="box center"><div class="big">🔒</div><h2>El arcade está bloqueado</h2>
-     <p style="font-size:19px">Se desbloquea cuando juegues <b>todos los bloques</b> una vez y el boletín te dé tu nota.</p>
-     <p class="sub">Te falta${f.miss>1?'n':''} <b>${f.miss}</b> bloque${f.miss>1?'s':''}: ${BLOCKS.filter(b=>nota(b.k)==null).map(b=>b.n).join(', ')}.</p>
+     <p style="font-size:19px">Se desbloquea al terminar <b>la ruta entera con su examen final</b>.</p>
+     ${f.miss?`<p class="sub">Te falta${f.miss>1?'n':''} <b>${f.miss}</b> bloque${f.miss>1?'s':''}: ${BLOCKS.filter(b=>nota(b.k)==null).map(b=>b.n).join(', ')}.</p>`:'<p class="sub">Ya tienes todos los bloques: te falta el examen final de la ruta.</p>'}
      ${hoyToca()?`<button class="btn" id="hoy2">🎯 Ir a: ${hoyToca().b.n}</button> `:''}<button class="btn sec" onclick="home()">🏠 Menú</button></div>`;
      const b=$('#hoy2');if(b)b.onclick=()=>R[hoyToca().b.k]();return}
    ARC.home();
  },
  exam(){examRun(JUEGO.examen.preguntas())},
 });
+/* Cifras nuevas en cada partida (23-nov, plan hasta el examen): si el juego tiene JUEGO.cifras(k), se llama antes de cada
+   bloque y del examen para rehacer sus listas con otros números (mismos ejercicios, misma forma). */
+if(typeof JUEGO.cifras=='function')[...BLOCKS.map(b=>b.k),'exam'].forEach(k=>{const f=R[k];if(typeof f!='function')return;
+  R[k]=function(...a){try{JUEGO.cifras(k)}catch(e){console.error('cifras',k,e)}return f.apply(this,a)}});
 /* =====================================================================
    INTERACCIÓN: arrastrar al hueco, unir con líneas, fichas de letras,
    deslizar tarjetas y clasificar. Mismo contenido, otra forma de jugar.
@@ -1352,20 +1368,30 @@ const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n)
    ===================================================================== */
 let ROUTE=null;
 try{ROUTE=JSON.parse(localStorage.getItem(JUEGO.claves.ruta)||'null')}catch(e){}
+/* Plan hasta el examen (23-nov, P4 · otra vuelta, otras cifras): la ruta se hace por vueltas (v). En la vuelta 1, un bloque
+   está hecho si tiene nota; desde la 2, si se ha hecho en esta vuelta (hv). Datos viejos sin v = vuelta 1. */
+if(ROUTE){ROUTE.v=ROUTE.v||1;ROUTE.hv=ROUTE.hv||[]}
+/* El examen final es la última estación de cada vuelta (no se escribe en ROUTE_ST: el menú lee ese literal y lo añade igual) */
+if(typeof ROUTE_ST!='undefined'&&ROUTE_ST.length&&JUEGO.examen&&JUEGO.ruta&&JUEGO.ruta.conExamen!==false&&!ROUTE_ST.some(x=>x.k==='exam'))
+  ROUTE_ST.push({k:'exam',n:'Examen final',ic:'👑',min:Math.max(5,JUEGO.examen.min||5)});
+function hechoRuta(k,r=ROUTE){return r&&r.v>1?(r.hv||[]).includes(k):nota(k)!=null}
+function vueltaAcabada(r=ROUTE){return !!r&&(!!r.fin||ROUTE_ST.every(x=>hechoRuta(x.k,r)))}
 function saveRoute(){try{ROUTE?localStorage.setItem(JUEGO.claves.ruta,JSON.stringify(ROUTE)):localStorage.removeItem(JUEGO.claves.ruta)}catch(e){}rutaSuite()}
 /* La ruta en el menú de la suite (22-nov, ronda 12 del logo, M2): el menú enseña el mapa con el cohete en la estación que toca.
    Se guarda en «mision_suite» con la nota: estaciones [icono, nombre], la que toca, dónde acaba cada día [estación, texto] y si ya se terminó. */
 function rutaSuite(){try{if(typeof ROUTE_ST=='undefined'||!ROUTE_ST.length)return;const t=JSON.parse(lsGet('mision_suite')||'{}');
-  t[JUEGO.id]={...t[JUEGO.id],ruta:{est:ROUTE_ST.map(x=>[x.ic,x.n]),i:ROUTE?ROUTE.i:0,cortes:ROUTE_ST.map((x,n)=>x.corte?[n,x.corte]:null).filter(Boolean),fin:!!(ROUTE&&ROUTE.fin)}};
+  t[JUEGO.id]={...t[JUEGO.id],ruta:{est:ROUTE_ST.map(x=>[x.ic,x.n]),i:ROUTE?ROUTE.i:0,cortes:ROUTE_ST.map((x,n)=>x.corte?[n,x.corte]:null).filter(Boolean),fin:!!(ROUTE&&ROUTE.fin),
+    v:ROUTE?ROUTE.v||1:1,hv:ROUTE&&ROUTE.v>1?ROUTE.hv:null}};
   localStorage.setItem('mision_suite',JSON.stringify(t))}catch(e){}}
 rutaSuite();
 /* Desde el menú de la suite (22-nov): «?ruta=1» entra directo en la estación que toca; «?examen=1», al examen final.
    Se usa una sola vez (se quita de la dirección) y solo cuando el niño ya ha dicho su nombre. */
-function irDirecto(){const q=new URLSearchParams(location.search),ruta=q.has('ruta'),ex=q.has('examen');if(!ruta&&!ex)return false;
+function irDirecto(){const q=new URLSearchParams(location.search),ruta=q.has('ruta')||q.has('vuelta'),ex=q.has('examen');if(!ruta&&!ex)return false;
   try{history.replaceState(null,'',location.pathname)}catch(e){}
   if(ex){R.exam();return true}
+  if(q.has('vuelta')&&ROUTE){otraVuelta();return true}
   if(typeof ROUTE_ST=='undefined'||!ROUTE_ST.length)return false;
-  if(!ROUTE)ROUTE={i:0,part:0,on:false};rutaEntra(false);ROUTE.on=true;startStation();return true}
+  if(!ROUTE)ROUTE={i:0,part:0,on:false,v:1,hv:[]};rutaEntra(false);ROUTE.on=true;startStation();return true}
 function routePart(){const P=JUEGO.ruta.partes;if(!P||!P.length)return null;const n=(ROUTE&&ROUTE.part)||0;return P[n%P.length]}
 function routeTag(){return ROUTE&&ROUTE.on?`<span class="pill" style="font-size:13px">🧭 ${ROUTE.i+1}/${ROUTE_ST.length}</span>`:''}
 /* Tiempo real de cada estación (20-nov): se guardan las 5 últimas veces de cada una (en segundos), con el progreso del niño.
@@ -1377,11 +1403,11 @@ function apuntaTiempo(s){if(!ROUTE.t0)return;const seg=Math.round((Date.now()-RO
   const tm=ROUTE.tm=ROUTE.tm||{};(tm[s.k]=tm[s.k]||[]).push(seg);if(tm[s.k].length>5)tm[s.k].shift()}
 /* 23-nov (el padre): la ruta sigue por el primer bloque sin hacer y se salta los que ya se jugaron sueltos.
    Con todo hecho, o con «Empezar de cero», se repite entera sin saltar nada (rep). Se puede pasar otro objeto para saber dónde seguiría. */
-function saltaHechos(r=ROUTE){if(r.rep)return;while(r.i<ROUTE_ST.length&&nota(ROUTE_ST[r.i].k)!=null)r.i++}
+function saltaHechos(r=ROUTE){if(r.rep)return;while(r.i<ROUTE_ST.length&&hechoRuta(ROUTE_ST[r.i].k,r))r.i++}
 function rutaEntra(cero,r=ROUTE){
   if(cero){r.i=0;r.rep=true;return r}
   if(r.rep&&r.i>0&&!r.fin)return r;
-  if(ROUTE_ST.every(s=>nota(s.k)!=null)){if(r.fin||r.i>=ROUTE_ST.length||!r.rep)r.i=0;r.rep=true;return r}
+  if(ROUTE_ST.every(s=>hechoRuta(s.k,r))){if(r.fin||r.i>=ROUTE_ST.length||!r.rep)r.i=0;r.rep=true;return r}
   r.rep=false;saltaHechos(r);return r}
 function startStation(){
   const s=ROUTE_ST[ROUTE.i];ROUTE.t0=Date.now();if(ROUTE.i===0)ROUTE.fin=null;saveRoute();
@@ -1391,7 +1417,7 @@ function startStation(){
   R[s.k]();
 }
 function routeMap(){
-  const E=rutaEstado(ROUTE_ST.length,ROUTE?ROUTE.i:0,ROUTE&&ROUTE.fin,k=>nota(ROUTE_ST[k].k)!=null,k=>ROUTE_ST[k].corte);
+  const E=rutaEstado(ROUTE_ST.length,ROUTE?ROUTE.i:0,ROUTE&&ROUTE.fin,k=>hechoRuta(ROUTE_ST[k].k),k=>ROUTE_ST[k].corte);
   const left=ROUTE_ST.reduce((a,s,n)=>a+(E.D[n]?0:(tiempoReal(s.k)||s.min)),0),aparca=E.aparca;
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=E.D[n]?'done':n===E.now?'now':'';
     return `<div class="rst ${st}${E.tramo(n)?' rlinea':''}${E.finfila(n)?' finfila':''}" style="--i:${n}">${n===E.cohete&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
@@ -1400,16 +1426,11 @@ function routeMap(){
 const _end=endScreen;
 endScreen=function(icon,ok,tot,key,again,extra=''){
   _end(icon,ok,tot,key,again,extra);
+  if(ROUTE&&ROUTE_ST.some(x=>x.k==key)){ROUTE.hv=ROUTE.hv||[];if(!ROUTE.hv.includes(key)){ROUTE.hv.push(key);saveRoute()}}
   if(!(ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==key))return;
   apuntaTiempo(ROUTE_ST[ROUTE.i]);const ih=ROUTE.i;ROUTE.i++;saltaHechos();XP+=20;hud();save();
   const box=document.querySelector('.box');
-  if(ROUTE.i>=ROUTE_ST.length){
-    ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;ROUTE.rep=false;ROUTE.fin=Date.now();saveRoute();confetti();setTimeout(confetti,600);
-    box.insertAdjacentHTML('beforeend',`<div class="routeend">${coheteGrande()}<div class="sello-fin" id="sfin"></div><h2>¡Ruta completada!</h2>
-      <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
-      ${guia('¡Lo has conseguido! Ahora, el examen final.',{celebra:1,salta:1})}<p style="font-size:18px">+20 XP por estación. ${JUEGO.ruta.textoFin||''}</p>
-      <button class="btn destaca" onclick="R.exam()">👑 Hacer el examen final</button></div>`);
-    box.querySelector('#again').remove();setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(170)},escQuieto()?0:2000);return}
+  if(ROUTE.i>=ROUTE_ST.length){box.querySelector('#again').remove();finRuta(box);return}
   saveRoute();const nx=ROUTE_ST[ROUTE.i],hecha=ROUTE_ST[ih];
   /* Ruta en varios días (21-nov, Mates): tras la última estación del día, se dice que se para aquí; se puede seguir si se quiere */
   if(hecha.corte)box.insertAdjacentHTML('beforeend',`<div class="hoyfin">${coheteGrande()}${guia(`¡${hecha.corte}! Por hoy, perfecto. Mañana sigues por ${nx.ic} ${nx.n}.`,{celebra:1})}</div>`);
@@ -1417,17 +1438,47 @@ endScreen=function(icon,ok,tot,key,again,extra=''){
   box.insertAdjacentHTML('beforeend',`<div style="margin-top:14px">${routeMap()}</div><p class="center" style="color:var(--gold)">+20 XP por estación completada</p>`);
   $('#rnext').onclick=startStation;
 };
+/* Fin de una vuelta (23-nov): el examen ya está hecho (es la última estación). Se abre el arcade (ARCA),
+   se puede subir la marca al ranking con su vuelta y empezar otra vuelta con los mismos ejercicios y cifras nuevas. */
+function finRuta(box){
+  const v=ROUTE.v||1;
+  ROUTE.part=((ROUTE.part||0)+1)%Math.max(1,(JUEGO.ruta.partes||[]).length);ROUTE.on=false;ROUTE.i=0;ROUTE.rep=false;ROUTE.fin=Date.now();saveRoute();
+  if(!ARCA&&(EXV[v]!=null||nota('exam')!=null||!JUEGO.examen)){ARCA=true;save()}
+  confetti();setTimeout(confetti,600);
+  box.insertAdjacentHTML('beforeend',`<div class="routeend">${coheteGrande()}<div class="sello-fin" id="sfin"></div><h2>¡${v>1?'Vuelta '+v:'Ruta'} completada!</h2>
+    <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
+    ${guia(v>1?`¡Otra vuelta más! Cada vuelta, mejor.`:'¡Lo has conseguido! Ya tienes el arcade abierto.',{celebra:1,salta:1})}
+    <p style="font-size:18px">+20 XP por estación.${EXV[v]!=null?` Examen de la vuelta ${v}: <b>${fmt(EXV[v])}</b>.`:''}</p>
+    <p class="sub">Sube tu marca al ranking de la clase y, si quieres, da otra vuelta: los mismos ejercicios con cifras nuevas.</p>
+    <button class="btn destaca" id="rsube">📤 Subir mi marca al ranking</button> <button class="btn" id="otravuelta">🔁 Otra vuelta con cifras nuevas</button>
+    <div class="fb" id="sfb"></div></div>`);
+  $('#rsube').onclick=sendScore;$('#otravuelta').onclick=otraVuelta;
+  setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(170)},escQuieto()?0:2000)}
+function otraVuelta(){if(!ROUTE)ROUTE={i:0,part:0,on:false,v:1,hv:[]};
+  ROUTE.v=(ROUTE.v||1)+1;ROUTE.hv=[];ROUTE.i=0;ROUTE.rep=false;ROUTE.fin=null;ROUTE.on=true;saveRoute();startStation()}
+/* El examen como estación de la ruta: al acabarlo se apunta su nota en la vuelta y, si era la última estación, termina la vuelta */
+function rutaTrasExamen(g){
+  const v=ROUTE?ROUTE.v||1:1;EXV[v]=g;save();
+  if(!(ROUTE&&ROUTE.on&&ROUTE_ST[ROUTE.i]&&ROUTE_ST[ROUTE.i].k==='exam'))return;
+  apuntaTiempo(ROUTE_ST[ROUTE.i]);ROUTE.hv=ROUTE.hv||[];if(!ROUTE.hv.includes('exam'))ROUTE.hv.push('exam');ROUTE.i++;saltaHechos();XP+=20;hud();save();
+  const fin=app().lastElementChild;if(fin&&fin.classList.contains('center')&&!fin.classList.contains('box'))fin.remove();
+  const box=document.createElement('div');box.className='box center';app().appendChild(box);
+  if(ROUTE.i>=ROUTE_ST.length)return finRuta(box);
+  saveRoute();const nx=ROUTE_ST[ROUTE.i];
+  box.innerHTML=`<button class="btn" id="rnext">▶ Siguiente estación: ${nx.ic} ${nx.n}</button><div style="margin-top:14px">${routeMap()}</div>`;$('#rnext').onclick=startStation}
 R.route=function(){
-  if(!ROUTE)ROUTE={i:0,part:0,on:false};
-  const P=rutaEntra(false,{...ROUTE}),resume=P.i>0&&P.i<ROUTE_ST.length;
-  app().innerHTML=`<div class="box"><h2 class="ruta-tit">${COHETE_SVG} Ruta de estudio</h2>
+  if(!ROUTE)ROUTE={i:0,part:0,on:false,v:1,hv:[]};
+  const acabada=vueltaAcabada()&&!(ROUTE.rep&&ROUTE.i>0&&!ROUTE.fin);
+  const P=rutaEntra(false,{...ROUTE}),resume=!acabada&&P.i>0&&P.i<ROUTE_ST.length,v=ROUTE.v||1;
+  app().innerHTML=`<div class="box"><h2 class="ruta-tit">${COHETE_SVG} Ruta de estudio${v>1?` · Vuelta ${v}`:''}</h2>
   ${guia(resume?`¡Seguimos! Vas por la estación ${P.i+1} de ${ROUTE_ST.length}.`:JUEGO.ruta.facil?'Empezamos por lo más sencillo y vamos subiendo. ¡Vamos!':'Empezamos por lo más difícil, con la cabeza fresca. ¡Vamos!',{saluda:!resume})}
   <p class="sub">${ROUTE_ST.length} estaciones seguidas, unos ${JUEGO.ruta.minutos||30} minutos. ${JUEGO.ruta.facil?'Empieza por lo más sencillo y termina con lo más difícil.':'Empieza por lo más difícil, con la cabeza fresca, y termina con lo más ligero.'} Cuenta igual que las misiones sueltas.</p>
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
-  <div class="center">${resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${P.i+1}: ${ROUTE_ST[P.i].ic} ${ROUTE_ST[P.i].n}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ruta</button>`}
+  <div class="center">${acabada?`<button class="btn" id="rvuelta">🔁 Otra vuelta con cifras nuevas (vuelta ${v+1})</button> <button class="btn sec" id="rnew">Repetir la vuelta ${v}</button>`:resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${P.i+1}: ${ROUTE_ST[P.i].ic} ${ROUTE_ST[P.i].n}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ${v>1?'vuelta '+v:'ruta'}</button>`}
   <button class="btn sec" onclick="home()">🏠 Menú</button></div></div>`;
-  $('#rgo').onclick=()=>{rutaEntra(false);ROUTE.on=true;startStation()};
+  const rg=$('#rgo');if(rg)rg.onclick=()=>{rutaEntra(false);ROUTE.on=true;startStation()};
+  const rv=$('#rvuelta');if(rv)rv.onclick=otraVuelta;
   const rn=$('#rnew');if(rn)rn.onclick=()=>{rutaEntra(true);ROUTE.on=true;startStation()};
 };
 

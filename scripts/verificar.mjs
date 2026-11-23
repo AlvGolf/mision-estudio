@@ -178,7 +178,9 @@ for (const juego of juegos) {
     await page.click('#rgo');
     // La primera estación se hace pasar por 4 minutos: al acabarla, el mapa tiene que decir «tú: 4 min»
     await page.evaluate(() => { if (typeof ROUTE !== 'undefined' && ROUTE && ROUTE.t0) { ROUTE.t0 -= 240000; saveRoute(); } });
-    let pasos = 0, estaciones = 1, atasco = 0, ultimo = '', n = 0;
+    let pasos = 0, estaciones = 1, atasco = 0, ultimo = '', n = 0, preguntasEx = 0;
+    const examEnRuta = await page.evaluate(() => typeof ROUTE_ST !== 'undefined' && ROUTE_ST.some(x => x.k === 'exam'));
+    const arcaAntes = await page.evaluate(() => typeof ARCA !== 'undefined' ? ARCA : null);
     const t0 = Date.now();
     const mal = () => (++n % 3 === 0); // una de cada tres, mal a propósito
 
@@ -211,6 +213,13 @@ for (const juego of juegos) {
       }
       if (await visible('#src .chip')) { pasos++; atasco = 0; await jugarOrdenar(page, mal(), tag, t, { fallo }); await revisarPantalla(`${t} · ordenar`); continue; }
       if (await visible('input#a')) { pasos++; atasco = 0; await jugarEscrito(page, mal(), tag, t, { fallo }); await revisarPantalla(`${t} · escribir`); continue; }
+      if (examEnRuta && await visible('#go')) { await page.click('#go'); await page.waitForSelector('#app .opt, #app .pad, #app #rsig', { timeout: 8000 }).catch(() => {}); atasco = 0; continue; }
+      if (examEnRuta && await page.evaluate(() => !document.querySelector('#stage') && /examen/i.test(document.querySelector('#app h2')?.textContent || ''))) {
+        atasco = 0;
+        if (await visible('#app .opt')) { await page.locator('#app .opt').first().click(); preguntasEx++; continue; }
+        if (await visible('#app #rsig')) { await page.click('#app #rsig'); preguntasEx++; await page.waitForTimeout(200); continue; }
+        if (await visible('#app .pad')) { await page.locator('#app .pad [data-n="1"]').click(); await page.locator('#app .pad #wchk').click(); preguntasEx++; await page.waitForTimeout(250); continue; }
+      }
       if (await visible('#again')) { fallo(`[${tag}] La ruta se corta en «${t}»: sale «Repetir» en vez de la siguiente estación`); break; }
       if (++atasco > 60) {
         fallo(`[${tag}] La ruta se queda atascada en «${t}» (no reconozco el ejercicio)`);
@@ -222,6 +231,16 @@ for (const juego of juegos) {
     const acabada = await visible('.routeend');
     if (acabada) {
       R.notas.push(`[${tag}] Ruta completa: ${estaciones} estaciones, ${pasos} ejercicios, ${Math.round((Date.now() - t0) / 1000)} s`);
+      /* Plan hasta el examen (23-nov): el examen es la última estación, al acabar la vuelta se abre el arcade y se ofrece otra vuelta */
+      if (examEnRuta) {
+        const fv = await page.evaluate(() => ({ arca: ARCA, exv: EXV[1], txt: document.querySelector('.routeend')?.innerText || '', otra: !!document.querySelector('#otravuelta'), sube: !!document.querySelector('#rsube') }));
+        if (!preguntasEx) fallo(`[${tag}] La ruta termina sin pasar por el examen final (tiene que ser su última estación)`);
+        else R.notas.push(`[${tag}] El examen es la última estación de la ruta: ${preguntasEx} preguntas`);
+        if (fv.exv == null) fallo(`[${tag}] La nota del examen de la vuelta 1 no se guarda`);
+        if (arcaAntes === false && !fv.arca) fallo(`[${tag}] Terminada la primera vuelta con su examen, el arcade no se abre`);
+        if (arcaAntes === true) aviso(`[${tag}] El arcade ya estaba abierto antes de terminar la primera vuelta`);
+        if (!fv.otra || !fv.sube) fallo(`[${tag}] Al terminar la vuelta no salen «Otra vuelta con cifras nuevas» y «Subir mi marca»`);
+      }
       await revisarPantalla('ruta completada');
       /* 23-nov (el padre): al terminar la ruta, su mapa sale completo con el cohete al final (antes volvía a la primera estación) */
       if (await page.evaluate(() => typeof rutaEstado === 'function')) {
@@ -235,6 +254,21 @@ for (const juego of juegos) {
             ROUTE_ST.forEach(x => GR[x.k] = [8]); const c = rutaEntra(false, { i: 3, part: 0, on: false }); return [a, b, c.i, c.rep] });
           if (sx.join() !== '1,4,0,true') fallo(`[${tag}] La ruta no se salta bien lo jugado suelto (empieza en ${sx[0] + 1}, salta a ${sx[1] + 1}; con todo hecho va a ${sx[2] + 1}, repetir: ${sx[3]})`);
           else R.notas.push(`[${tag}] La ruta se salta lo jugado suelto y, con todo hecho, se repite desde el principio`);
+          /* Vuelta 2: con notas en todo, solo cuenta como hecho lo de esta vuelta (hv); el mapa dice «Vuelta 2» */
+          if (await p3.evaluate(() => typeof hechoRuta === 'function')) {
+            const v2 = await p3.evaluate(() => { const K = n => ROUTE_ST[n].k; const r = rutaEntra(false, { i: 0, part: 0, on: false, v: 2, hv: [K(0)] });
+              ROUTE = { i: 0, part: 0, on: false, v: 2, hv: [] }; R.route(); return { i: r.i, tit: document.querySelector('.ruta-tit')?.textContent || '', hechas: document.querySelectorAll('.rmap .rst.done').length } });
+            if (v2.i !== 1 || v2.hechas !== 0 || !/Vuelta 2/.test(v2.tit)) fallo(`[${tag}] La vuelta 2 no empieza bien: sigue en la estación ${v2.i + 1} (debía ser la 2), ${v2.hechas} estaciones marcadas (debían ser 0), título «${v2.tit}»`);
+            else R.notas.push(`[${tag}] La vuelta 2 empieza con el mapa vacío y solo se salta lo hecho en esta vuelta`);
+            /* Ranking: cada niño una vez, con su mejor nota y el examen de cada vuelta */
+            const rk = await p3.evaluate(() => typeof agrupaRanking === 'function' ? agrupaRanking([
+              { nombre: 'Prueba', nota: 6, examen: 7.5, xp: 100, estrellas: 3, racha: 1, fecha: '2026-11-20T10:00:00Z' },
+              { nombre: 'prueba ', nota: 8, examen: 8.4, xp: 300, estrellas: 5, racha: 2, fecha: '2026-11-22T10:00:00Z', vuelta: 2 },
+              { nombre: 'Prueba', nota: 7, examen: 6, xp: 350, estrellas: 5, racha: 3, fecha: '2026-11-23T10:00:00Z', vuelta: 3 }]) : null);
+            if (rk) { const r = rk[0];
+              if (rk.length !== 1 || r.nota !== 8 || r.ex !== 8.4 || r.xp !== 350 || r.vu[1] !== 7.5 || r.vu[2] !== 8.4 || r.vu[3] !== 6) fallo(`[${tag}] El ranking no agrupa bien las vueltas: ${JSON.stringify(rk)}`);
+              else R.notas.push(`[${tag}] Ranking: cada niño una vez, con su mejor nota y el examen de cada vuelta`); }
+          }
         }
         await p3.close();
       }
@@ -265,7 +299,7 @@ for (const juego of juegos) {
 
     /* ---------- 3. Examen final ---------- */
     const btnExamen = page.locator('.routeend .btn');
-    if (acabada && await btnExamen.count()) {
+    if (acabada && !examEnRuta && await btnExamen.count()) {
       await btnExamen.first().click();
       if (await visible('#go')) { await page.click('#go'); await page.waitForSelector('#app .opt, #app .pad', { timeout: 8000 }).catch(() => {}); }
       let preguntas = 0;
