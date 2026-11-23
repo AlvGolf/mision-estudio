@@ -408,20 +408,23 @@ for (const M of MENUS_SUITE) {
     if (g && g.nueva) {
       const src = fs.readFileSync(path.join(RAIZ, path.normalize(path.join(ruta, g.href)), 'index.html'), 'utf8');
       const kEst = (src.match(/claves:\{estado:'([^']+)'/) || [])[1], est = new Function('return ' + src.match(/const ROUTE_ST=(\[[\s\S]*?\]);/)[1])();
-      for (const caso of ['sueltos', 'todos']) {
-        const gr = {}; est.forEach((x, n) => { if (caso === 'todos' || n === 0 || n === 3) gr[x.k] = [8]; });
+      for (const caso of ['sueltos', 'seguidos', 'todos']) {
+        const gr = {}; est.forEach((x, n) => { if (caso === 'todos' || n === 0 || (caso === 'sueltos' ? n === 3 : n === 1)) gr[x.k] = [8]; });
         const ctx = await navegador.newContext({ viewport: { width: 1180, height: 820 } });
         await ctx.addInitScript(([kc, c, kn, ke, v]) => { localStorage.setItem('mision_entrada', new Date().toISOString().slice(0, 10)); localStorage.setItem(kc, c); localStorage.setItem(kn, 'Prueba'); localStorage.setItem(ke, v); }, [M.cursoK, M.cursos[0], M.nombre, kEst, JSON.stringify({ gr })]);
         const page = await ctx.newPage(); page.on('pageerror', e => errores.push(e.message));
         await page.goto(BASE + ruta, { waitUntil: 'networkidle' }); await page.click(`.tarj[data-id="${g.id}"]`);
         await page.waitForSelector('.ficha-r', { timeout: 4000 }).catch(() => {});
         const f = await page.evaluate(() => { const r = document.querySelector('.ficha-r'); if (!r) return null; const st = [...r.querySelectorAll('.rst')];
-          return { hechas: st.map((e, n) => e.classList.contains('done') ? n : -1).filter(n => n >= 0), cohete: st.findIndex(e => e.querySelector('.ficha-m')), tramos: r.querySelectorAll('.rst.tramo').length, tit: r.querySelector('.tt').textContent, boton: (r.querySelector('.bts .btn') || {}).textContent || '' } });
+          return { hechas: st.map((e, n) => e.classList.contains('done') ? n : -1).filter(n => n >= 0), cohete: st.findIndex(e => e.querySelector('.ficha-m')), tramos: r.querySelectorAll('.rst.rlinea').length, tit: r.querySelector('.tt').textContent, estrecha: Math.min(...st.map(e => e.getBoundingClientRect().width)), verde: st[0] ? getComputedStyle(st[0], '::after').backgroundColor : '', gris: st[1] ? getComputedStyle(st[1], '::after').backgroundColor : '', sinLinea: st.slice(0, -1).map((e, k) => { const a = e.getBoundingClientRect(), b = st[k + 1].getBoundingClientRect(), x = getComputedStyle(e, '::after'); return Math.abs(a.top - b.top) < 5 && (x.content === 'none' || x.display === 'none') ? k : -1 }).filter(k => k >= 0), boton: (r.querySelector('.bts .btn') || {}).textContent || '' } });
         if (!f) R.fallos.push(`[${ruta}] Con bloques jugados, al tocar «${g.id}» no sale la ficha`);
         else if (caso === 'sueltos' && (f.hechas.join() !== '0,3' || f.cohete !== 3 || f.tramos !== 0)) R.fallos.push(`[${ruta}] Con los bloques 1 y 4 jugados sueltos, el mapa ilumina ${f.hechas.map(n => n + 1).join(', ') || 'ninguno'}, pone el cohete en el ${f.cohete + 1} y enciende ${f.tramos} tramos (tiene que ser: 1 y 4, el cohete en el 4 y ningún tramo)`);
+        else if (f.sinLinea.length) R.fallos.push(`[${ruta}] En el mapa falta la línea entre estaciones de la misma fila: ${f.sinLinea.map(k => `${k + 1}→${k + 2}`).join(', ')}`);
+        else if (f.estrecha < 40) R.fallos.push(`[${ruta}] Con bloques hechos, una estación del mapa sale aplastada (${Math.round(f.estrecha)} px de ancho)`);
+        else if (caso === 'seguidos' && (f.tramos !== 1 || f.cohete !== 1 || f.verde === f.gris)) R.fallos.push(`[${ruta}] Con los bloques 1 y 2 hechos, el mapa enciende ${f.tramos} tramos (color ${f.verde} frente a ${f.gris} de uno apagado) y pone el cohete en el ${f.cohete + 1} (tiene que ser: el tramo del 1 al 2 encendido y el cohete en el 2)`);
         else if (caso === 'sueltos' && !f.boton.includes(est[1].n)) R.fallos.push(`[${ruta}] Con los bloques 1 y 4 hechos, el botón de la ruta dice «${f.boton.trim()}» y no propone el bloque 2 («${est[1].n}»)`);
         else if (caso === 'todos' && (f.hechas.length !== est.length || !/completada/.test(f.tit))) R.fallos.push(`[${ruta}] Con todos los bloques jugados, el mapa no sale completo (${f.hechas.length} de ${est.length}, «${f.tit.trim()}»)`);
-        else R.notas.push(`[${ruta}] ${caso === 'sueltos' ? 'Bloques 1 y 4 jugados sueltos: se iluminan esos dos, el cohete en el 4 y sin tramos' : 'Todos los bloques jugados: ruta completada'}`);
+        else R.notas.push(`[${ruta}] ${caso === 'sueltos' ? 'Bloques 1 y 4 jugados sueltos: se iluminan esos dos, el cohete en el 4 y sin tramos' : caso === 'seguidos' ? `Bloques 1 y 2 hechos: se enciende el tramo entre ellos (${f.verde}) y el cohete en el 2` : 'Todos los bloques jugados: ruta completada'}`);
         await ctx.close();
       }
     }

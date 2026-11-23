@@ -1394,7 +1394,7 @@ function routeMap(){
   const E=rutaEstado(ROUTE_ST.length,ROUTE?ROUTE.i:0,ROUTE&&ROUTE.fin,k=>nota(ROUTE_ST[k].k)!=null,k=>ROUTE_ST[k].corte);
   const left=ROUTE_ST.reduce((a,s,n)=>a+(E.D[n]?0:(tiempoReal(s.k)||s.min)),0),aparca=E.aparca;
   return `<div class="rmap">${ROUTE_ST.map((s,n)=>{const st=E.D[n]?'done':n===E.now?'now':'';
-    return `<div class="rst ${st}${E.tramo(n)?' tramo':''}" style="--i:${n}">${n===E.cohete&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
+    return `<div class="rst ${st}${E.tramo(n)?' rlinea':''}${E.finfila(n)?' finfila':''}" style="--i:${n}">${n===E.cohete&&!aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st=='done'?'✓':s.ic}</div><div class="rname">${s.n}</div><div class="rmin">${tiempoReal(s.k)?`tú: ${tiempoReal(s.k)} min`:`~${s.min} min`}</div></div>${s.corte&&n<ROUTE_ST.length-1?`<div class="rcorte" style="--i:${n}">🌙 ${esc(s.corte)}${aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>
     <p class="sub center" style="margin-top:10px">⏱️ Quedan unos <b>${left} minutos</b></p>`;
 }
 const _end=endScreen;
