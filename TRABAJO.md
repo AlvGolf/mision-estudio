@@ -12,3 +12,4 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
+| motor-beta, menu-beta, mates-u3-beta, mates-reloj-beta, pruebas-motor | Claude Code | 23-nov | Plan hasta el examen: vueltas con cifras nuevas y plan por días |
