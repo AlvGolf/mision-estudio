@@ -75,6 +75,8 @@ const RAIZ='../';
 /* Los juegos que tienen una beta en pruebas la abren desde el menú beta; aquí, ninguno */
 const BETAS={};
 const ir=c=>RAIZ+(BETAS[c]||c);
+/* Un juego nuevo en pruebas (soloBeta) solo sale en el menú beta que abre su beta (24-nov, Lengua U3) */
+JUEGOS.splice(0,JUEGOS.length,...JUEGOS.filter(j=>!j.soloBeta||BETAS[j.carpeta]));
 function resumen(){try{return JSON.parse(lsGet('mision_suite')||'{}')}catch(e){return{}}}
 function dias(f){const h=new Date();h.setHours(0,0,0,0);const d=new Date(f+'T00:00:00');return Math.round((d-h)/864e5)}
 const fecha=f=>{const d=new Date(f+'T00:00:00');return d.getDate()+'-'+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]};
@@ -167,7 +169,7 @@ function fichaVueltas(j){const L0=RUTAS[j.id],url=ir(j.carpeta);let r=null,es=nu
   const mapa=`<div class="rmap">${L.map((x,n)=>{const st=E.D[n]?'done':n===E.now?'now':'',c=!conPlan&&x.corte;
     return `<div class="rst ${st}${E.tramo(n)?' rlinea':''}${E.finfila(n)?' finfila':''}" style="--i:${n}">${n===E.cohete&&!E.aparca?`<span class="ficha-m">${COHETE_SVG}</span>`:''}<div class="rdot">${st==='done'?'✓':x.ic}</div><div class="rname">${esc(x.n)}</div></div>${c&&n<N-1?`<div class="rcorte">🌙 ${esc(c)}${E.aparca&&n===E.cohete?`<span class="aparcado">${COHETE_SVG} aparcado hasta mañana</span>`:''}</div>`:''}`}).join('')}</div>`;
   const sig=!E.completa?L[E.now]:null,alguno=E.D.some(Boolean),vv=v>1?` · vuelta ${v}`:'';
-  const bts=E.completa?`<a class="btn destaca" href="${url}?vuelta=1">🔁 Otra vuelta con cifras nuevas</a>`
+  const bts=E.completa?`<a class="btn destaca" href="${url}?vuelta=1">🔁 Otra vuelta con ${j.asignatura==='mates'?'cifras nuevas':'otros ejercicios'}</a>`
     :`<a class="btn" href="${url}?ruta=1">▶ ${sig?(alguno?'Seguir':v>1?'Empezar la vuelta '+v:'Empezar la ruta')+': '+sig.ic+' '+esc(sig.n):'Empezar la ruta'}</a>`;
   return `<div class="ficha-r" role="region" aria-label="Ruta de estudio de ${esc(j.titulo)}"><h3 class="tt">${COHETE_SVG} ${E.completa?`¡${v>1?'Vuelta '+v:'Ruta'} completada!`:`Ruta de estudio${vv} · ${E.D.filter(Boolean).length} de ${N} hechas`}</h3>
     ${frase?`<p class="plan-hoy">${esc(frase)}${r.pr&&r.pr.n>1?` · 🔥 ${r.pr.n} días cumplidos`:''}</p>`:''}

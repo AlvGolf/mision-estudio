@@ -159,7 +159,9 @@ for (const juego of juegos) {
       const d = await page.evaluate(() => ({ suma: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.filter(s => s.k !== 'exam').reduce((a, s) => a + (s.min || 0), 0) : null, min: typeof JUEGO !== 'undefined' && JUEGO.ruta ? JUEGO.ruta.minutos : null,
         dias: typeof ROUTE_ST !== 'undefined' ? ROUTE_ST.filter(s => s.k !== 'exam').reduce((a, s) => { a[a.length - 1] += s.min || 0; if (s.corte) a.push(0); return a; }, [0]).filter(x => x) : [] }));
       const curso = temario && String(temario.curso || '');
-      const pide = /2/.test(curso) ? [15, 20] : /5/.test(curso) ? [30, 35] : null;
+      /* Si el padre cambia la duración de un juego (Lengua U3, 24-nov: «de 35 a 40»), manda la de JUEGO.ruta.minutos */
+      const propia = d.min && String(d.min).match(/^(\d+) a (\d+)$/);
+      const pide = propia ? [+propia[1], +propia[2]] : /2/.test(curso) ? [15, 20] : /5/.test(curso) ? [30, 35] : null;
       // Ruta en varios días (el padre, 21-nov, Mates): cada día, unos 20 minutos
       if (d.dias.length > 1) { d.dias.forEach((m, k) => { if (m < 15 || m > 25) aviso(`El día ${k + 1} de la ruta suma ${m} minutos: cada día tiene que durar unos 20 (de 15 a 25)`); }); }
       else if (d.suma != null && pide) {
@@ -366,7 +368,7 @@ for (const juego of juegos) {
     for (const k of propios) {
       await page.evaluate(() => { BLOCKS.forEach(b => { GR[b.k] = [8]; }); save(); R.arcade(); });
       await page.click(`[data-j="${k}"]`);
-      const jugador = { cohete: jugarCohete, torre: jugarTorre }[k];
+      const jugador = { cohete: jugarCohete, torre: jugarTorre, tijeras: jugarTijeras, cartas: jugarCartas }[k];
       if (!jugador) { aviso(`El juego del arcade «${k}» no tiene jugador en el verificador`); continue; }
       const r = await jugador(page);
       await page.screenshot({ path: path.join(dirCapturas, `arcade-${k}.png`) });
@@ -566,6 +568,133 @@ process.exit(hayFallos ? 1 : 0);
 /* 🗼 La Torre del Jefe (22-nov): se juega en un móvil (390 px) tocando los botones. Falla a propósito, carga el golpe fuerte,
    lo escribe mal una vez (no quita vida) y bien otra (media vida al guardián), se queda sin vidas en la planta 2 (se repite
    esa planta) y sube hasta arriba: da la estrella (se quita antes la del Cohete) y guarda el récord. */
+/* ✂️ Tijeras de sílabas (Lengua U3, 24-nov): primer mundo. Un corte mal a propósito (quita una vida y queda para repasar),
+   un corte deslizando el dedo, los demás tocando el hueco; en el guardián, una burbuja mal y las demás bien. */
+async function jugarTijeras(page) {
+  await page.waitForSelector('[data-p]', { timeout: 8000 });
+  await page.click('[data-p]');
+  if (!await page.waitForSelector('#tijGo:not([disabled])', { timeout: 15000 }).then(() => true, () => false)) return { error: 'no sale el botón «Empezar» al elegir un mundo' };
+  await page.waitForTimeout(600);
+  const T = () => page.evaluate(() => window._TIJ);
+  if ((await T()).fase !== 'listo') return { error: 'la partida arranca sola, sin esperar a «Empezar»' };
+  await page.click('#tijGo');
+  const lienzo = await page.$('#tijLienzo canvas');
+  const aPantalla = async (x, y) => { const b = await lienzo.boundingBox(), k = b.width / 600; return [b.x + x * k, b.y + y * k]; };
+  const toca = async (x, y) => { const [a, b] = await aPantalla(x, y); await page.mouse.click(a, b); await page.waitForTimeout(60); };
+  let malCorte = false, deslizado = false, malBurbuja = false, cortes = 0;
+  for (let n = 0; n < 400; n++) {
+    const A = await T();
+    if (!A) break;
+    if (A.fase === 'fin') return { error: 'se acaban las vidas jugando bien' };
+    if (A.fase === 'juego') {
+      const p = A.palabras.find(p => p.gaps.length && p.gaps[0].x > 40 && p.gaps[p.gaps.length - 1].x < 560);
+      if (!p) { await page.waitForTimeout(150); continue; }
+      const mala = p.gaps.find(g => !g.ok && !g.cortado), buena = p.gaps.find(g => g.ok && !g.cortado);
+      if (!malCorte && mala) {
+        await toca(mala.x, mala.y); await page.waitForTimeout(150); const B = await T();
+        if (B.vidas !== A.vidas - 1) return { error: `un corte donde no va no quita una vida (${p.w})` };
+        malCorte = true; continue;
+      }
+      if (!buena) { await page.waitForTimeout(100); continue; }
+      if (!deslizado) {
+        const [x, y] = await aPantalla(buena.x, buena.y - 70), [x2, y2] = await aPantalla(buena.x, buena.y + 70);
+        await page.mouse.move(x, y); await page.mouse.down();
+        for (let k = 1; k <= 6; k++) await page.mouse.move(x + (x2 - x) * k / 6, y + (y2 - y) * k / 6);
+        await page.mouse.up(); await page.waitForTimeout(100);
+        const B = await T(), q = B.palabras.find(z => z.id === p.id);
+        if (q && !q.gaps.some(g => g.cortado)) return { error: 'deslizar el dedo entre dos sílabas no corta la palabra' };
+        deslizado = true; cortes++; continue;
+      }
+      await toca(buena.x, buena.y); cortes++; continue;
+    }
+    if (A.fase === 'jefe' && A.jefe) {
+      const b = A.jefe.burbujas.find(b => malBurbuja ? b.ok : !b.ok);
+      await toca(b.x, b.y); await page.waitForTimeout(malBurbuja ? 400 : 500);
+      if (!malBurbuja) { const B = await T(); if (B.vidas !== A.vidas - 1) return { error: 'medir mal el verso del guardián no quita una vida' }; malBurbuja = true; }
+      continue;
+    }
+    if (A.fase === 'gana') break;
+    await page.waitForTimeout(100);
+  }
+  await page.waitForTimeout(1800);
+  const fin = await page.locator('#app').innerText().catch(() => '');
+  const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
+  if (!malCorte || !deslizado || !malBurbuja) return { error: 'no se ha podido probar el corte mal, el corte deslizando o el verso mal medido' };
+  if (!/Mundo conquistado/.test(fin)) return { error: `no se vence al guardián (pantalla: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
+  if (est.estrella !== 1) return { error: 'vencer al guardián no da la estrella del arcade' };
+  if (!Object.keys(est.arc.repasar || {}).length) return { error: 'lo que se falla no queda apuntado para repasar' };
+  if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('tijeras:'))) return { error: 'no se guarda el récord del mundo' };
+  return { nota: `espera a «Empezar»; un corte donde no va quita una vida y queda para repasar; deslizar el dedo y tocar el hueco cortan (${cortes} cortes); el guardián pide medir versos y quita vida si se falla; vence, da la estrella y guarda el récord` };
+}
+
+/* 🃏 Duelo de Cartas (Lengua U3, 24-nov): como la Torre. Fallos a propósito (uno con el primer rival y, con el segundo,
+   hasta quedarse sin vidas); el golpe fuerte, la primera vez mal escrito y después bien. */
+async function jugarCartas(page) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  try {
+    await page.evaluate(() => { BEST.arcade = 0; save(); });
+    if (!await page.waitForSelector('#caJuega', { timeout: 8000 }).then(() => true, () => false)) return { error: 'no sale el botón para empezar el duelo' };
+    await page.click('#caJuega');
+    await page.waitForSelector('#caGo', { timeout: 5000 });
+    const T = () => page.evaluate(() => window._CARTAS);
+    if ((await T()).fase !== 'empezar') return { error: 'el duelo arranca solo, sin esperar a «Empezar»' };
+    const ancho = async donde => { const w = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth); return w > 1 ? `a 390 px, ${donde} se sale ${w} px por la derecha` : null; };
+    const turno = async () => {
+      for (let i = 0; i < 80; i++) {
+        const A = await T(); if (!A) return null;
+        if (A.fase === 'turno') return A;
+        if (A.fase === 'empezar' && await page.$('#caGo')) await page.click('#caGo');
+        await page.waitForTimeout(100);
+      }
+      return 'atascado';
+    };
+    let n = 0, fMal = 0, fBien = 0, sinVidas = false, fallado = false, desborde = null, manosMal = null;
+    while (n++ < 150) {
+      const A = await turno();
+      if (A === null) break;
+      if (A === 'atascado') return { error: `el duelo se queda parado (rival ${(await T()).rival + 1})` };
+      desborde = desborde || await ancho('la mano de cartas');
+      if (A.mano.length !== 5 || A.buena < 0 || new Set(A.mano).size !== 5) manosMal = manosMal || `una mano no tiene cinco cartas distintas con una buena («${A.orden}»: ${A.mano.join(', ')})`;
+      if (A.cargado) {
+        await page.click('#caFuerte'); await page.waitForTimeout(150);
+        const B = await T(); if (B.fase !== 'fuerte' || !B.fuerte) return { error: 'con el golpe fuerte cargado, el botón no abre la pregunta' };
+        desborde = desborde || await ancho('el golpe fuerte');
+        const bien = fMal > 0;
+        await page.fill('#caIn', bien ? B.fuerte.acc[0] : 'zzz'); await page.click('#caOk'); await page.waitForTimeout(120);
+        const C = await T();
+        if (bien) { if (C.vida !== Math.max(0, B.vida - Math.ceil(5 / 2))) return { error: `un golpe fuerte bien escrito no le quita media vida al rival (${B.vida} → ${C.vida})` }; fBien++; }
+        else { if (C.vida !== B.vida || C.vidas !== B.vidas) return { error: 'un golpe fuerte mal escrito le quita vida a alguien' }; if (C.cargado) return { error: 'el golpe fuerte mal escrito no se gasta' }; fMal++; }
+        continue;
+      }
+      const falla = (A.rival === 0 && !fallado) || (A.rival === 1 && !sinVidas);
+      const i = falla ? (A.buena + 1) % 5 : A.buena;
+      await page.click(`[data-o="${i}"]`); await page.waitForTimeout(80);
+      const B = await T();
+      if (falla) {
+        if (B.vidas !== A.vidas - 1) return { error: 'jugar una carta que no vale no quita una vida' };
+        fallado = true;
+        if (B.vidas === 0) {
+          await page.waitForTimeout(900); const C = await T();
+          if (C.fase !== 'empezar' || C.rival !== 1 || C.vidas !== 3) return { error: 'sin vidas, no se repite el duelo con las tres vidas' };
+          sinVidas = true;
+        }
+      } else if (B.vida !== A.vida - 1) return { error: 'jugar la carta buena no le quita una vida al rival' };
+    }
+    await page.waitForTimeout(1500);
+    const fin = await page.locator('#app').innerText().catch(() => '');
+    const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
+    if (desborde) return { error: desborde };
+    if (manosMal) return { error: manosMal };
+    if (!fMal || !fBien) return { error: 'no se ha podido usar el golpe fuerte (mal y bien)' };
+    if (!sinVidas) return { error: 'no se ha podido probar a quedarse sin vidas' };
+    if (!Object.keys(est.arc.repasar || {}).length) return { error: 'lo que se falla no queda apuntado para repasar' };
+    if (!/Duelo ganado/.test(fin)) return { error: `no se gana el duelo (pantalla: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
+    if (est.estrella !== 1) return { error: 'vencer al último rival no da la estrella del arcade' };
+    if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('cartas:'))) return { error: 'no se guarda el récord del duelo' };
+    return { nota: 'a 390 px y sin desbordes: espera a «Empezar»; cada mano, cinco cartas y una buena; fallar quita una vida y queda para repasar; tres aciertos cargan el golpe fuerte; mal escrito no quita vida y se gasta, bien escrito quita media vida; sin vidas se repite el duelo; vence a los cuatro, da la estrella y guarda el récord' };
+  } finally { await page.setViewportSize({ width: 820, height: 1180 }); }
+}
+
 async function jugarTorre(page) {
   await page.setViewportSize({ width: 390, height: 844 });
   try {

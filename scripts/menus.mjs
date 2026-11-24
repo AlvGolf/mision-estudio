@@ -14,7 +14,7 @@ export const MENUS = [
   /* 5º: el enlace de siempre (la raíz). Para probar un cambio grande del menú: una entrada igual con dir 'menu-beta' y '../' en las rutas */
   { dir: '', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: 'manifest.webmanifest', icono: 'iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', betas: {} },
   /* Beta del menú de 5º (23-nov, plan hasta el examen): con el motor beta y la beta de Mates U3 */
-  { dir: 'menu-beta', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: '../manifest.webmanifest', icono: '../iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', motor: 'motor-beta', jugador: 1, betas: { 'mates-u3/': 'mates-u3-beta/' } },
+  { dir: 'menu-beta', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: '../manifest.webmanifest', icono: '../iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', motor: 'motor-beta', jugador: 1, betas: { 'mates-u3/': 'mates-u3-beta/', 'lengua-t3/': 'lengua-t3-beta/' } },
   /* Beta del menú de 2º (23-nov): con el motor beta y la beta del reloj */
   { dir: 'segundo-beta', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: '../segundo/manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', motor: 'motor-beta', jugador: 1, betas: { 'mates-reloj/': 'mates-reloj-beta/' } },
   /* Para probar un cambio del menú de 2º: una entrada igual con dir 'segundo-beta', motor: 'motor-beta' y betas a los juegos beta */

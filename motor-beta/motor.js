@@ -85,7 +85,7 @@ function home(){
    const go=()=>{const v=$('#nm').value.trim().slice(0,20);if(!v){$('#nmfb').textContent='Escribe tu nombre 😉';return}const vuelve=recuperaPerfil(v);try{localStorage.setItem(JUEGO.claves.nombre,vuelve||v)}catch(e){}if(vuelve)return location.reload();home()};
    if(!escQuieto())[...app().querySelector('.box').children].forEach((el,i)=>{el.style.setProperty('--i',i);el.classList.add('ent')});
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
-  app().innerHTML=`${JUEGO.marca?`<div class="portada-m" role="img" aria-label="Misión Estudio · ${esc(JUEGO.marca)}">${logoMarca('simbolo','',44)}<span class="portada-t">${esc(JUEGO.marca)}</span></div>`:''}${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">${COHETE_SVG} Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, de lo más difícil a lo más ligero</small>`}</button>
+  app().innerHTML=`${JUEGO.marca?`<div class="portada-m" role="img" aria-label="Misión Estudio · ${esc(JUEGO.marca)}">${logoMarca('simbolo','',44)}<span class="portada-t">${esc(JUEGO.marca)}</span></div>`:''}${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">${COHETE_SVG} Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, ${JUEGO.ruta.facil?'de lo más sencillo a lo más difícil':'de lo más difícil a lo más ligero'}</small>`}</button>
   <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(arcadeCerrado()?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(arcadeCerrado()?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ${finalNota().miss?'Abierto en la beta':'¡Desbloqueado!'}</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
@@ -244,7 +244,7 @@ function wireFame(){
   wireClass();
 }
 function examRun(qs){
-  qs=qs.map(q=>q.num||q.poner?{...q}:{...q,opts:shuf(q.opts)});let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
+  qs=qs.map(q=>q.opts&&!q.num&&!q.poner?{...q,opts:shuf(q.opts)}:{...q});let i=0,ok=0,wrong=[],left=JUEGO.examen.min*60,done=false;
   /* 22-nov (reloj de 2º): con min 0 el examen no tiene tiempo límite */
   const sinTiempo=!JUEGO.examen.min;
   app().innerHTML=`<div class="box"><h2>👑 EXAMEN FINAL</h2><p class="sub">Sin pistas. Las correcciones salen al final. ${sinTiempo?'Sin prisa: tómate tu tiempo.':`Tienes ${JUEGO.examen.min} minutos.`}</p>
@@ -255,11 +255,19 @@ function examRun(qs){
       const q=qs[i];
       app().innerHTML=`<div class="box"><div style="display:flex;justify-content:space-between"><h2>👑 Examen</h2>${sinTiempo?'':`<span class="pill" id="clk">${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}</span>`}</div>
       <div class="bar"><div style="width:${i/qs.length*100}%"></div></div><div class="hint">Pregunta ${i+1} de ${qs.length}</div>
-      <div class="q">${esc(q.q)}</div>${q.reloj?relojSVG():''}${q.poner?`<div class="rlj-pon"></div><button class="btn" id="rsig">Siguiente ➜</button>`:q.num?`${q.borrador?'<div id="eb"></div>':''}<div id="tk"></div>`:`<div class="opts">${q.opts.map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`}</div>`;
+      <div class="q">${esc(q.q)}</div>${q.reloj?relojSVG():''}${q.escribe?`<input class="typ" id="ea" ${NOAUTO} placeholder="Escribe aquí"><button class="btn" id="rsig">Siguiente ➜</button>`:q.sil?`<div class="silabas">${[...q.sil.w].map((l,k)=>`${k?`<button class="corte" data-k="${k}" aria-pressed="false" aria-label="Cortar entre la ${l} y la anterior"></button>`:''}<span class="le">${esc(l)}</span>`).join('')}</div><div class="hint">Toca entre dos letras para cortar</div><button class="btn" id="rsig">Siguiente ➜</button>`:q.poner?`<div class="rlj-pon"></div><button class="btn" id="rsig">Siguiente ➜</button>`:q.num?`${q.borrador?'<div id="eb"></div>':''}<div id="tk"></div>`:`<div class="opts">${q.opts.map(o=>`<button class="opt">${esc(o)}</button>`).join('')}</div>`}</div>`;
       if(q.reloj)relojAgujas($('#app .rlj'),q.reloj.h,q.reloj.m);
       /* Poner la hora en el reloj (2º, 22-nov): se apunta sin enseñar si está bien */
       if(q.poner){const P=q.poner,RM=relojMovil($('#app .rlj-pon'),12,0,P.paso||15);
         $('#rsig').onclick=()=>{const {h,m}=RM.get();if(h%12==P.h%12&&m==P.m)ok++;else wrong.push({q:q.q,yo:horaTxt(h,m),a:horaTxt(P.h,P.m)});i++;setTimeout(show,120)};return}
+      /* Lengua (24-nov): escribir la respuesta (las tildes, según el juego) y separar en sílabas; se apunta sin enseñar si está bien */
+      if(q.escribe){const inp=$('#ea');inp.focus({preventScroll:true});const t=JUEGO.tildesCuentan??false;
+        const go=()=>{const v=inp.value.trim();if(q.escribe.some(a=>limpiaR(a,t)===limpiaR(v,t)))ok++;else wrong.push({q:q.q,yo:v||'(en blanco)',a:q.escribe[0]});i++;show()};
+        $('#rsig').onclick=go;inp.onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();go()}};return}
+      if(q.sil){const cs=[...document.querySelectorAll('#app .corte')];cs.forEach(b=>b.onclick=()=>{b.classList.toggle('on');b.setAttribute('aria-pressed',b.classList.contains('on'))});
+        const corta=c=>{const L=[...q.sil.w],o=[];let a=0;[...c,L.length].forEach(k=>{o.push(L.slice(a,k).join(''));a=k});return o.join('-')};
+        $('#rsig').onclick=()=>{const yo=cs.filter(b=>b.classList.contains('on')).map(b=>+b.dataset.k),c=q.sil.c;
+          if(yo.length===c.length&&yo.every(k=>c.includes(k)))ok++;else wrong.push({q:q.q,yo:corta(yo),a:corta(c)});i++;show()};return}
       /* Con teclado (Mates, 21-nov): se apunta sin enseñar si está bien; las correcciones salen al final */
       if(q.num){if(q.borrador)borrador($('#eb'));teclado($('#tk'),v=>{if(mismoNum(v,q.a))ok++;else wrong.push({q:q.q,yo:v,a:fmtN(numES(q.a))});i++;setTimeout(show,120)},{neg:q.neg,boton:'Siguiente ➜'});return}
       document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(b.textContent==q.a)ok++;else wrong.push({q:q.q,yo:b.textContent,a:q.a});i++;show()});}
@@ -508,7 +516,7 @@ const STEP={
   },
   /* Desliza: derecha = bien, izquierda = mal */
   swipe(st,s,done){
-    st.innerHTML=`<div class="swipezone"><div class="sw-l">❌ MAL</div><div class="scard" id="sc"><div style="font-size:15px;color:var(--mut)">¿Está bien traducido?</div>
+    st.innerHTML=`<div class="swipezone"><div class="sw-l">❌ MAL</div><div class="scard" id="sc"><div style="font-size:15px;color:var(--mut)">${esc(s.pre||'¿Está bien traducido?')}</div>
       <div style="font-size:28px;font-weight:700;margin-top:8px">${esc(s.w)}</div><div style="font-size:24px;color:var(--gold)">= ${esc(s.tr)}</div></div><div class="sw-r">BIEN ✅</div></div>
     <div class="tf" style="margin-top:12px"><button class="opt center" data-v="0">⬅ ❌ Mal</button><button class="opt center" data-v="1">✅ Bien ➡</button></div>`;
     const card=$('#sc');let over=false;
@@ -1469,8 +1477,8 @@ function finRuta(box){
     <div class="rmap">${ROUTE_ST.map((s,n)=>`<div class="rst done" style="--i:${n}"><div class="rdot">✓</div><div class="rname">${s.n}</div></div>`).join('')}</div>
     ${guia(v>1?`¡Otra vuelta más! Cada vuelta, mejor.`:'¡Lo has conseguido! Ya tienes el arcade abierto.',{celebra:1,salta:1})}
     <p style="font-size:18px">+20 XP por estación.${EXV[v]!=null?` Examen de la vuelta ${v}: <b>${fmt(EXV[v])}</b>.`:''}</p>
-    <p class="sub">Sube tu marca al ranking de la clase y, si quieres, da otra vuelta: los mismos ejercicios con cifras nuevas.</p>
-    <button class="btn destaca" id="rsube">📤 Subir mi marca al ranking</button> <button class="btn" id="otravuelta">🔁 Otra vuelta con cifras nuevas</button>
+    <p class="sub">Sube tu marca al ranking de la clase y, si quieres, da otra vuelta: los mismos ejercicios con ${JUEGO.cifras?'cifras nuevas':'otras palabras y frases'}.</p>
+    <button class="btn destaca" id="rsube">📤 Subir mi marca al ranking</button> <button class="btn" id="otravuelta">🔁 Otra vuelta con ${JUEGO.cifras?'cifras nuevas':'otros ejercicios'}</button>
     <div class="fb" id="sfb"></div></div>`);
   $('#rsube').onclick=sendScore;$('#otravuelta').onclick=otraVuelta;
   setTimeout(()=>{const f=$('#sfin');if(f)f.innerHTML=selloMarca(170)},escQuieto()?0:2000)}
@@ -1496,7 +1504,7 @@ R.route=function(){
   ${(()=>{const p=planRuta(),t=planActivo(p)?planFrase(p,ROUTE_ST):'';return t?`<p class="plan-hoy">${t}${ROUTE.pr&&ROUTE.pr.n>1?` · 🔥 ${ROUTE.pr.n} días cumplidos`:''}</p>`:''})()}
   ${routeMap()}
   ${routePart()?`<p class="sub center">${JUEGO.ruta.textoParte}: <b>${routePart().l}</b></p>`:''}
-  <div class="center">${acabada?`<button class="btn" id="rvuelta">🔁 Otra vuelta con cifras nuevas (vuelta ${v+1})</button> <button class="btn sec" id="rnew">Repetir la vuelta ${v}</button>`:resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${P.i+1}: ${ROUTE_ST[P.i].ic} ${ROUTE_ST[P.i].n}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ${v>1?'vuelta '+v:'ruta'}</button>`}
+  <div class="center">${acabada?`<button class="btn" id="rvuelta">🔁 Otra vuelta con ${JUEGO.cifras?'cifras nuevas':'otros ejercicios'} (vuelta ${v+1})</button> <button class="btn sec" id="rnew">Repetir la vuelta ${v}</button>`:resume?`<button class="btn" id="rgo">▶ Seguir por la estación ${P.i+1}: ${ROUTE_ST[P.i].ic} ${ROUTE_ST[P.i].n}</button> <button class="btn sec" id="rnew">Empezar de cero</button>`:`<button class="btn" id="rgo">▶ Empezar la ${v>1?'vuelta '+v:'ruta'}</button>`}
   <button class="btn sec" onclick="home()">🏠 Menú</button></div></div>`;
   const rg=$('#rgo');if(rg)rg.onclick=()=>{rutaEntra(false);ROUTE.on=true;startStation()};
   const rv=$('#rvuelta');if(rv)rv.onclick=otraVuelta;

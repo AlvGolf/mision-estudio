@@ -1,0 +1,28 @@
+{
+ "juego": "lengua-t3",
+ "asignatura": "Lengua",
+ "curso": "5º",
+ "examen": "2026-12-01",
+ "fuente": "Cinco fotos de las fichas del cole (Reflexión sobre la lengua y Educación literaria), mandadas por el padre el 24-nov-2026. Las fotos se quedan en el PC. En la ficha de diptongos dice «tres sílabas» donde debe decir «tres vocales» (triptongo): se usa «vocales». Los ejemplos del libro salen en las definiciones y en el examen; el resto de frases, poemas y textos son nuevos. Los tres vídeos de YouTube no se usan (el padre, 24-nov).",
+ "puntos": [
+  {"id": "adjetivo", "punto": "El adjetivo: dice cómo son o cómo están las personas, animales u objetos (cálido, excelente, oscuro)", "test": "ADJ_MC", "escribir": "ADJ_ESCRIBE", "ordenar": "-"},
+  {"id": "genero-numero", "punto": "El adjetivo es variable: género (femenino o masculino) y número (singular o plural)", "test": "ADJ_CAJAS", "escribir": "ADJ_ESCRIBE", "ordenar": "-"},
+  {"id": "concordancia", "punto": "El adjetivo y el sustantivo al que acompaña concuerdan en género y número", "test": "ADJ_MARCA", "escribir": "ADJ_REPARA", "ordenar": "-"},
+  {"id": "grado-positivo", "punto": "Grado positivo: el adjetivo no indica intensidad (listo, alegre)", "test": "GRAD_POOL", "escribir": "DEF_ESCRIBE", "ordenar": "-"},
+  {"id": "grado-comparativo", "punto": "Grado comparativo: de inferioridad (menos alta que), de igualdad (tan amable como) y de superioridad (más rápido que)", "test": "GRAD_MC", "escribir": "GRAD_GAP", "ordenar": "-"},
+  {"id": "grado-superlativo", "punto": "Grado superlativo: el grado máximo de una cualidad (lentísimo, muy ordenada)", "test": "GRAD_POOL", "escribir": "GRAD_ESCRIBE", "ordenar": "-"},
+  {"id": "epitetos", "punto": "Epítetos: adjetivos delante del sustantivo que expresan una cualidad propia de él (blanca nieve, caluroso verano)", "test": "EPI_MC", "escribir": "EPI_FIRST", "ordenar": "-"},
+  {"id": "sinonimos", "punto": "Sinónimos: significado muy similar o casi igual (alegre y feliz); evitan repetir palabras", "test": "SIN_MC", "escribir": "SIN_ESCRIBE", "ordenar": "-"},
+  {"id": "antonimos", "punto": "Antónimos: significados opuestos o contrarios (lleno y vacío, entrar y salir)", "test": "ANTON", "escribir": "SIN_ESCRIBE", "ordenar": "-"},
+  {"id": "monosemicas-polisemicas", "punto": "Monosémicas (un solo significado: silla) y polisémicas (varios: banco)", "test": "VOC_MC", "escribir": "VOC_ESCRIBE", "ordenar": "-"},
+  {"id": "homonimas", "punto": "Homónimas: suenan igual y significan distinto; homógrafas (se escriben igual) y homófonas (vaca y baca)", "test": "VOC_GAP", "escribir": "VOC_ESCRIBE", "ordenar": "-"},
+  {"id": "paronimas", "punto": "Parónimas: se pronuncian de forma muy parecida y significan distinto (asar y azar, cierra y sierra)", "test": "PARON", "escribir": "VOC_ESCRIBE", "ordenar": "-"},
+  {"id": "diptongo", "punto": "Diptongo: dos vocales en la misma sílaba; cerrada átona + abierta tónica (tilde en la abierta: miércoles) o dos cerradas (tilde en la segunda: lingüística)", "test": "DIPTONGOS", "escribir": "DIP_SIL", "ordenar": "-"},
+  {"id": "triptongo", "punto": "Triptongo: tres vocales en la misma sílaba; la tilde va en la abierta (averiguáis)", "test": "DIP_MC", "escribir": "DIP_DICTADO", "ordenar": "-"},
+  {"id": "hiato", "punto": "Hiato: dos vocales seguidas en sílabas distintas: dos abiertas (te-a-tro), cerrada tónica y abierta (dí-a), dos iguales (poseer)", "test": "HIATOS", "escribir": "DIP_SIL", "ordenar": "-"},
+  {"id": "acentuacion", "punto": "Las palabras con diptongo, triptongo o hiato siguen las reglas generales de acentuación", "test": "DIP_MC", "escribir": "DIP_DICTADO", "ordenar": "-"},
+  {"id": "sinalefa", "punto": "La sinalefa: palabra que acaba en vocal y la siguiente empieza en vocal o h se cuentan como una sílaba; la «y» con sonido «i» es vocal", "test": "VER_MARCA", "escribir": "VER_NUM", "ordenar": "-"},
+  {"id": "aguda-esdrujula", "punto": "Última palabra aguda: se suma una sílaba; esdrújula: se resta una", "test": "VER_MC", "escribir": "VER_NUM", "ordenar": "-"},
+  {"id": "arte-mayor-menor", "punto": "Versos de arte menor (8 sílabas o menos) y de arte mayor (9 o más)", "test": "VERSOS", "escribir": "VER_NUM", "ordenar": "-"}
+ ]
+}
