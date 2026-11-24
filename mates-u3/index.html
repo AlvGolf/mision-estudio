@@ -201,7 +201,7 @@ const JUEGO={
 <tr><td>Divisible <b>por 2</b>: es par (acaba en 0, 2, 4, 6 u 8). <b>Por 3</b>: sus cifras suman un múltiplo de 3. <b>Por 5</b>: acaba en 0 o en 5. <b>Por 1</b>: todos.</td></tr>
 <tr><td><b>Primo:</b> solo dos divisores, el 1 y él mismo. <b>Compuesto:</b> más de dos. El 2 es el único primo par.</td></tr>
 </table></div>`,
- examen:{min:30,fecha:'2026-11-27',dia:'el jueves',preguntas(){
+ examen:{min:30,fecha:'2026-11-27',dia:'el viernes',preguntas(){
    const prob=pick(PROBS,4).map(x=>({q:x.q,a:x.a,num:true,borrador:true}));
    const nums=[...pick(PRUEBA,1),...pick(PUERTAS,1),...pick([...MULT_NUM,...DIVS_NUM,...PRIM_NUM,...CRIT_NUM],2)].map(x=>({q:x.q,a:x.a,num:true,borrador:true}));
    return shuf([divExamen(false),divExamen(false),divExamen(true),divExamen(true),...prob,...nums,...pick(TODO_MC(),8)]);
