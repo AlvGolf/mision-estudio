@@ -57,7 +57,7 @@ Un mensaje de voz pidió un «reto»: le pones la fecha del examen y el juego re
 - ✅ **F2 · Cifras nuevas en cada partida** (31ff71b): `mates-u3-beta/cifras.js` rehace todas las listas con números de la misma dificultad (las historias y las preguntas de idea, igual) y `mates-reloj-beta/cifras.js` mueve las horas como mucho una hora, de cuarto en cuarto, reescribiendo la frase («a las 4 menos cuarto»). Cada uno trae `JUEGO.cifras.comprueba()`; el verificador genera 2.000 partidas y rehace cada cuenta. Mates U3 normal no cambia antes del examen del 27.
 - ✅ **F3 · Plan de cada día** (31ff71b): `planHoy` y `planFrase` en `motor-beta/piel.js`, comunes al juego y al menú. Fines de semana libres salvo con ≤3 días; un día sin jugar se reparte; 5º de 10 a 35 min, 2º de 8 a 20; el último día de estudio, el examen de la vuelta (aunque esté a medias); el día del examen, «¡suerte!». En el juego, «📅 Hoy: … · unos N min · faltan D días» encima del mapa y, al cumplirlo, el cohete con la racha (`ROUTE.dia`, `ROUTE.pr`); con plan, los «cortes» fijos no salen. Necesita `JUEGO.examen.fecha` ('AAAA-MM-DD'; puesto en `mates-u3-beta`). Menús beta: `menu-beta/` (5º, con la beta de Mates) y `segundo-beta/` (2º, con la del reloj), en `scripts/menus.mjs`. Los menús normales llevan el código, pero solo se activa con la piel del motor beta.
 - Verificador: vueltas, examen en la ruta, arcade, ranking, cifras, plan del juego y de la ficha (con fecha simulada); control positivo hecho en cada guarda.
-- ⏳ **F4 · Script del ranking**: `apps-script/Code.gs` ya guarda `vuelta` (le toca al padre pegarlo, escribir «vuelta» en la celda J1 de «Marcas» y redesplegar).
+- ✅ **F4 · Script del ranking** (24-nov, 0:59, hecho por Claude con Chrome a petición del padre): en el Apps Script, `vuelta` en `COLS` y en `appendRow`; «vuelta» en J1 de «Marcas»; «Ranking v1» redesplegada como versión 2 (misma dirección). Comprobado: el ranking responde y trae la columna `vuelta`. No se subió ninguna marca de prueba.
 - ⏳ **F5 · Producción**: cuando el padre lo apruebe, `motor-beta` → `motor` y `npm run menus`. Lengua de 5º nacerá ya con todo (añadir `examen.fecha`). Mates U3 normal, solo después del 27 si se quiere.
 - Ojo: la beta comparte progreso con el juego normal en el mismo aparato (probarla en el del padre, no en la tablet de un niño).
 
@@ -93,7 +93,7 @@ Un mensaje de voz pidió un «reto»: le pones la fecha del examen y el juego re
 - (21-nov) Historia y miniinvestigación de Mates, elegidas por el padre en el artefacto: H1 (la excursión) y M2 (el torneo del colegio).
 
 - **Fotos del temario de Lengua de 5º (examen el 1-dic).**
-- **24-nov por la mañana: probar las betas del plan hasta el examen** en su propio aparato: https://alvgolf.github.io/mision-estudio/menu-beta/ (Mates U3) y https://alvgolf.github.io/mision-estudio/segundo-beta/ (el reloj). Y pegar el nuevo `apps-script/Code.gs`, escribir «vuelta» en J1 de «Marcas» y redesplegar.
+- **24-nov por la mañana: probar las betas del plan hasta el examen** en su propio aparato: https://alvgolf.github.io/mision-estudio/menu-beta/ (Mates U3) y https://alvgolf.github.io/mision-estudio/segundo-beta/ (el reloj). (El script del ranking ya está desplegado.)
 
 - La nota real del examen de Inglés Unit 2 (20-nov), cuando la sepa, para compararla con la «nota prevista» del juego.
 - Instalar la app en las tablets de los niños (Android: botón «Instalar la app» en el menú; iPad: Compartir → «Añadir a pantalla de inicio») y contar cómo va.
