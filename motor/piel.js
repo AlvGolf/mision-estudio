@@ -36,6 +36,40 @@ function rutaEstado(n,i,fin,hecho,corte){const D=[...Array(n)].map((_,k)=>!!fin|
   const fila=[];let p=0;for(let k=0;k<n;k++){fila[k]=p%5===4;p=corte(k)?0:p+1}
   return {D,cohete:c,now:ult<0?0:sig,completa:sig<0,tramo:k=>D[k]&&!!D[k+1],aparca:ult>=0&&!!corte(c)&&c<n-1&&!D[c+1],finfila:k=>fila[k]}}
 
+/* ================== EL PLAN HASTA EL EXAMEN (23-nov, artefacto «Plan hasta el examen», P4 y sus 19 preguntas) ==================
+   Cada día dice qué estaciones tocan, según los días que quedan hasta el examen. Se recalcula cada día con lo que falta,
+   así que un día sin jugar se reparte entre los que quedan. Fines de semana libres, salvo que falten 3 días o menos.
+   El último día de estudio antes del examen toca el examen final de la vuelta en curso, aunque esté a medias.
+   Minutos por día: en 5º, de 10 a 35; en 2º, de 8 a 20. Lo usan el juego y el menú de la suite.
+   o: {est: estaciones [{k,min,ic,n}] con el examen al final · hecho(k): hecha en esta vuelta · examen: 'AAAA-MM-DD' ·
+       hoy: Date · curso: 2 o 5 · mins(s): minutos de una estación (los reales si los hay)} */
+function fechaDia(d){d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function planHoy(o){
+  if(!o.examen||!/^\d{4}-\d\d-\d\d$/.test(o.examen))return{modo:'sin'};
+  const H=new Date(fechaDia(o.hoy||new Date())+'T00:00:00'),E=new Date(o.examen+'T00:00:00'),dias=Math.round((E-H)/864e5);
+  if(dias<0)return{modo:'pasado',dias};if(dias===0)return{modo:'hoy',dias};
+  const [MIN,TOPE]=o.curso==2?[8,20]:[10,35],mins=o.mins||(s=>s.min||0);
+  const lista=[];for(let k=0;k<dias;k++){const d=new Date(H);d.setDate(d.getDate()+k);if(dias<=3||(d.getDay()!==0&&d.getDay()!==6))lista.push(fechaDia(d))}
+  const hoy=fechaDia(H),base={dias,diasEstudio:lista.length,min:0,est:[]};
+  if(!lista.includes(hoy))return{...base,modo:'libre',sigue:lista[0]||null};
+  const pend=o.est.map((s,n)=>({s,n})).filter(x=>!o.hecho(x.s.k)),ex=pend.find(x=>x.s.k==='exam'),obra=pend.filter(x=>x.s.k!=='exam');
+  if(hoy===lista[lista.length-1])return{...base,modo:'vispera',est:ex?[ex.n]:[],min:ex?mins(ex.s):0};
+  const quedan=lista.length-1-lista.indexOf(hoy),total=obra.reduce((a,x)=>a+mins(x.s),0);
+  const cuota=Math.min(TOPE,Math.max(MIN,total/quedan));
+  const est=[];let m=0;
+  for(const x of obra){const t=mins(x.s);if(est.length&&m+t>cuota+2)break;est.push(x.n);m+=t}
+  if(est.length===obra.length&&ex&&(m+mins(ex.s)<=TOPE||!est.length)){est.push(ex.n);m+=mins(ex.s)}
+  return{...base,modo:'plan',est,min:m,cuota:Math.round(cuota),fin:est.length===pend.length}}
+/* El plan de hoy en una frase, para el juego y para el menú */
+function planFrase(p,est){if(!p)return '';const nom=n=>est[n]?`${est[n].ic} ${est[n].n}`:'',dd=p.dias===1?'mañana es el examen':`faltan ${p.dias} días para el examen`;
+  const dia=f=>{const d=new Date(f+'T00:00:00');return ['el domingo','el lunes','el martes','el miércoles','el jueves','el viernes','el sábado'][d.getDay()]};
+  switch(p.modo){
+    case 'hoy':return '📅 ¡Hoy es el examen del cole! Mucha suerte.';
+    case 'libre':return `📅 Hoy es día libre: el plan sigue ${p.sigue?dia(p.sigue):'otro día'}. Si quieres, puedes jugar igual.`;
+    case 'vispera':return p.est.length?`📅 Hoy toca el examen final de la ruta: ${dd}.`:`📅 Hoy, repaso libre: ${dd}.`;
+    case 'plan':if(!p.est.length)return '';return `📅 Hoy: ${nom(p.est[0])}${p.est.length>1?' → '+nom(p.est[p.est.length-1]):''} · unos ${p.min} min · ${dd}`;
+    default:return ''}}
+
 /* ================== MARCA (21-nov, rondas 8 a 10 del artefacto «Logo de Misión Estudio») ==================
    Opción B, equilibrada: el ME en la cabecera, la portada de cada juego, el boletín y el sello; nada mientras se estudia.
    Los archivos están en /marca/. A color en los estilos claros (familia D, la mañana) y en blanco en los oscuros. */

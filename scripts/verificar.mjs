@@ -366,7 +366,7 @@ for (const juego of juegos) {
     await page.goto(`${BASE}/${juego}/`, { waitUntil: 'networkidle' });
     const propios = await page.evaluate(() => ((JUEGO.arcade && JUEGO.arcade.juegos) || []).filter(j => !j.pronto).map(j => j.k));
     for (const k of propios) {
-      await page.evaluate(() => { BLOCKS.forEach(b => { GR[b.k] = [8]; }); save(); R.arcade(); });
+      await page.evaluate(() => { BLOCKS.forEach(b => { GR[b.k] = [8]; }); if (typeof ARCA !== "undefined") ARCA = true; save(); R.arcade(); }); /* 23-nov: en la normal se abre con la primera vuelta y su examen (ARCA) */
       await page.click(`[data-j="${k}"]`);
       const jugador = { cohete: jugarCohete, torre: jugarTorre, tijeras: jugarTijeras, cartas: jugarCartas }[k];
       if (!jugador) { aviso(`El juego del arcade «${k}» no tiene jugador en el verificador`); continue; }

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Misión Mates · Unidad 3</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../motor/motor.css?v=32">
+<link rel="stylesheet" href="../motor/motor.css?v=33">
 </head>
 <body>
 <header>
@@ -163,7 +163,7 @@ const ROUTE_ST=[
  {k:'div1',n:'División por una cifra',ic:'➗',min:6},{k:'mult',n:'Múltiplos',ic:'✖️',min:4},{k:'divs',n:'Divisores',ic:'🧩',min:4},
  {k:'hist',n:'La excursión',ic:'🎢',min:4,corte:'Hasta aquí el primer día'},
  {k:'crit',n:'Criterios',ic:'🔍',min:4},{k:'prim',n:'Primos',ic:'💎',min:3},{k:'div2',n:'División por dos cifras',ic:'🧮',min:6},
- {k:'torneo',n:'El torneo',ic:'🏆',min:3},{k:'prob',n:'Problemas',ic:'📝',min:6}];
+ {k:'torneo',n:'El torneo',ic:'🏆',min:3},{k:'prob',n:'Problemas',ic:'📝',min:6,corte:'Hasta aquí el segundo día'}];
 
 /* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
 const TODO_MC=()=>[...DIV1_MC,...MULT_MC,...DIVS_MC,...DIVS_GAP,...CRIT_MC,...PRIM_MC];
@@ -201,7 +201,7 @@ const JUEGO={
 <tr><td>Divisible <b>por 2</b>: es par (acaba en 0, 2, 4, 6 u 8). <b>Por 3</b>: sus cifras suman un múltiplo de 3. <b>Por 5</b>: acaba en 0 o en 5. <b>Por 1</b>: todos.</td></tr>
 <tr><td><b>Primo:</b> solo dos divisores, el 1 y él mismo. <b>Compuesto:</b> más de dos. El 2 es el único primo par.</td></tr>
 </table></div>`,
- examen:{min:30,dia:'el jueves',preguntas(){
+ examen:{min:30,fecha:'2026-11-27',dia:'el jueves',preguntas(){
    const prob=pick(PROBS,4).map(x=>({q:x.q,a:x.a,num:true,borrador:true}));
    const nums=[...pick(PRUEBA,1),...pick(PUERTAS,1),...pick([...MULT_NUM,...DIVS_NUM,...PRIM_NUM,...CRIT_NUM],2)].map(x=>({q:x.q,a:x.a,num:true,borrador:true}));
    return shuf([divExamen(false),divExamen(false),divExamen(true),divExamen(true),...prob,...nums,...pick(TODO_MC(),8)]);
@@ -210,9 +210,9 @@ const JUEGO={
  arcade:{
   /* Arcade propio de Mates (22-nov, artefacto «Arcade de Misión Estudio», A1): sustituye a los cuatro modos de Inglés */
   juegos:[{k:'cohete',ic:'🚀',c:'m1',n:'Cohete del Saber',d:'Revienta las rocas que cumplen la consigna y vence al guardián de cada planeta.',
-    src:['../vendor/phaser.min.js','../vendor/zzfx.js','arcade/numeros.js?v=1','arcade/cohete.js?v=3']},
+    src:['../vendor/phaser.min.js','../vendor/zzfx.js','arcade/cohete.js?v=3']},
    {k:'torre',ic:'🗼',c:'m2',n:'La Torre del Jefe',d:'Duelo por turnos: el golpe fuerte se gana escribiendo el cociente y el resto.',
-    src:['../vendor/zzfx.js','arcade/numeros.js?v=1','arcade/torre.js?v=1']}],
+    src:['../vendor/zzfx.js','arcade/torre.js?v=1']}],
   bloques:[{k:'mix',n:'Todo mezclado',ic:'🎲'},{k:'mult',n:'Múltiplos y divisores',ic:'🧩'},{k:'crit',n:'Criterios y primos',ic:'🔍'}],
   jefes:{mix:['🦖','Rex de los Números'],mult:['🤖','Robot Múltiplo'],crit:['🐉','Dragón Primo']},
   test(k){const m={mult:()=>[...MULT_MC,...DIVS_MC,...DIVS_GAP],crit:()=>[...CRIT_MC,...PRIM_MC],mix:TODO_MC};return m[k]().map(q=>({...q}))},
@@ -221,7 +221,9 @@ const JUEGO={
  },
 };
 </script>
-<script src="../motor/piel.js?v=32"></script>
-<script src="../motor/motor.js?v=32"></script>
+<script src="arcade/numeros.js?v=1"></script>
+<script src="cifras.js?v=1"></script>
+<script src="../motor/piel.js?v=33"></script>
+<script src="../motor/motor.js?v=33"></script>
 </body>
 </html>

@@ -75,6 +75,7 @@ table.rules td{padding:8px;border-bottom:1px solid var(--line);vertical-align:to
 .rk-n small{font-weight:400;color:var(--mut);font-size:13px}
 .rk-s{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0;font-size:16px}
 .rk-st{font-size:14px}
+.rk-vu{font-size:15px;color:var(--gold);margin:2px 0 4px}
 .rk .fdel{flex:none}
 @media(max-width:600px){
  header{padding:8px 10px}
@@ -210,6 +211,8 @@ line.badl{stroke:var(--no);stroke-width:4;stroke-dasharray:6 6;stroke-linecap:ro
 .rst.now .rdot{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,200,61,.25);animation:pulse 1.6s infinite}
 .rname{font-size:12px;margin-top:4px;color:var(--mut);line-height:1.2}
 .routeend{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.plan-hoy{font-size:17px;font-weight:700;color:var(--gold);background:var(--sunk);border-radius:12px;padding:8px 12px;margin:8px 0;text-align:center}
+.box>.routeend:first-child{margin-top:0;border-top:0;padding-top:0}
 @media(max-width:600px){
  .gapq{font-size:19px}.gap{min-width:96px}
  .opts.two{grid-template-columns:1fr}

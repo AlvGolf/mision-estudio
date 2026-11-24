@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| lengua-t3-beta (nuevo) | Claude Code | 24-nov | Juego nuevo de Lengua de 5º: temario, artefacto de formatos y beta |
