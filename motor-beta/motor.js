@@ -219,10 +219,13 @@ function resumenSuite(){try{const t=JSON.parse(lsGet('mision_suite')||'{}');cons
 const PERFIL_K=['estado','ruta','arcade'];
 const perfilClave=n=>'perfil:'+JUEGO.id+':'+n.trim().toLowerCase();
 function apartaPerfil(){try{const n=lsGet(JUEGO.claves.nombre);
-  if(n)localStorage.setItem(perfilClave(n),JSON.stringify({nombre:n,...Object.fromEntries(PERFIL_K.map(k=>[k,lsGet(JUEGO.claves[k])]))}));
+  const t=JSON.parse(lsGet('mision_suite')||'{}');/* la nota de la tarjeta del menú se aparta con él (24-nov) */
+  if(n)localStorage.setItem(perfilClave(n),JSON.stringify({nombre:n,...Object.fromEntries(PERFIL_K.map(k=>[k,lsGet(JUEGO.claves[k])])),suite:t[JUEGO.id]||null}));
+  delete t[JUEGO.id];localStorage.setItem('mision_suite',JSON.stringify(t));
   PERFIL_K.forEach(k=>localStorage.removeItem(JUEGO.claves[k]));localStorage.removeItem(JUEGO.claves.nombre)}catch(e){}}
 function recuperaPerfil(n){try{const p=JSON.parse(localStorage.getItem(perfilClave(n))||'null');if(!p)return false;
   PERFIL_K.forEach(k=>p[k]==null?localStorage.removeItem(JUEGO.claves[k]):localStorage.setItem(JUEGO.claves[k],p[k]));
+  if(p.suite){const t=JSON.parse(lsGet('mision_suite')||'{}');t[JUEGO.id]=p.suite;localStorage.setItem('mision_suite',JSON.stringify(t))}
   localStorage.removeItem(perfilClave(n));return p.nombre||n}catch(e){return false}}
 function wireFame(){
   $('#fsave').onclick=()=>{

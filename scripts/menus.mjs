@@ -14,9 +14,9 @@ export const MENUS = [
   /* 5º: el enlace de siempre (la raíz). Para probar un cambio grande del menú: una entrada igual con dir 'menu-beta' y '../' en las rutas */
   { dir: '', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: 'manifest.webmanifest', icono: 'iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', betas: {} },
   /* Beta del menú de 5º (23-nov, plan hasta el examen): con el motor beta y la beta de Mates U3 */
-  { dir: 'menu-beta', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: '../manifest.webmanifest', icono: '../iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', motor: 'motor-beta', betas: { 'mates-u3/': 'mates-u3-beta/' } },
+  { dir: 'menu-beta', curso: 5, nombre: 'mision_name', cursoK: 'mision_curso', manifest: '../manifest.webmanifest', icono: '../iconos/apple-touch-icon.png', titulo: 'Misión Estudio 5', motor: 'motor-beta', jugador: 1, betas: { 'mates-u3/': 'mates-u3-beta/' } },
   /* Beta del menú de 2º (23-nov): con el motor beta y la beta del reloj */
-  { dir: 'segundo-beta', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: '../segundo/manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', motor: 'motor-beta', betas: { 'mates-reloj/': 'mates-reloj-beta/' } },
+  { dir: 'segundo-beta', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: '../segundo/manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', motor: 'motor-beta', jugador: 1, betas: { 'mates-reloj/': 'mates-reloj-beta/' } },
   /* Para probar un cambio del menú de 2º: una entrada igual con dir 'segundo-beta', motor: 'motor-beta' y betas a los juegos beta */
   /* 2º: su propio enlace, su app (el cohete del libro) y su propio nombre en la tablet */
   { dir: 'segundo', curso: 2, nombre: 'mision_name_2', cursoK: 'mision_curso_2', manifest: 'manifest.webmanifest', icono: '../iconos/cohete/apple-touch-icon.png', titulo: 'Misión Estudio 2', betas: {} },
@@ -24,7 +24,7 @@ export const MENUS = [
 
 export function pinta(m) {
   const raiz = m.dir ? '../' : '';
-  const suite = JSON.stringify({ curso: m.curso, nombre: m.nombre, cursoK: m.cursoK }).replace(/"/g, "'");
+  const suite = JSON.stringify({ curso: m.curso, nombre: m.nombre, cursoK: m.cursoK, ...(m.jugador ? { jugador: 1 } : {}) }).replace(/"/g, "'");
   const betas = JSON.stringify(m.betas).replace(/"/g, "'");
   return fs.readFileSync(path.join(RAIZ, 'scripts', 'menu.html'), 'utf8')
     .replaceAll('{{RAIZ}}', raiz).replaceAll('{{MOTOR}}', m.motor || 'motor').replaceAll('{{MANIFEST}}', m.manifest).replaceAll('{{ICONO}}', m.icono)

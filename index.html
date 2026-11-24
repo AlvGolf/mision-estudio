@@ -101,9 +101,22 @@ function pideNombre(){
     Promise.all(JUEGOS.map(leeRuta)).then(()=>{let vuelve=null;
       JUEGOS.forEach(j=>{const c=CLAVES[j.id];if(!c)return;try{const pk='perfil:'+j.id+':'+v.toLowerCase(),pf=JSON.parse(localStorage.getItem(pk)||'null');
         if(!pf||['estado','ruta','arcade'].some(k=>c[k]&&localStorage.getItem(c[k])!=null))return;
-        ['estado','ruta','arcade'].forEach(k=>{if(c[k]&&pf[k]!=null)localStorage.setItem(c[k],pf[k])});localStorage.removeItem(pk);vuelve=vuelve||pf.nombre}catch(e){}});
+        ['estado','ruta','arcade'].forEach(k=>{if(c[k]&&pf[k]!=null)localStorage.setItem(c[k],pf[k])});
+        if(pf.suite){const t=JSON.parse(lsGet('mision_suite')||'{}');t[j.id]=pf.suite;localStorage.setItem('mision_suite',JSON.stringify(t))}
+        localStorage.removeItem(pk);vuelve=vuelve||pf.nombre}catch(e){}});
       try{localStorage.setItem(SUITE.nombre,vuelve||v)}catch(e){}pinta()})};
   document.getElementById('nmok').onclick=go;document.getElementById('nm').onkeydown=e=>{if(e.key=='Enter')go()}}
+/* Cambiar de jugador desde el menú (el padre, 24-nov): aparta el progreso del niño en cada juego de su curso con su nombre,
+   como «no soy yo» dentro del juego (perfil:<juego>:<nombre>), y vuelve a pedir el nombre; al escribirlo otra vez, recupera lo suyo.
+   La nota de la tarjeta (mision_suite) se aparta con él, para que el siguiente no vea la del anterior. Solo en los menús con SUITE.jugador. */
+function cambiaJugador(){const n=nombre(),js=JUEGOS.filter(j=>j.curso===CURSO);son('tap');
+  Promise.all(js.map(leeRuta)).then(()=>{let t={};try{t=JSON.parse(lsGet('mision_suite')||'{}')}catch(e){}
+    js.forEach(j=>{const c=CLAVES[j.id];if(!c)return;try{const K=['estado','ruta','arcade'].filter(k=>c[k]),v=Object.fromEntries(K.map(k=>[k,localStorage.getItem(c[k])]));
+      const pk='perfil:'+j.id+':'+n.toLowerCase();
+      // sin nada jugado en este juego, no se pisa un perfil que ya estuviera apartado
+      if(n&&(K.some(k=>v[k]!=null)||!localStorage.getItem(pk)))localStorage.setItem(pk,JSON.stringify({nombre:n,...v,suite:t[j.id]||null}));
+      K.forEach(k=>localStorage.removeItem(c[k]));delete t[j.id]}catch(e){}});
+    try{localStorage.setItem('mision_suite',JSON.stringify(t));localStorage.removeItem(SUITE.nombre)}catch(e){}pinta()})}
 function pinta(){
   if(!nombre())return pideNombre();
   if(!CURSO)return elegirCurso();
@@ -117,12 +130,13 @@ function pinta(){
   // asignaturas ordenadas por su próximo examen; las que solo tienen exámenes pasados, al final
   const orden=a=>{const f=js.filter(j=>j.asignatura===a&&j.d>=0).map(j=>j.d);return f.length?Math.min(...f):1e6};
   const asigs=[...new Set(js.map(j=>j.asignatura))].sort((a,b)=>orden(a)-orden(b));
-  app().innerHTML=`${guia(saludo,{saluda:1})}
+  app().innerHTML=`${guia(saludo+(SUITE.jugador?` <button class="tab" id="chj" style="font-size:12px;padding:3px 10px">👤 cambiar de jugador</button>`:''),{saluda:1})}
     ${prox?`<a class="prox ${ent()}" href="${ir(prox.carpeta)}" data-id="${prox.id}"><small>Próximo examen · ${cuando(prox.d)}</small><b>${A(prox).ic} ${esc(A(prox).n)} · ${esc(prox.titulo)}</b>
       <span>${prox.r&&prox.r.nota!=null?'Tu nota ahora: '+semaforo(prox.r).slice(3)+' · sigue la ruta de hoy':'Empieza por la 🧭 ruta de estudio'}</span></a>`:''}
     ${asigs.map(a=>`<section class="estante"><h2 class="${ent()}">${ASIGNATURAS[a]?.ic||'📘'} ${esc(ASIGNATURAS[a]?.n||a)}</h2><div class="cuerpo"><div class="fila">${js.filter(j=>j.asignatura===a).sort((x,y)=>(x.d<0)-(y.d<0)||(x.d<0?y.d-x.d:x.d-y.d)).map(tarjeta).join('')}</div></div></section>`).join('')
       ||`<div class="vacio ${ent()}">Todavía no hay juegos de ${CURSO}º. En cuanto llegue el temario, aparecerán aquí.</div>`}
     <div id="instalar"></div>`;
+  const chj=document.getElementById('chj');if(chj)chj.onclick=cambiaJugador;
   app().querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>son('tap')));
   js.forEach(leeRuta);
   app().querySelectorAll('.tarj[data-id],.prox[data-id]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();abreFicha(js.find(j=>j.id===a.dataset.id),a.classList.contains('prox'))}));
