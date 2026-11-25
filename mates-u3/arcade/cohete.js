@@ -217,8 +217,8 @@ function start(api){estilos();const J=api.estado;J.vencidos=J.vencidos||{};J.ten
         /* Rocas: llegan de arriba (o las lanza el guardián) */
         S.sale-=dtReal*S.lento;const hay=S.rocas.filter(r=>!r.fuera).length;
         if(S.sale<=0&&(!prueba||hay===0)){
-          if(S.fase==='rocas'){S.sale=prueba?500:Math.max(620,1050-S.buenas*22);const bueno=rnd()<.5;S.roca(60+rnd()*(W-120),-50,prueba?150:150+S.buenas*5+rnd()*50,bueno)}
-          else if(S.fase==='jefe'){S.sale=prueba?500:1100;const bueno=rnd()<.55;S.roca(Phaser.Math.Clamp(S.jefe.c.x+(rnd()-.5)*160,60,W-60),S.jefe.c.y+90,prueba?160:190,bueno)}}
+          if(S.fase==='rocas'){S.sale=prueba?500:Math.max(620,1050-S.buenas*22);const bueno=rnd()<.5;S.roca(60+rnd()*(W-120),-50,prueba?150:120+S.buenas*4+rnd()*40,bueno)}
+          else if(S.fase==='jefe'){S.sale=prueba?500:1100;const bueno=rnd()<.55;S.roca(Phaser.Math.Clamp(S.jefe.c.x+(rnd()-.5)*160,60,W-60),S.jefe.c.y+90,prueba?160:152,bueno)}}
         for(const r of S.rocas){if(r.fuera)continue;r.c.y+=r.vy*dt;r.im.rotation+=r.giro*dt;
           if(r.c.y>H-PANEL+40){r.fuera=true;r.c.destroy();if(r.bueno){S.racha=0;S.flota(r.c.x,H-PANEL-30,'se escapó','#aab4e6')}continue}
           if(Math.abs(r.c.x-S.nave.x)<62&&Math.abs(r.c.y-S.nave.y)<70){r.fuera=true;S.boom.explode(10,r.c.x,r.c.y);r.c.destroy();
