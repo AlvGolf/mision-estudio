@@ -86,7 +86,7 @@ function home(){
    if(!escQuieto())[...app().querySelector('.box').children].forEach((el,i)=>{el.style.setProperty('--i',i);el.classList.add('ent')});
    $('#nmok').onclick=go;$('#nm').onkeydown=e=>{if(e.key=='Enter')go()};$('#nm').focus();return}
   app().innerHTML=`${JUEGO.marca?`<div class="portada-m" role="img" aria-label="Misión Estudio · ${esc(JUEGO.marca)}">${logoMarca('simbolo','',44)}<span class="portada-t">${esc(JUEGO.marca)}</span></div>`:''}${guia(`¡Hola, ${esc(NAME)}! ${JUEGO.saludo} <button class="tab" id="chn" style="font-size:12px;padding:3px 10px">no soy yo</button>`,{saluda:1})}${boletin()}<button class="btn routebtn" onclick="R.route()">${COHETE_SVG} Ruta de estudio · unos ${JUEGO.ruta.minutos||30} minutos ${ROUTE&&ROUTE.i>0?`<small>Vas por la estación ${ROUTE.i+1} de ${ROUTE_ST.length} · toca para seguir</small>`:`<small>Las ${ROUTE_ST.length} misiones seguidas, ${JUEGO.ruta.facil?'de lo más sencillo a lo más difícil':'de lo más difícil a lo más ligero'}</small>`}</button>
-  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(arcadeCerrado()?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(arcadeCerrado()?`<div style="margin-top:4px;font-size:14px">🔒 Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ${finalNota().miss?'Abierto en la beta':'¡Desbloqueado!'}</div>`):''}</button>`).join('')}</div>
+  <div class="grid">${M.map(m=>m[0]=='#'?`<div class="sect">${m[1]}</div>`:`<button class="mission ${m[0]=='arcade'?(arcadeCerrado()?'locked':'arc'):''}" data-k="${m[0]}"><div class="ic">${m[1]}</div><h3>${m[2]}</h3><p>${m[3]}</p><div class="stars" style="color:var(--gold)">${starStr(m[0])}</div>${MAP[m[0]]?`<div style="margin-top:4px;font-size:15px">${sem(nota(m[0]))} Nota ${fmt(nota(m[0]))}</div>`:''}${m[0]=='arcade'?(arcadeCerrado()?`<div style="margin-top:4px;font-size:14px">🔒 ${finalNota().miss?`Faltan ${finalNota().miss} bloque${finalNota().miss>1?'s':''}`:'Falta el examen final'}</div>`:`<div style="margin-top:4px;font-size:14px;color:#a3e635">🔓 ${finalNota().miss?'Abierto en la beta':'¡Desbloqueado!'}</div>`):''}</button>`).join('')}</div>
   ${JUEGO.chuleta||''}
   ${classBox()}
   ${fame()}<div id="instalar"></div>`;
@@ -389,7 +389,8 @@ function chooser(title,sub,parts,run){
 /* 23-nov (plan hasta el examen, ronda 2): se abre al terminar la primera vuelta de la ruta con su examen (ARCA).
    Quien ya lo tenía abierto por la regla de antes (nota en todos los bloques) lo conserva: no se quita nada. */
 if(!ARCAMIG){ARCAMIG=true;if(finalNota().miss===0)ARCA=true;save()}   /* una sola vez, al llegar esta versión */
-function arcadeCerrado(){return !/-beta\//.test(location.pathname)&&!ARCA}
+/* 25-nov: también se abre con nota en todos los bloques y el examen hecho, aunque el examen se haya hecho desde su tarjeta y no como última estación de la ruta */
+function arcadeCerrado(){if(!ARCA&&finalNota().miss===0&&(nota('exam')!=null||Object.keys(EXV).length||!JUEGO.examen)){ARCA=true;save()}return !/-beta\//.test(location.pathname)&&!ARCA}
 /* El arcade bloqueado y el examen final, comunes a todos los juegos */
 Object.assign(R,{
  arcade(){
