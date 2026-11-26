@@ -1,0 +1,28 @@
+{
+ "juego": "ingles-ropa",
+ "asignatura": "Inglés",
+ "curso": "2º",
+ "examen": "-",
+ "fuente": "Ficha de estudio en casa de Inglés de 2º (una foto, 24-nov-2026): «Clothes vocabulary & What are they wearing?». Sin examen: es para repasar y aprender jugando. Lo que piden en clase (el padre, 24-nov): escribir bien las prendas en inglés, y preguntar qué lleva él o ella y responderlo con el color.",
+ "vocabulario": [
+  {"en": "T-shirt", "es": "camiseta", "grupo": "tops & bottoms"},
+  {"en": "jumper", "es": "jersey", "grupo": "tops & bottoms"},
+  {"en": "jacket", "es": "chaqueta", "grupo": "tops & bottoms"},
+  {"en": "trousers", "es": "pantalones", "grupo": "tops & bottoms", "plural": true},
+  {"en": "shorts", "es": "pantalones cortos", "grupo": "tops & bottoms", "plural": true},
+  {"en": "skirt", "es": "falda", "grupo": "tops & bottoms"},
+  {"en": "dress", "es": "vestido", "grupo": "full outfits & accessories"},
+  {"en": "socks", "es": "calcetines", "grupo": "full outfits & accessories", "plural": true},
+  {"en": "shoes", "es": "zapatos", "grupo": "full outfits & accessories", "plural": true},
+  {"en": "hat", "es": "gorro o sombrero", "grupo": "full outfits & accessories"},
+  {"en": "scarf", "es": "bufanda", "grupo": "full outfits & accessories"},
+  {"en": "gloves", "es": "guantes", "grupo": "full outfits & accessories", "plural": true}
+ ],
+ "colores_de_la_ficha": ["blue", "brown", "pink", "yellow"],
+ "gramatica": [
+  {"id": "pregunta", "punto": "La pregunta: What is he wearing? / What is she wearing? (he = él, she = ella)", "test": "WEAR_MC", "escribir": "WEAR_ESCRIBE", "ordenar": "WEAR_ORD"},
+  {"id": "respuesta", "punto": "La respuesta: He is wearing… / She is wearing… con dos prendas unidas por and", "test": "WEAR_MC", "escribir": "WEAR_ESCRIBE", "ordenar": "WEAR_ORD"},
+  {"id": "color-delante", "punto": "El color va delante de la prenda: a blue jumper, brown trousers", "test": "WEAR_MC", "escribir": "WEAR_ESCRIBE", "ordenar": "WEAR_ORD"},
+  {"id": "a-o-nada", "punto": "a con una prenda (a pink dress); sin a con las que van en plural (yellow shoes, brown trousers)", "test": "WEAR_MC", "escribir": "WEAR_ESCRIBE", "ordenar": "WEAR_ORD"}
+ ]
+}

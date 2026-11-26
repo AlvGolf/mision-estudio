@@ -368,7 +368,7 @@ for (const juego of juegos) {
     for (const k of propios) {
       await page.evaluate(() => { BLOCKS.forEach(b => { GR[b.k] = [8]; }); if (typeof ARCA !== "undefined") ARCA = true; save(); R.arcade(); }); /* 23-nov: en la normal se abre con la primera vuelta y su examen (ARCA) */
       await page.click(`[data-j="${k}"]`);
-      const jugador = { cohete: jugarCohete, torre: jugarTorre, tijeras: jugarTijeras, cartas: jugarCartas }[k];
+      const jugador = { cohete: jugarCohete, torre: jugarTorre, tijeras: jugarTijeras, cartas: jugarCartas, foto: jugarFoto }[k];
       if (!jugador) { aviso(`El juego del arcade «${k}» no tiene jugador en el verificador`); continue; }
       const r = await jugador(page);
       await page.screenshot({ path: path.join(dirCapturas, `arcade-${k}.png`) });
@@ -692,6 +692,45 @@ async function jugarCartas(page) {
     if (est.estrella !== 1) return { error: 'vencer al último rival no da la estrella del arcade' };
     if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('cartas:'))) return { error: 'no se guarda el récord del duelo' };
     return { nota: 'a 390 px y sin desbordes: espera a «Empezar»; cada mano, cinco cartas y una buena; fallar quita una vida y queda para repasar; tres aciertos cargan el golpe fuerte; mal escrito no quita vida y se gasta, bien escrito quita media vida; sin vidas se repite el duelo; vence a los cuatro, da la estrella y guarda el récord' };
+  } finally { await page.setViewportSize({ width: 820, height: 1180 }); }
+}
+
+/* 📸 El fotógrafo de la pasarela (25-nov, «La ropa» de 2º): en la primera ronda fotografía a propósito a otro niño
+   (no cuenta y queda para repasar); en las demás, al bueno cuando está dentro del marco. Tiene que dar el reportaje y la estrella. */
+async function jugarFoto(page) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  try {
+    await page.evaluate(() => { BEST.arcade = 0; save(); });
+    if (!await page.waitForSelector('#foGo', { timeout: 8000 }).then(() => true, () => false)) return { error: 'no sale el botón «Empezar» del fotógrafo' };
+    await page.waitForTimeout(400);
+    if (await page.evaluate(() => window._FOTO && window._FOTO.fase) !== 'portada') return { error: 'el desfile arranca solo, sin esperar a «Empezar»' };
+    await page.click('#foGo');
+    let fallada = false, buenas = 0, desborde = null;
+    const t0 = Date.now();
+    while (Date.now() - t0 < 60000) {
+      const F = await page.evaluate(() => window._FOTO);
+      if (!F) break;
+      if (F.fase !== 'desfile') { await page.waitForTimeout(50); continue; }
+      if (!desborde) { const w = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth); if (w > 1) desborde = `a 390 px, el desfile se sale ${w} px por la derecha`; }
+      const dentro = F.x.map((x, j) => Math.abs(x - F.marco.c) < F.marco.r * .4 ? j : -1).filter(j => j >= 0);
+      const quiero = F.ronda === 0 ? dentro.find(j => j !== F.objetivo) : dentro.find(j => j === F.objetivo);
+      if (quiero === undefined) { await page.waitForTimeout(30); continue; }
+      await page.click('#foFoto'); await page.waitForTimeout(60);
+      const G = await page.evaluate(() => window._FOTO);
+      if (F.ronda === 0) { if (G && G.buenas !== F.buenas) return { error: 'una foto al niño equivocado cuenta como buena' }; fallada = true; }
+      else { if (G && G.buenas !== F.buenas + 1) return { error: 'la foto al niño bueno, dentro del marco, no cuenta' }; buenas++; }
+      await page.waitForFunction(r => !window._FOTO || window._FOTO.ronda !== r, F.ronda, { timeout: 6000 }).catch(() => { });
+    }
+    await page.waitForTimeout(800);
+    const fin = await page.locator('#app').innerText().catch(() => '');
+    const est = await page.evaluate(() => ({ estrella: BEST.arcade, arc: JSON.parse(localStorage.getItem(JUEGO.claves.arcade) || '{}') }));
+    if (desborde) return { error: desborde };
+    if (!fallada) return { error: 'no se ha podido hacer una foto mala a propósito' };
+    if (!Object.keys(est.arc.repasar || {}).length) return { error: 'la foto mala no queda apuntada para repasar' };
+    if (!/Reportaje de moda/.test(fin)) return { error: `no se termina el reportaje (pantalla: «${fin.slice(0, 80).replace(/\s+/g, ' ')}»)` };
+    if (est.estrella !== 1) return { error: 'terminar el reportaje no da la estrella del arcade' };
+    if (!Object.keys(est.arc.best || {}).some(c => c.startsWith('foto:'))) return { error: 'no se guarda el récord del fotógrafo' };
+    return { nota: `a 390 px y sin desbordes: espera a «Empezar»; la foto al niño equivocado no cuenta y queda para repasar; la del bueno dentro del marco, sí (${buenas}); reportaje, estrella y récord` };
   } finally { await page.setViewportSize({ width: 820, height: 1180 }); }
 }
 
@@ -1281,6 +1320,37 @@ async function jugarPaso(page, S, mal, tag, t, { fallo, aviso }) {
       for (const ch of escribe) await st.locator(`#tk .pad [data-n="${ch}"]`).click();
       await st.locator('#tk #wchk').click();
       if (!mal && !await st.locator('#pn.ok').count()) fallo(`[${tag}] «${t}»: la respuesta correcta del problema («${bien}») sale como mala`);
+      break;
+    }
+    /* 👕 La ropa (25-nov, formato propio del juego en JUEGO.pasos): vestir, ordenar, deletrear con fichas y con teclado,
+       escribir la prenda con su color y ¿quién es? Cada paso trae su respuesta en los datos. */
+    case 'ropa': {
+      const fbTxt = async () => (await page.locator('#fb').innerText().catch(() => ''));
+      if (S.modo === 'vestir') {
+        if (!mal) for (const [k, c] of S.p.items) { await st.locator(`.rp-bote[data-c="${c}"]`).click(); await st.locator(`.rp-prenda[data-k="${k}"]`).click(); }
+        await st.locator('#rchk').click();
+        if (!mal && !/Perfecto/.test(await fbTxt())) fallo(`[${tag}] «${t}»: vestir justo como dice la frase (${S.p.items.join(' · ')}) sale mal`);
+        if (mal && /Perfecto/.test(await fbTxt())) fallo(`[${tag}] «${t}»: sin vestir al muñeco sale bien`);
+      } else if (S.modo === 'ordenar') {
+        const pal = S.frase.replace(/[.?]$/, '').split(' ');
+        if (await st.locator('#rfic .rp-fic').filter({ hasText: /^[.?]$/ }).count()) fallo(`[${tag}] «${t}»: entre las fichas sale el punto`);
+        for (const w of (mal ? [...pal].reverse() : pal)) await st.locator(`#rfic .rp-fic[data-w="${w}"]`).first().click();
+        await st.locator('#rchk').click();
+        if (!mal && !/Muy bien/.test(await fbTxt())) fallo(`[${tag}] «${t}»: ordenar bien «${S.frase}» sale mal`);
+      } else if (S.modo === 'letras') {
+        const letra = c => st.locator('.rp-letra:not([disabled])').filter({ hasText: new RegExp(`^${c.replace(/[-.*+?^${}()|[\]\\]/g, '\\$&')}$`) }).first();
+        if (mal) { for (const c of [...S.en].reverse()) await letra(c).click(); await page.waitForTimeout(1300); for (const c of [...S.en].reverse()) await letra(c).click(); }
+        else { for (const c of S.en) await letra(c).click(); if (!/perfecto/.test(await fbTxt())) fallo(`[${tag}] «${t}»: deletrear bien «${S.en}» con las fichas sale mal`); }
+      } else if (S.modo === 'teclado') {
+        await st.locator('#rin').fill(mal ? 'xx' : S.en); await st.locator('#rchk').click();
+        if (!mal && !/perfecto/.test(await fbTxt())) fallo(`[${tag}] «${t}»: escribir «${S.en}» con el teclado sale mal`);
+      } else if (S.modo === 'escribe') {
+        await st.locator('#rpA').fill(mal ? 'x' : S.partes[0]); await st.locator('#rpB').fill(mal ? 'x' : S.partes[1]); await st.locator('#rchk').click();
+        if (!mal && !/perfecta/.test(await fbTxt())) fallo(`[${tag}] «${t}»: escribir «${S.partes.join(' and ')}» sale mal`);
+      } else if (S.modo === 'quien') {
+        await st.locator(`.rp-per[data-j="${mal ? (S.bueno + 1) % S.gente.length : S.bueno}"]`).click();
+        if (!mal && !/encontrado/.test(await fbTxt())) fallo(`[${tag}] «${t}»: tocar al niño que dice la frase sale mal`);
+      } else fallo(`[${tag}] «${t}»: modo de la ropa desconocido (${S.modo})`);
       break;
     }
     default:

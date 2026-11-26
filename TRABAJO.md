@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| ingles-ropa-beta | Claude Code | 24-nov | Juego nuevo de Inglés de 2º: la ropa y «What is he/she wearing?» |

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La ropa en inglés</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../motor-beta/motor.css?v=33">
+<style>
+/* Lo propio de este juego: el muñeco que se viste, los botes de pintura, el armario, las fichas y los niños para elegir */
+.rp-frase{display:flex;gap:10px;align-items:center;margin:8px 0}
+.rp-en{font-size:clamp(19px,4.6vw,24px);font-weight:600;color:#1D3BA8;background:#fff;border-radius:14px;padding:8px 12px;line-height:1.3}
+.rp-oculta{color:#6a6f8a;font-style:italic}
+.rp-oye,.rp-ver{border:0;background:#fff;border-radius:999px;min-width:46px;height:46px;font-size:22px;box-shadow:0 3px 0 #0002;flex:none;cursor:pointer;font-family:inherit}
+.rp-ver{font-size:15px;padding:0 12px;color:#1D3BA8;font-weight:600}
+.rp-escena{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+@media (max-width:520px){.rp-escena{grid-template-columns:1fr}}
+.rp-mu svg,.rp-solo svg{width:min(180px,46vw);height:auto;display:block;margin:0 auto;background:#fff;border-radius:18px}
+.rp-botes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.rp-bote{width:44px;height:44px;border-radius:50%;border:3px solid #fff;box-shadow:0 3px 0 #0003;padding:0;cursor:pointer}
+.rp-bote[aria-pressed="true"]{outline:4px solid var(--acc);outline-offset:2px;transform:scale(1.12)}
+.rp-armario{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:12px 0}
+@media (max-width:520px){.rp-armario{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.rp-prenda{background:#fff;border:3px solid #fff;border-radius:12px;padding:4px;box-shadow:0 3px 0 #0002;aspect-ratio:1;display:grid;place-items:center;min-width:0;cursor:pointer}
+.rp-prenda svg{width:100%;height:100%}
+.rp-prenda[aria-pressed="true"]{border-color:var(--acc);background:#e8eeff}
+.rp-linea{min-height:58px;background:var(--sunk);border:2px dashed var(--line2);border-radius:14px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.rp-linea .vacia{color:var(--mut);font-size:16px}
+.rp-fichas{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+.rp-fic{position:relative}
+.rp-fic .n{position:absolute;top:-8px;right:-8px;background:#1D3BA8;color:#fff;border-radius:999px;font-size:12px;min-width:22px;height:22px;display:grid;place-items:center;padding:0 5px}
+.rp-linea .chip.ok{background:var(--yes);color:#04220f}.rp-linea .chip.bad{background:var(--no);color:#fff}
+.rp-huecos{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.rp-grande{width:150px;height:150px;margin:6px auto;display:block;background:#fff;border-radius:20px;padding:10px;box-shadow:0 4px 0 #0002}
+.rp-escribe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:clamp(19px,4.6vw,23px);font-weight:600;margin:10px 0}
+.rp-escribe input{font-family:inherit;font-size:20px;font-weight:600;padding:8px 10px;border-radius:12px;border:3px solid var(--line2);background:#fff;color:#17224a;width:min(230px,100%)}
+.rp-escribe input.ok{border-color:var(--yes)}.rp-escribe input.bad{border-color:var(--no)}
+.rp-gente{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.rp-per{background:#fff;border:3px solid #fff;border-radius:16px;padding:4px;box-shadow:0 4px 0 #0002;min-width:0;cursor:pointer}
+.rp-per svg{width:100%;height:auto;display:block}
+.rp-per.ok{border-color:var(--yes);background:#e6fbef}.rp-per.bad{border-color:var(--no)}
+.chip .rp-ic{width:34px;height:34px;vertical-align:middle;margin-right:4px}
+.rules .rp-ic{width:30px;height:30px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <h1 onclick="home()">👕 <span class="t-long">La ropa en inglés</span><span class="t-short">La ropa</span></h1>
+  <div class="hud"><span class="pill" id="xp">⭐ 0 XP</span><span class="pill" id="streak">🔥 0</span></div>
+</header>
+<main id="app"></main>
+
+<script>
+/* La ropa en inglés (2º): «Clothes vocabulary & What are they wearing?». Sin examen del cole: para repasar y aprender jugando.
+   Lo que piden en clase (el padre, 24-nov): escribir bien las prendas, y preguntar qué lleva él o ella y responderlo con el color.
+   Elegido por el padre el 25-nov en el artefacto «La ropa en inglés de 2º»: los siete juegos, el arcade del fotógrafo y el
+   cohete del armario, once colores, «hat» vale gorro o sombrero, deletrear con fichas y luego con teclado, la frase se ve y
+   se oye (en la segunda vuelta, solo se oye), voz británica, el guion de T-shirt cuenta, dos prendas, niños sin nombre,
+   ruta de un día de lo fácil a lo difícil y prueba final de 10 preguntas sin tiempo.
+   Ordenar sin la ficha del punto, y cada ficha desaparece al usarla las veces que sale en la frase (el padre, 25-nov).
+   Los ejercicios propios (vestir, ordenar, deletrear, escribir y ¿quién es?) van en JUEGO.pasos. El motor se carga al final. */
+
+/* ================== DATOS ================== */
+const PR=[
+ {k:'tshirt',en:'T-shirt',es:'camiseta',g:'top'},{k:'jumper',en:'jumper',es:'jersey',g:'top'},{k:'jacket',en:'jacket',es:'chaqueta',g:'enc'},
+ {k:'trousers',en:'trousers',es:'pantalones',g:'bot',pl:1},{k:'shorts',en:'shorts',es:'pantalones cortos',g:'bot',pl:1},{k:'skirt',en:'skirt',es:'falda',g:'bot'},
+ {k:'dress',en:'dress',es:'vestido',g:'dress'},{k:'socks',en:'socks',es:'calcetines',g:'socks',pl:1},{k:'shoes',en:'shoes',es:'zapatos',g:'shoes',pl:1},
+ {k:'hat',en:'hat',es:'gorro o sombrero',g:'hat'},{k:'scarf',en:'scarf',es:'bufanda',g:'scarf'},{k:'gloves',en:'gloves',es:'guantes',g:'gloves',pl:1}];
+const P=Object.fromEntries(PR.map(p=>[p.k,p]));
+/* Once colores (el padre, 25-nov: los diez básicos y el gris) */
+const COL={red:['#e8413c','rojo'],blue:['#2f6fe0','azul'],yellow:['#ffd23a','amarillo'],green:['#2fb25a','verde'],pink:['#ff8fc4','rosa'],
+  orange:['#ff8a2a','naranja'],purple:['#8a55d6','morado'],brown:['#8a5a32','marrón'],black:['#2a2a33','negro'],white:['#ffffff','blanco'],grey:['#9aa0ab','gris']};
+const COLS=Object.keys(COL);
+const escR=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const azar=a=>a[Math.floor(Math.random()*a.length)];
+const mezcla=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* Vocabulario para el verificador: [inglés, español, tipo, frase con hueco] */
+const FRASE_VOC={tshirt:'He is wearing a red ___ (camiseta).',jumper:'She is wearing a blue ___ (jersey).',jacket:'He is wearing a green ___ (chaqueta).',
+  trousers:'She is wearing brown ___ (pantalones).',shorts:'He is wearing yellow ___ (pantalones cortos).',skirt:'She is wearing a pink ___ (falda).',
+  dress:'She is wearing a purple ___ (vestido).',socks:'He is wearing white ___ (calcetines).',shoes:'She is wearing black ___ (zapatos).',
+  hat:'He is wearing a yellow ___ (gorro).',scarf:'She is wearing a grey ___ (bufanda).',gloves:'He is wearing red ___ (guantes).'};
+const VOCAB=PR.map(p=>[p.en,p.es,'prenda',FRASE_VOC[p.k]]);
+/* Frase con hueco: las opciones falsas son un color y una palabra de la frase, que nunca encajan en el sitio de la prenda */
+function vocabSentQ(w){const otra=azar(['wearing','she','is']),col=azar(COLS.filter(c=>!w[3].includes(' '+c+' ')));
+  return {t:'gap',q:w[3],opts:[w[0],col,otra],a:w[0],ex:`${w[0]} = ${w[1]}`}}
+
+/* ================== DIBUJOS: el muñeco de cómic con contorno; cada prenda, su forma y su color ================== */
+const TR='stroke="#1d2033" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"',SOMB='fill="#0000001f"';
+function forma(k,c){switch(k){
+ case 'tshirt':return `<path d="M56 78H104L120 88L114 104L104 100V140H56V100L46 104L40 88Z" fill="${c}" ${TR}/><path d="M72 78Q80 87 88 78" fill="none" ${TR}/>`;
+ case 'jumper':return `<rect x="38" y="80" width="19" height="56" rx="8" fill="${c}" ${TR}/><rect x="103" y="80" width="19" height="56" rx="8" fill="${c}" ${TR}/><rect x="38" y="127" width="19" height="9" rx="3" ${SOMB}/><rect x="103" y="127" width="19" height="9" rx="3" ${SOMB}/><rect x="53" y="76" width="54" height="68" rx="11" fill="${c}" ${TR}/><rect x="53" y="135" width="54" height="9" rx="3" ${SOMB}/><path d="M70 77Q80 86 90 77" fill="none" ${TR}/>`;
+ case 'jacket':return `<rect x="36" y="79" width="21" height="58" rx="8" fill="${c}" ${TR}/><rect x="103" y="79" width="21" height="58" rx="8" fill="${c}" ${TR}/><path d="M52 76H78V148H52Z" fill="${c}" ${TR}/><path d="M82 76H108V148H82Z" fill="${c}" ${TR}/><path d="M60 76L72 76L68 92Z" fill="#00000030" ${TR}/><path d="M100 76L88 76L92 92Z" fill="#00000030" ${TR}/><path d="M58 122H72M88 122H102" ${TR}/><circle cx="76" cy="104" r="1.8" fill="#1d2033"/><circle cx="76" cy="118" r="1.8" fill="#1d2033"/>`;
+ case 'trousers':return `<path d="M58 132H102V218H83L80 154L77 218H58Z" fill="${c}" ${TR}/><path d="M58 141H102" ${TR}/>`;
+ case 'shorts':return `<path d="M58 132H102V172H83L80 154L77 172H58Z" fill="${c}" ${TR}/><path d="M58 141H102M60 166H76M84 166H100" ${TR}/>`;
+ case 'skirt':return `<path d="M60 132H100L113 180H47Z" fill="${c}" ${TR}/><path d="M70 136L66 180M80 136V180M90 136L94 180" ${TR} fill="none"/>`;
+ case 'dress':return `<path d="M60 76H100L102 128L118 186H42L58 128Z" fill="${c}" ${TR}/><path d="M70 76Q80 88 90 76" fill="none" ${TR}/><path d="M58 128H102" ${TR}/>`;
+ case 'socks':return `<rect x="61" y="190" width="18" height="32" rx="4" fill="${c}" ${TR}/><rect x="81" y="190" width="18" height="32" rx="4" fill="${c}" ${TR}/><rect x="61" y="190" width="18" height="6" ${SOMB}/><rect x="81" y="190" width="18" height="6" ${SOMB}/>`;
+ case 'shoes':return `<path d="M50 228V220Q50 211 60 211H76Q81 211 81 218V228Z" fill="${c}" ${TR}/><path d="M79 228V218Q79 211 84 211H100Q110 211 110 220V228Z" fill="${c}" ${TR}/><path d="M50 228H81M79 228H110" stroke="#1d2033" stroke-width="5"/><path d="M62 215L70 219M90 215L98 219" ${TR}/>`;
+ case 'hat':return `<path d="M55 40Q55 13 80 13Q105 13 105 40Z" fill="${c}" ${TR}/><rect x="52" y="33" width="56" height="13" rx="5" fill="${c}" ${TR}/><rect x="52" y="33" width="56" height="13" rx="5" ${SOMB}/><circle cx="80" cy="12" r="8" fill="${c}" ${TR}/>`;
+ case 'scarf':return `<rect x="85" y="74" width="14" height="46" rx="3" fill="${c}" ${TR}/><path d="M85 88H99M85 102H99" stroke="#ffffffaa" stroke-width="4"/><path d="M87 120V126M92 120V126M97 120V126" ${TR}/><rect x="59" y="65" width="42" height="14" rx="7" fill="${c}" ${TR}/><path d="M68 66V78M80 66V78M92 66V78" stroke="#ffffffaa" stroke-width="3"/>`;
+ case 'gloves':return `<circle cx="47" cy="139" r="10" fill="${c}" ${TR}/><ellipse cx="57" cy="134" rx="4" ry="6" fill="${c}" ${TR}/><circle cx="113" cy="139" r="10" fill="${c}" ${TR}/><ellipse cx="103" cy="134" rx="4" ry="6" fill="${c}" ${TR}/>`;
+}}
+const CAJA={tshirt:'36 70 88 74',jumper:'34 70 92 78',jacket:'32 70 96 82',trousers:'50 126 60 96',shorts:'48 126 64 50',skirt:'42 126 76 58',dress:'38 70 84 120',socks:'56 186 48 40',shoes:'46 206 68 26',hat:'48 0 64 50',scarf:'54 60 52 70',gloves:'34 124 92 26'};
+const hexDe=c=>COL[c]?COL[c][0]:c;
+const icono=(k,c='#f4f4f8',cls='')=>`<svg ${cls?`class="${cls}"`:''} viewBox="${CAJA[k]}" role="img" aria-label="${escR(P[k].es)}">${forma(k,hexDe(c))}</svg>`;
+const PIEL=['#f5c9a3','#e0a87a','#a8714a'],PELO=['#3b2416','#d9a13b','#1d1d22','#a34a1e'];
+function muneco(p){const r=p.ropa||{},piel=p.piel||PIEL[0],pelo=p.pelo||PELO[0],ella=p.s==='she';
+  const capa=k=>r[k]?forma(k,hexDe(r[k])):'';
+  const top=r.dress||r.tshirt||r.jumper,bot=r.dress||r.trousers||r.shorts||r.skirt;
+  return `<svg viewBox="0 0 160 236" role="img" aria-label="${ella?'Una niña':'Un niño'}">
+   ${ella?`<rect x="51" y="38" width="12" height="40" rx="6" fill="${pelo}" ${TR}/><rect x="97" y="38" width="12" height="40" rx="6" fill="${pelo}" ${TR}/>`:''}
+   <rect x="63" y="140" width="14" height="80" rx="5" fill="${piel}" ${TR}/><rect x="83" y="140" width="14" height="80" rx="5" fill="${piel}" ${TR}/>
+   <ellipse cx="68" cy="222" rx="11" ry="5" fill="${piel}" ${TR}/><ellipse cx="92" cy="222" rx="11" ry="5" fill="${piel}" ${TR}/>
+   ${capa('socks')}${capa('shoes')}
+   ${bot?'':`<rect x="58" y="130" width="44" height="18" rx="4" fill="#e6d6b8" ${TR}/>`}
+   ${capa('trousers')}${capa('shorts')}${capa('skirt')}
+   <rect x="42" y="80" width="14" height="54" rx="7" fill="${piel}" ${TR}/><rect x="104" y="80" width="14" height="54" rx="7" fill="${piel}" ${TR}/>
+   <circle cx="49" cy="137" r="7" fill="${piel}" ${TR}/><circle cx="111" cy="137" r="7" fill="${piel}" ${TR}/>
+   ${top?'':`<rect x="56" y="76" width="48" height="60" rx="10" fill="#efe2c8" ${TR}/>`}
+   ${capa('dress')}${capa('tshirt')}${capa('jumper')}${capa('jacket')}${capa('gloves')}
+   <rect x="73" y="64" width="14" height="14" fill="${piel}" ${TR}/>
+   <circle cx="80" cy="46" r="24" fill="${piel}" ${TR}/>
+   <circle cx="72" cy="48" r="2.8" fill="#1d2033"/><circle cx="88" cy="48" r="2.8" fill="#1d2033"/>
+   <circle cx="66" cy="56" r="3.5" fill="#ff7a7a55"/><circle cx="94" cy="56" r="3.5" fill="#ff7a7a55"/>
+   <path d="M72 57Q80 63 88 57" fill="none" ${TR}/>
+   ${r.hat?'':`<path d="M56 44Q56 19 80 19Q104 19 104 44Q97 31 80 31Q63 31 56 44Z" fill="${pelo}" ${TR}/>`}
+   ${capa('scarf')}${capa('hat')}</svg>`}
+
+/* ================== LAS FRASES ================== */
+/* «an orange»: el único color que empieza por vocal. Para no meter «an» en 2º, el naranja solo sale con prendas en plural
+   (vale()); si aun así sale con una sola (en el arcade, al explicar), se escribe bien */
+const parte=([k,c])=>`${P[k].pl?'':c==='orange'?'an ':'a '}${c} ${P[k].en}`;
+const vale=([k,c])=>!!P[k].pl||c!=='orange';
+const respuesta=p=>`${p.s==='she'?'She':'He'} is wearing ${p.items.map(parte).join(' and ')}.`;
+const pregunta=p=>`What is ${p.s} wearing?`;
+const conRopa=p=>({...p,ropa:Object.fromEntries(p.items)});
+/* En español, el color concuerda con la prenda: «una camiseta roja», «unos zapatos marrones» */
+const FEM={tshirt:1,jacket:1,skirt:1,scarf:1};
+const COL_ES={red:['rojo','roja','rojos'],blue:['azul','azul','azules'],yellow:['amarillo','amarilla','amarillos'],green:['verde','verde','verdes'],pink:['rosa','rosa','rosas'],
+  orange:['naranja','naranja','naranjas'],purple:['morado','morada','morados'],brown:['marrón','marrón','marrones'],black:['negro','negra','negros'],white:['blanco','blanca','blancos'],grey:['gris','gris','grises']};
+const enEs=([k,c],art)=>{const pl=P[k].pl,f=FEM[k],col=COL_ES[c][pl?2:f?1:0];return `${art?(pl?'unos ':f?'una ':'un '):''}${P[k].es.split(' o ')[0]} ${col}`};
+/* Dos prendas que casan: una de arriba y otra de abajo o un complemento (el vestido y la falda, solo con «she») */
+function conjunto(s){s=s||(Math.random()<.5?'he':'she');
+  const a=azar(s==='she'?['tshirt','jumper','jacket','dress']:['tshirt','jumper','jacket']);
+  const b=a==='dress'?azar(['shoes','socks','hat','scarf','gloves']):azar(['trousers','shorts','shoes','socks','hat','scarf','gloves',...(s==='she'?['skirt']:[])]);
+  let c1,c2;do [c1,c2]=mezcla(COLS);while(!vale([a,c1])||!vale([b,c2]));return {s,items:[[a,c1],[b,c2]],piel:azar(PIEL),pelo:azar(PELO)}}
+/* Seis niños vestidos parecido: cada falso cambia un solo detalle (un color, una prenda o los colores cambiados de sitio) */
+function parecidos(t,n){const otros=[],clave=x=>JSON.stringify([x.s,...x.items]),vistos=new Set([clave(t)]);let guard=0;
+  while(otros.length<n&&guard++<300){const o=JSON.parse(JSON.stringify(t));o.piel=azar(PIEL);o.pelo=azar(PELO);const m=Math.floor(Math.random()*4);
+    if(m===0)o.items[0][1]=azar(COLS.filter(c=>c!==t.items[0][1]&&c!==t.items[1][1]));
+    else if(m===1)o.items[1][1]=azar(COLS.filter(c=>c!==t.items[1][1]&&c!==t.items[0][1]));
+    else if(m===2){const ks=t.items[0][0]==='dress'?['jumper','tshirt']:['tshirt','jumper','jacket'].filter(k=>k!==t.items[0][0]);o.items[0][0]=azar(ks)}
+    else o.items=[[o.items[0][0],o.items[1][1]],[o.items[1][0],o.items[0][1]]];
+    if(o.s==='he'&&o.items.some(([k])=>k==='dress'||k==='skirt'))continue;
+    if(o.items[0][0]!=='dress'&&o.items[1][0]==='dress')continue;if(!o.items.every(vale))continue;
+    const k=clave(o);if(!vistos.has(k)){vistos.add(k);otros.push(o)}}
+  return otros}
+
+/* ================== LISTAS DE LA GRAMÁTICA (las nombra temario.json) ================== */
+/* Test: ¿cuál está bien escrita? Las malas, con el color detrás o con la «a» donde no toca: ninguna puede estar bien */
+function mcFrase(){const p=conjunto(),S=p.s==='she'?'She':'He',bien=respuesta(p);
+  const detras=`${S} is wearing ${p.items.map(([k,c])=>`${P[k].pl?'':'a '}${P[k].en} ${c}`).join(' and ')}.`;
+  const cambiaA=`${S} is wearing ${p.items.map(([k,c],i)=>i===0?(P[k].pl?`a ${c} ${P[k].en}`:`${c} ${P[k].en}`):parte([k,c])).join(' and ')}.`;
+  return {t:'mc',q:'¿Cuál está bien escrita?',opts:[bien,detras,cambiaA],a:bien,ex:`El color va delante de la prenda, y «a» solo con una cosa: ${bien}`}}
+function mcDecir(){const k=azar(PR).k,c=azar(COLS.filter(c=>vale([k,c]))),bien=parte([k,c]),pl=P[k].pl;
+  const opts=[bien,`${pl?'a ':''}${c} ${P[k].en}`,`${pl?'':'a '}${P[k].en} ${c}`];
+  return {t:'mc',q:`¿Cómo se dice «${enEs([k,c],true)}»?`,opts,a:bien}}
+function mcPregunta(){const s=azar(['he','she']),bien=`What is ${s} wearing?`;
+  return {t:'mc',q:`Quieres saber qué lleva puesto ${s==='she'?'ella':'él'}. ¿Qué preguntas?`,opts:[bien,`What is ${s==='she'?'he':'she'} wearing?`,`What ${s} is wearing?`],a:bien}}
+const WEAR_MC=Array.from({length:8},mcFrase);
+const WEAR_ESCRIBE=Array.from({length:6},()=>pasoEscribe(false));
+const WEAR_ORD=Array.from({length:6},()=>pasoOrdena(false));
+
+/* ================== PASOS (los datos de cada ejercicio, con la respuesta dentro, para el verificador) ================== */
+const pasoVestir=()=>({t:'ropa',modo:'vestir',p:conjunto()});
+function pasoQuien(){const t=conjunto(),gente=mezcla([t,...parecidos(t,5)]);return {t:'ropa',modo:'quien',gente,bueno:gente.indexOf(t),frase:respuesta(t)}}
+function pasoOrdena(conPlural){const p=conjunto();if(conPlural&&!p.items.some(([k])=>P[k].pl))p.items[1]=[azar(['trousers','shoes','socks','gloves','shorts']),p.items[1][1]];
+  const frase=respuesta(p),tieneA=/ a /.test(frase);return {t:'ropa',modo:'ordenar',p,frase,trampas:tieneA?['are']:['a','are'],q:pregunta(p)}}
+function pasoPregunta(s){const p=conjunto(s);return {t:'ropa',modo:'ordenar',p,frase:pregunta(p),trampas:[p.s==='he'?'she':'he','are'],
+  pide:`Quieres saber qué lleva puesto ${p.s==='he'?'él':'ella'}. Monta la pregunta en inglés.`}}
+const pasoLetras=k=>({t:'ropa',modo:'letras',k,en:P[k].en,c:azar(COLS.filter(c=>c!=='white'))});
+const pasoTeclado=k=>({t:'ropa',modo:'teclado',k,en:P[k].en,c:azar(COLS.filter(c=>c!=='white'))});
+function pasoEscribe(conPlural){const p=conjunto();if(conPlural&&!p.items.some(([k])=>P[k].pl))p.items[1]=[azar(['trousers','shoes','socks','gloves','shorts']),p.items[1][1]];
+  return {t:'ropa',modo:'escribe',p,partes:p.items.map(parte)}}
+function pasoCajas(){const ks=mezcla(PR.map(p=>p.k)).slice(0,8),c=Object.fromEntries(ks.map(k=>[k,azar(COLS)]));
+  /* que haya de las dos */
+  if(!ks.some(k=>P[k].pl))ks[0]='shoes';if(ks.every(k=>P[k].pl))ks[0]='hat';
+  return {t:'bins',q:'¿Con «a» o sin «a»? Lleva cada prenda a su caja. Las que van de dos en dos, como los zapatos, van sin «a».',
+    bins:['a …','sin «a»'],items:[...new Set(ks)].map(k=>({t:`${c[k]||'red'} ${P[k].en}`,b:P[k].pl?1:0}))}}
+
+/* La rueda del deletreo: las doce prendas por turnos, para que en unas partidas salgan todas */
+let RUEDA=[];
+const siguientes=n=>{const out=[];while(out.length<n){if(!RUEDA.length)RUEDA=mezcla(PR.map(p=>p.k));const k=RUEDA.shift();if(!out.includes(k))out.push(k)}return out};
+
+/* ================== BLOQUES CON NOTA Y ESTRELLAS ================== */
+const BLOCKS=[{k:'vestidor',n:'El vestidor',w:1},{k:'quien',n:'¿Quién es?',w:1},{k:'conA',n:'¿Con «a» o sin «a»?',w:1},
+ {k:'deletreo',n:'Deletrea la prenda',w:2},{k:'ordena',n:'Ordena la respuesta',w:1},{k:'pregunta',n:'Pregunta tú',w:1},{k:'escribe',n:'Escríbelo tú',w:2}];
+const MIC=[['vestidor','🎨'],['quien','🔎'],['conA','📦'],['deletreo','🔤'],['ordena','🧩'],['pregunta','❓'],['escribe','✍️'],['exam','👑']];
+
+/* ================== MISIONES ================== */
+const R={
+ vestidor(){runSteps('🎨 El vestidor',[pasoVestir(),pasoVestir(),pasoVestir()],'vestidor',R.vestidor,'🎨')},
+ quien(){runSteps('🔎 ¿Quién es?',[pasoQuien(),pasoQuien(),pasoQuien(),pasoQuien()],'quien',R.quien,'🔎')},
+ conA(){runSteps('📦 ¿Con «a» o sin «a»?',[pasoCajas(),mcFrase(),mcFrase()],'conA',R.conA,'📦')},
+ deletreo(){const ks=siguientes(5),voc=mezcla(VOCAB).slice(0,2);
+   runSteps('🔤 Deletrea la prenda',[...ks.slice(0,3).map(pasoLetras),...ks.slice(3).map(pasoTeclado),...voc.map(vocabSentQ)],'deletreo',R.deletreo,'🔤')},
+ ordena(){runSteps('🧩 Ordena la respuesta',[pasoOrdena(true),pasoOrdena(false),pasoOrdena(false)],'ordena',R.ordena,'🧩')},
+ pregunta(){runSteps('❓ Pregunta tú',[pasoPregunta('he'),pasoPregunta('she'),mcPregunta()],'pregunta',R.pregunta,'❓')},
+ escribe(){runSteps('✍️ Escríbelo tú',[pasoEscribe(false),pasoEscribe(true),pasoEscribe(false)],'escribe',R.escribe,'✍️')},
+};
+/* La ruta: un día de 15 a 20 minutos, de lo fácil a lo difícil (el padre, 25-nov), y al final la prueba */
+const ROUTE_ST=[{k:'vestidor',n:'El vestidor',ic:'🎨',min:3},{k:'quien',n:'¿Quién es?',ic:'🔎',min:2},{k:'conA',n:'¿Con «a» o sin «a»?',ic:'📦',min:2},
+ {k:'deletreo',n:'Deletrea la prenda',ic:'🔤',min:4},{k:'ordena',n:'Ordena la respuesta',ic:'🧩',min:3},{k:'pregunta',n:'Pregunta tú',ic:'❓',min:2},{k:'escribe',n:'Escríbelo tú',ic:'✍️',min:3}];
+
+/* ================== PRUEBA FINAL: 10 preguntas sin tiempo ================== */
+function preguntasExamen(){
+  const esc4=mezcla(PR).slice(0,4).map(p=>({q:`Escribe en inglés: «${p.es}»`,escribe:[p.en]}));
+  const t=x=>({q:x.q,opts:x.opts,a:x.a});
+  return [...esc4,...[mcFrase(),mcFrase(),mcFrase()].map(t),...[mcDecir(),mcDecir()].map(t),t(mcPregunta())]}
+
+/* ================== LOS EJERCICIOS PROPIOS ================== */
+const soloOir=()=>typeof ROUTE!=='undefined'&&!!ROUTE&&ROUTE.v>1;
+const oye=t=>`<button type="button" class="rp-oye" data-oye="${escR(t)}" aria-label="Escuchar">🔊</button>`;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-oye]');if(b)hablar(b.dataset.oye,false,'en-GB')});
+/* La frase en inglés: se ve y se oye; en la segunda vuelta, solo se oye (con «Ver» por si no hay sonido) */
+function fraseHTML(t,escucha){return escucha&&soloOir()
+  ?`<div class="rp-frase">${oye(t)}<span class="rp-en rp-oculta">Escucha la frase 👂</span><button type="button" class="rp-ver">👀 Ver</button></div>`
+  :`<div class="rp-frase">${oye(t)}<span class="rp-en">${escR(t).replace(/T-shirt/g,"T&#8209;shirt")}</span></div>`}
+function fraseWire(st,t,habla){const v=st.querySelector('.rp-ver');if(v)v.onclick=()=>{const s=st.querySelector('.rp-oculta');s.textContent=t;s.classList.remove('rp-oculta');v.remove()};
+  if(habla)setTimeout(()=>{if(st.isConnected)hablar(t,false,'en-GB')},350)}
+const normR=t=>String(t).toLowerCase().replace(/[.!?]/g,'').replace(/\s+/g,' ').trim();
+
+const PASOS={ropa(st,s,done){
+  /* 🎨 Vestir: elegir el bote de pintura y tocar la prenda; lo que no cabe a la vez se quita solo */
+  if(s.modo==='vestir'){const p=s.p,f=respuesta(p);let bote=null,ropa={},hecho=false;
+    st.innerHTML=`<div class="q">Viste ${p.s==='she'?'a la niña':'al niño'} como dice la frase.</div>${fraseHTML(f,true)}
+      <div class="rp-escena"><div class="rp-mu"></div><div><div class="hint" style="margin:0 0 8px">1 · Elige un color &nbsp; 2 · Toca la prenda</div>
+      <div class="rp-botes">${COLS.map(c=>`<button type="button" class="rp-bote" data-c="${c}" style="background:${COL[c][0]}" aria-pressed="false" aria-label="Pintura ${COL[c][1]}"></button>`).join('')}</div></div></div>
+      <div class="rp-armario">${PR.filter(x=>p.s==='she'||!['skirt','dress'].includes(x.k)).map(x=>`<button type="button" class="rp-prenda" data-k="${x.k}" aria-pressed="false"></button>`).join('')}</div>
+      <button class="btn" id="rchk">Comprobar ✔</button>`;
+    fraseWire(st,f,true);
+    const pinta=()=>{st.querySelector('.rp-mu').innerHTML=muneco({...p,ropa});st.querySelectorAll('.rp-prenda').forEach(b=>{const k=b.dataset.k;b.setAttribute('aria-pressed',String(!!ropa[k]));b.innerHTML=icono(k,ropa[k]||'#f4f4f8')})};pinta();
+    st.querySelectorAll('.rp-bote').forEach(b=>b.onclick=()=>{bote=b.dataset.c;st.querySelectorAll('.rp-bote').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));son('tap')});
+    st.querySelectorAll('.rp-prenda').forEach(b=>b.onclick=()=>{if(hecho)return;const k=b.dataset.k;
+      if(ropa[k]&&(!bote||ropa[k]===bote)){delete ropa[k];pinta();return}
+      if(!bote){$('#fb').textContent='Primero elige un color en los botes.';return}
+      const g=P[k].g;for(const x of Object.keys(ropa)){const gx=P[x].g;if(gx===g||(g==='dress'&&['top','bot'].includes(gx))||(gx==='dress'&&['top','bot'].includes(g)))delete ropa[x]}
+      ropa[k]=bote;$('#fb').textContent='';pinta();son('tap')});
+    $('#rchk').onclick=()=>{if(hecho)return;hecho=true;$('#rchk').remove();const quiere=Object.fromEntries(p.items),ks=new Set([...Object.keys(quiere),...Object.keys(ropa)]);
+      const ok=[...ks].every(k=>quiere[k]===ropa[k]);ok?win(15):lose();
+      if(!ok){ropa={...quiere};setTimeout(()=>{if(st.isConnected)pinta()},600)}
+      done(ok?1:0,1,ok?'✅ ¡Perfecto! Lo has vestido justo como dice la frase.':`❌ Mira: ${p.items.map(([k,c])=>`<b>${escR(parte([k,c]))}</b> = ${escR(enEs([k,c]))}`).join(' y ')}.`)};
+    return}
+
+  /* 🧩 Ordenar: una ficha por palabra; si la palabra sale dos veces, la ficha lleva ×2 y se queda hasta usarla dos veces. Sin punto. */
+  if(s.modo==='ordenar'){const pal=s.frase.replace(/[.?]$/,'').split(' '),cuenta={};pal.forEach(w=>cuenta[w]=(cuenta[w]||0)+1);
+    s.trampas.forEach(w=>{if(!cuenta[w])cuenta[w]=1});const fichas=mezcla(Object.keys(cuenta));let puestas=[],hecho=false;
+    st.innerHTML=`<div class="rp-escena"><div class="rp-solo">${muneco(conRopa(s.p))}</div><div>${s.pide?`<div class="q">${escR(s.pide)}</div>`:fraseHTML(s.q,false)}</div></div>
+      <div class="rp-linea" id="rlin"></div><div class="rp-fichas" id="rfic"></div><button class="btn" id="rchk">Comprobar ✔</button>`;
+    if(!s.pide)fraseWire(st,s.q,true);
+    const quedan=w=>cuenta[w]-puestas.filter(x=>x===w).length;
+    const pinta=()=>{$('#rlin').innerHTML=puestas.length?puestas.map((w,i)=>`<button type="button" class="chip rp-fic puesta" data-i="${i}">${escR(w)}</button>`).join(''):'<span class="vacia">Toca las fichas en orden…</span>';
+      $('#rfic').innerHTML=fichas.filter(w=>quedan(w)>0).map(w=>`<button type="button" class="chip rp-fic" data-w="${escR(w)}">${escR(w)}${quedan(w)>1?`<span class="n">×${quedan(w)}</span>`:''}</button>`).join('');
+      st.querySelectorAll('#rfic .rp-fic').forEach(b=>b.onclick=()=>{if(hecho)return;puestas.push(b.dataset.w);son('tap');pinta()});
+      st.querySelectorAll('#rlin .puesta').forEach(b=>b.onclick=()=>{if(hecho)return;puestas.splice(+b.dataset.i,1);pinta()})};pinta();
+    $('#rchk').onclick=()=>{if(hecho||!puestas.length)return;hecho=true;$('#rchk').remove();const ok=puestas.join(' ')===pal.join(' ');
+      st.querySelectorAll('#rlin .chip').forEach(b=>b.classList.add(ok?'ok':'bad'));st.querySelectorAll('#rfic .rp-fic').forEach(b=>b.disabled=true);
+      ok?win(15):lose();hablar(s.frase,false,'en-GB');
+      done(ok?1:0,1,ok?'✅ ¡Muy bien! La frase está perfecta.':`❌ Es así: <b>${escR(s.frase)}</b>`)};
+    return}
+
+  /* 🔤 Deletrear con fichas de letras: dos de más, dos intentos y luego la solución */
+  if(s.modo==='letras'){const x=P[s.k],w=x.en,L=[...w];let pos=0,intento=1,hecho=false,huecos=Array(L.length).fill(''),usadas=[];
+    const extra=mezcla([...'abcdeghiklmnoprstuwy'].filter(l=>!w.toLowerCase().includes(l))).slice(0,2);
+    const fichas=mezcla([...L.map((l,j)=>({l,j})),...extra.map((l,j)=>({l,j:'e'+j}))]);
+    st.innerHTML=`<div class="rp-frase">${oye(w)}<div class="q" style="margin:0">¿Cómo se escribe en inglés? <span style="opacity:.75">(${escR(x.es)})</span></div></div>
+      ${icono(s.k,s.c,'rp-grande')}
+      <div class="rp-huecos">${L.map((_,i)=>`<span class="slot" data-n="${i}"></span>`).join('')}</div>
+      <div class="rp-fichas">${fichas.map(f=>`<button type="button" class="chip lt rp-letra" data-j="${f.j}">${escR(f.l)}</button>`).join('')}</div>
+      <button type="button" class="btn sec" id="rbor">⌫ Borrar</button>`;
+    setTimeout(()=>{if(st.isConnected)hablar(w,false,'en-GB')},350);
+    const H=[...st.querySelectorAll('.slot')],pinta=()=>H.forEach((h,j)=>{h.textContent=huecos[j];h.classList.toggle('f',!!huecos[j])});
+    const reinicia=()=>{huecos.fill('');pos=0;usadas=[];pinta();H.forEach(h=>h.classList.remove('bad','ok'));st.querySelectorAll('.rp-letra').forEach(b=>{b.disabled=false;b.style.visibility=''})};
+    st.querySelectorAll('.rp-letra').forEach(b=>b.onclick=()=>{if(hecho||pos>=L.length||b.disabled)return;huecos[pos]=b.textContent;b.disabled=true;b.style.visibility='hidden';usadas.push(b);pos++;pinta();son('tap');
+      if(pos<L.length)return;const ok=huecos.join('')===w;
+      if(ok){hecho=true;H.forEach(h=>h.classList.add('ok'));hablar(w,false,'en-GB');intento===1?win(15):sfxOk();$('#rbor').remove();done(intento===1?1:0,1,intento===1?'✅ ¡Escrito perfecto!':'👍 ¡Ahora sí! (cuenta el primer intento)');return}
+      if(intento===1){intento=2;lose();H.forEach((h,j)=>h.classList.toggle('bad',huecos[j]!==L[j]));$('#fb').textContent='Casi. Las rojas no van ahí: prueba otra vez.';setTimeout(()=>{if(st.isConnected){reinicia();$('#fb').textContent=''}},1100);return}
+      hecho=true;huecos=[...L];pinta();H.forEach(h=>h.classList.add('ok'));hablar(w,false,'en-GB');$('#rbor').remove();done(0,1,`❌ Se escribe así: <b>${escR(w)}</b>`)});
+    $('#rbor').onclick=()=>{if(hecho||!pos)return;pos--;huecos[pos]='';const b=usadas.pop();if(b){b.disabled=false;b.style.visibility=''}pinta()};
+    return}
+
+  /* ⌨️ Deletrear con el teclado: las mayúsculas dan igual; el guion de T-shirt cuenta */
+  if(s.modo==='teclado'){const x=P[s.k],w=x.en;
+    st.innerHTML=`<div class="rp-frase">${oye(w)}<div class="q" style="margin:0">Ahora sin fichas: escríbelo tú. <span style="opacity:.75">(${escR(x.es)})</span></div></div>
+      ${icono(s.k,s.c,'rp-grande')}<div class="rp-escribe" style="justify-content:center"><input id="rin" ${NOAUTO} placeholder="Escribe aquí" aria-label="La prenda en inglés"></div>
+      <button class="btn" id="rchk">Comprobar ✔</button>`;
+    setTimeout(()=>{if(st.isConnected)hablar(w,false,'en-GB')},350);
+    const inp=$('#rin'),go=()=>{const v=normR(inp.value);if(!v)return;const ok=v===w.toLowerCase();inp.disabled=true;inp.classList.add(ok?'ok':'bad');$('#rchk').remove();
+      ok?win(15):lose();hablar(w,false,'en-GB');
+      const pista=!ok&&s.k==='tshirt'&&v.replace(/[\s-]/g,'')==='tshirt'?' Lleva guion entre la T y shirt.':'';
+      done(ok?1:0,1,ok?'✅ ¡Escrito perfecto!':`❌ Se escribe <b>${escR(w)}</b>.${pista}`)};
+    $('#rchk').onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});return}
+
+  /* ✍️ Escríbelo tú: dos huecos, «a blue jumper» y «brown trousers»; si falla, dice por qué */
+  if(s.modo==='escribe'){const p=s.p,S=p.s==='she'?'She':'He';
+    st.innerHTML=`<div class="rp-escena"><div class="rp-solo">${muneco(conRopa(p))}</div><div>${fraseHTML(pregunta(p),false)}</div></div>
+      <div class="rp-escribe"><span>${S} is wearing</span><input id="rpA" ${NOAUTO} placeholder="a … …" aria-label="Primera prenda con su color"><span>and</span><input id="rpB" ${NOAUTO} placeholder="…" aria-label="Segunda prenda con su color"></div>
+      <button class="btn" id="rchk">Comprobar ✔</button>`;
+    fraseWire(st,pregunta(p),true);
+    $('#rchk').onclick=()=>{const I=[$('#rpA'),$('#rpB')];if(I.every(x=>!x.value.trim()))return;let n=0;const pistas=[];
+      I.forEach((x,j)=>{const ok=normR(x.value)===normR(s.partes[j]);x.classList.add(ok?'ok':'bad');x.disabled=true;if(ok){n++;return}
+        const v=normR(x.value),[k,c]=p.items[j],pl=P[k].pl;
+        if(pl&&v.startsWith('a '))pistas.push(`«${P[k].en}» va sin «a», porque es plural`);
+        else if(!pl&&v&&!v.startsWith('a '))pistas.push(`delante de «${c} ${P[k].en}» va «a»`);
+        else if(v.endsWith(' '+c))pistas.push('el color va delante de la prenda')});
+      $('#rchk').remove();n===2?win(20):lose();hablar(respuesta(p),false,'en-GB');
+      done(n,2,n===2?'✅ ¡Frase perfecta!':`${pistas.length?'Ojo: '+escR(pistas.join('; '))+'. ':''}Es: <b>${escR(respuesta(p))}</b>`)};
+    return}
+
+  /* 🔎 ¿Quién es?: seis niños parecidos; se toca al que dice la frase */
+  if(s.modo==='quien'){let hecho=false;const t=s.gente[s.bueno];
+    st.innerHTML=`<div class="q">Toca a quien dice la frase.</div>${fraseHTML(s.frase,true)}
+      <div class="rp-gente">${s.gente.map((p,j)=>`<button type="button" class="rp-per" data-j="${j}">${muneco(conRopa(p))}</button>`).join('')}</div>`;
+    fraseWire(st,s.frase,true);
+    st.querySelectorAll('.rp-per').forEach(b=>b.onclick=()=>{if(hecho)return;hecho=true;const j=+b.dataset.j,ok=j===s.bueno;
+      st.querySelectorAll('.rp-per').forEach(x=>{x.disabled=true;if(+x.dataset.j===s.bueno)x.classList.add('ok')});if(!ok)b.classList.add('bad');
+      ok?win(10):lose();
+      done(ok?1:0,1,ok?'✅ ¡Lo has encontrado!':`❌ Ese lleva ${escR(s.gente[j].items.map(parte).join(' and '))}. Era el que lleva ${escR(t.items.map(x=>enEs(x)).join(' y '))}.`)});
+    return}
+}};
+
+/* ================== CONFIGURACIÓN PARA EL MOTOR ================== */
+const JUEGO={
+ id:'ingles-ropa',
+ marca:'La ropa en inglés',
+ codigo:'MISIÓN ROPA · 2º',
+ curso:2, estilo:4, voz:'en-GB', tildesCuentan:false,
+ claves:{estado:'ingles_ropa',ruta:'ingles_ropa_ruta',arcade:'ingles_ropa_arcade',nombre:'mision_name_2'},
+ pasos:PASOS,
+ saludo:'Viste, busca, deletrea y pregunta: What is she wearing?',
+ notaBoletin:'Solo cuenta la primera respuesta. Deletrear y Escríbelo tú valen doble, porque es lo que piden en clase.',
+ menu:[
+   ['#','👀 Mirar y escuchar'],
+   ['vestidor','🎨','El vestidor','Vístelo como dice la frase'],
+   ['quien','🔎','¿Quién es?','Busca al que dice la frase'],
+   ['conA','📦','¿Con «a» o sin «a»?','a hat · red shoes'],
+   ['#','✏️ Escribir'],
+   ['deletreo','🔤','Deletrea la prenda','Letra a letra'],
+   ['ordena','🧩','Ordena la respuesta','She is wearing…'],
+   ['pregunta','❓','Pregunta tú','What is he wearing?'],
+   ['escribe','✍️','Escríbelo tú','La prenda con su color'],
+   ['#','👑 Prueba'],
+   ['exam','👑','PRUEBA FINAL','10 preguntas, sin prisa'],
+ ],
+ chuleta:`<div class="box"><h2>📘 Chuleta de la ropa</h2>
+<table class="rules">
+${PR.map(p=>`<tr><td>${icono(p.k,'#ffffff','rp-ic')} <b>${p.en}</b> = ${p.es}${p.pl?' <i>(plural: sin «a»)</i>':''}</td></tr>`).join('')}
+<tr><td><b>What is he wearing?</b> = ¿Qué lleva puesto él? · <b>What is she wearing?</b> = ¿Qué lleva puesto ella?</td></tr>
+<tr><td><b>He is wearing a blue jumper and brown trousers.</b> El color va <b>delante</b> de la prenda.</td></tr>
+<tr><td><b>a</b> con una sola cosa (a pink dress). <b>Sin «a»</b> con las que van en plural (yellow shoes).</td></tr>
+</table></div>`,
+ examen:{min:0,dia:'la prueba',preguntas:preguntasExamen},
+ ruta:{facil:true,minutos:'15 a 20',partes:[],estacion(){},textoFin:'Ahora, la prueba final: 10 preguntas, sin prisa.'},
+ arcade:{
+  /* Arcade propio (el padre, 25-nov: el fotógrafo de la pasarela y el cohete del armario) */
+  juegos:[{k:'foto',ic:'📸',c:'m1',n:'El fotógrafo de la pasarela',d:'Escucha a quién hay que fotografiar y dispara cuando esté en el marco.',
+    src:['../vendor/zzfx.js','../ingles-ropa/arcade/foto.js?v=1']},
+   {k:'cohete',ic:'🚀',c:'m2',n:'Cohete del armario',d:'Revienta las prendas que pide la consigna y vence al guardián de cada planeta.',
+    src:['../vendor/phaser.min.js','../vendor/zzfx.js','../ingles-ropa/arcade/cohete.js?v=1']}],
+  bloques:[{k:'mix',n:'Todo mezclado',ic:'🎲'}],jefes:{mix:['🦖','Rex del armario']},
+  test(){return [...Array(8)].map(mcFrase)},
+  deletreo(){return PR.map(p=>({q:p.es,h:p.en,a:p.en}))},
+ },
+};
+</script>
+<script src="../motor-beta/piel.js?v=33"></script>
+<script src="../motor-beta/motor.js?v=33"></script>
+</body>
+</html>
