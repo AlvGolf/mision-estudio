@@ -22,6 +22,12 @@ Se actualiza al cerrar cada sesión. Lo esencial manda sobre lo demás: lo extra
 
 ## Abierto
 
+- **Tareas de su TO DO, para después del examen de Mates del 27-nov; hechas antes del sábado 28-nov a las 23:00** (el padre, 26-nov):
+  1. Examen final: la goma del borrador borra solo lo que pasa el dedo, sin tener que empezar de nuevo.
+  2. Examen final: otra forma de contestar las preguntas que hoy tienen papel para escribir con el dedo (no es cómodo).
+  3. Tarjeta «Hoy»: a partir de las 21:00 dice «Mañana».
+  4. Botón para cambiar de jugador en el menú, más a mano que el «no soy yo» de ahora; antes, propuestas al padre de dónde más ponerlo.
+
 - **Motor común en producción (20-nov).** `motor/` lo cargan los juegos normales y `motor-beta/` las betas y `pruebas-motor/`. Verificador sin fallos y 32 pantallas idénticas a la normal anterior.
 
 ### Plan de desarrollo (20-nov, tras el informe de investigación; catálogo en `MODALIDADES.md`)
