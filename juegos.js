@@ -7,7 +7,8 @@ const JUEGOS=[
  {id:'ingles-u2',carpeta:'ingles-u2/',curso:5,asignatura:'ingles',titulo:'Unit 2',temas:'Adverbios, like / would like, verbos irregulares y vocabulario',examen:'2026-11-20'},
  {id:'mates-u3',carpeta:'mates-u3/',curso:5,asignatura:'mates',titulo:'Unidad 3',temas:'Divisiones, múltiplos, divisores, criterios de divisibilidad, primos y problemas',examen:'2026-11-27'},
  {id:'lengua-t3',carpeta:'lengua-t3/',curso:5,asignatura:'lengua',titulo:'Unidad 3',temas:'El adjetivo y sus grados, epítetos, vocabulario, diptongos e hiatos y la medida de los versos',examen:'2026-12-01'},
- {id:'mates-reloj',carpeta:'mates-reloj/',curso:2,asignatura:'mates',titulo:'Las horas del reloj',temas:'En punto, y cuarto, y media y menos cuarto en el reloj de agujas'}
+ {id:'mates-reloj',carpeta:'mates-reloj/',curso:2,asignatura:'mates',titulo:'Las horas del reloj',temas:'En punto, y cuarto, y media y menos cuarto en el reloj de agujas'},
+ {id:'ingles-ropa',carpeta:'ingles-ropa/',curso:2,asignatura:'ingles',titulo:'La ropa en inglés',temas:'Las prendas y sus colores, y What is he/she wearing?'}
 ];
 const ASIGNATURAS={
  ingles:{n:'Inglés',ic:'🔤',col:'#2a8bf2'},

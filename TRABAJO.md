@@ -12,4 +12,3 @@ Claude Code y el Claude de la app trabajan en el mismo repositorio. Este archivo
 
 | Juego (carpeta) | Quién | Desde | Qué está haciendo |
 |---|---|---|---|
-| ingles-ropa | Claude Code | 26-nov | Pasar «La ropa en inglés» de la beta a la normal (aprobada por el padre) |

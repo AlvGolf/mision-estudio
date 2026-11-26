@@ -1347,6 +1347,9 @@ Object.assign(STEP,{
     });
   },
 });
+/* Formatos propios de un juego (25-nov, «La ropa» de 2º): JUEGO.pasos = {tipo(st, s, done)}, con la misma forma que los de STEP.
+   Así lo que solo sirve a un tema (el muñeco que se viste) vive en su juego y no en el motor. No pisan los del motor. */
+if(JUEGO.pasos)for(const [k,f] of Object.entries(JUEGO.pasos))if(!STEP[k])STEP[k]=f;
 /* Volver al menú de la suite (21-nov): en la app instalada no hay barra del navegador, así que sin esto el niño no sale del juego. */
 function botonMenu(){const h=document.querySelector('header');if(!h||document.getElementById('amenu'))return;
   const b=document.createElement('a');b.id='amenu';b.className='pill amenu';b.href=JUEGO.curso==2?'../segundo/':ES_BETA?'../menu-beta/':'../'; /* cada curso vuelve a su menú (22-nov) */b.setAttribute('aria-label','Volver al menú de juegos');b.title='Todos los juegos';
