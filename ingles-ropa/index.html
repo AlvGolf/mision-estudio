@@ -366,6 +366,7 @@ ${PR.map(p=>`<tr><td>${icono(p.k,'#ffffff','rp-ic')} <b>${p.en}</b> = ${p.es}${p
  examen:{min:0,dia:'la prueba',preguntas:preguntasExamen},
  ruta:{facil:true,minutos:'15 a 20',partes:[],estacion(){},textoFin:'Ahora, la prueba final: 10 preguntas, sin prisa.'},
  arcade:{
+  abierto:true, /* el padre, 26-nov: «que se abra desde el primer día» */
   /* Arcade propio (el padre, 25-nov: el fotógrafo de la pasarela y el cohete del armario) */
   juegos:[{k:'foto',ic:'📸',c:'m1',n:'El fotógrafo de la pasarela',d:'Escucha a quién hay que fotografiar y dispara cuando esté en el marco.',
     src:['../vendor/zzfx.js','../ingles-ropa/arcade/foto.js?v=1']},
@@ -378,6 +379,6 @@ ${PR.map(p=>`<tr><td>${icono(p.k,'#ffffff','rp-ic')} <b>${p.en}</b> = ${p.es}${p
 };
 </script>
 <script src="../motor/piel.js?v=33"></script>
-<script src="../motor/motor.js?v=34"></script>
+<script src="../motor/motor.js?v=35"></script>
 </body>
 </html>

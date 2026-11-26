@@ -113,7 +113,7 @@ Semáforo: 🟢 ≥8 · 🟡 5–7,9 · 🔴 <5 · ⚪ sin jugar. "Hoy toca" pro
 - **Cada juego tiene su propio arcade** (el padre, 22-nov), pensado para su temario. Lo común va en el motor (desbloqueo, XP, monedas, récords, la estrella, «para repasar» y la pantalla de resultado). Los juegos de cada arcade van en `<juego>/arcade/` y se declaran en `JUEGO.arcade.juegos`. Usan ZzFX y, los de acción, Phaser 3 (los de turnos, como la Torre, van con botones de la página); los dos están en `vendor/`, con sus licencias. El verificador juega cada uno en modo prueba (`window.ARCADE_PRUEBA`: semilla fija y partida corta).
 - Mates U3 (en producción desde el 22-nov): 🚀 Cohete del Saber (cuatro planetas con su guardián; se mueve con la barra y dispara con el botón; caen cápsulas de escudo, imán y doble disparo) y 🗼 la Torre del Jefe (cuatro plantas de duelo por turnos; tres aciertos cargan el golpe fuerte: cociente y resto). Lo que se falla en el arcade vuelve a «Hoy toca».
 - Inglés sigue con los cuatro modos comunes del motor: ⚡ Contrarreloj (60 s, combos ×2/×3/×4) · 🐉 Batalla contra el jefe (3 vidas) · 🎈 Explota globos (velocidad base 0,72, +0,065 por ronda, tope +1,45) · 🚀 Rescate letra a letra.
-- Se desbloquea al haber jugado todos los bloques con nota. Suma XP (1 moneda = 5 XP), no cuenta para la nota.
+- Se desbloquea al haber jugado todos los bloques con nota, salvo en los juegos con `JUEGO.arcade.abierto` (La ropa en inglés, el padre, 26-nov), que lo tienen abierto desde el primer día. Suma XP (1 moneda = 5 XP), no cuenta para la nota.
 - Una sola estrella: vencer a un jefe. Total = misiones × 3 + 1.
 - Estilo para 10 años, nada infantil: tarjetas oscuras con borde y brillo por modo, etiqueta "MODO 01…04".
 - El arcade de Inglés no se cambia hasta que el padre lo pida.
